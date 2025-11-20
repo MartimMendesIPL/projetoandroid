@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">maislusitania_android</string>
+    <string name="app_logo">Logo</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="bem_vindo">Bem vindo/a</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="entrar">Entrar</string>
+    <string name="nao_possui_conta">Não possui conta?</string>
+    <string name="continuar_como_convidado">Continuar como convidado</string>
+    <string name="ou">ou</string>
+    <string name="registar_se">Registar-se</string>
+    <string name="criar_conta">Criar Conta</string>
+    <string name="email">Email</string>
+    <string name="confirmar_password">Confirmar Password</string>
+    <string name="registar">Registar</string>
+    <string name="possui_conta">Já possui conta?</string>
+
+</resources>

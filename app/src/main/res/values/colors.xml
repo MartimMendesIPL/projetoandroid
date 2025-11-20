@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Cores principais da app -->
+    <color name="blue_primary">#2E5AAC</color>
+    <color name="blue_primary_dark">#1E3A7C</color>
+    <color name="blue_primary_light">#5080DC</color>
+    <color name="white_blue">#E6F0F2</color>
+
+    <!-- Cores secundárias -->
+    <color name="teal_200">#03DAC6</color>
+    <color name="teal_700">#018786</color>
+
+    <!-- Cores básicas -->
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
+    <color name="error">#B00020</color>
+
+    <color name="text_field_background">#2E5AAC</color>
+
+
+</resources>
