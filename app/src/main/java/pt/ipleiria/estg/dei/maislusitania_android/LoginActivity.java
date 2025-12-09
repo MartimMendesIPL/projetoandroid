@@ -1,36 +1,32 @@
 package pt.ipleiria.estg.dei.maislusitania_android;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
-public class LoginActivity extends AppCompatActivity {
+import pt.ipleiria.estg.dei.maislusitania_android.utils.SingletonLusitania;
+
+public class LoginActivity extends AppCompatActivity  implements SingletonLusitania.LoginListener{
 
     private EditText etUsername, etPassword;
+    private static final String SHARED_PREFS_NAME = "MaisLusitaniaPrefs";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_login);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
 
-        setTitle("Login");
-
-        //Inicalizar componentes
         etUsername = findViewById(R.id.et_username);
         etPassword = findViewById(R.id.et_password);
+
+        // Registar como listener
+        SingletonLusitania.getInstance(this).setLoginListener(this);
     }
 
     public void goToRegister(View view) {
@@ -38,39 +34,54 @@ public class LoginActivity extends AppCompatActivity {
         startActivity(intent);
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
     }
-
-
-    //TODO implementar o método de login com API
     public void Login(View view) {
-
-        String email = etUsername.getText().toString();
+        String username = etUsername.getText().toString();
         String password = etPassword.getText().toString();
 
-        if (!validateLogin()) {
+        if (!validateLoginCampos()) {
             return;
         }
 
-        // Após o login ser bem-sucedido, adicione:
-        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-        startActivity(intent);
-        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-        finish(); // Para não voltar ao login ao pressionar "voltar"
+        // Invocar o método loginAPI do Singleton
+        SingletonLusitania.getInstance(this).loginAPI(username, password);
     }
 
+    private boolean validateLoginCampos() {
+        String username = etUsername.getText().toString().trim();
+        String password = etPassword.getText().toString().trim();
 
-    private boolean validateLogin() {
-
-        if (etUsername.getText().toString().isEmpty()) {
-            etUsername.setError("Username inválido");
-            etUsername.requestFocus();
+        if (username.isEmpty()) {
+            etUsername.setError("Campo obrigatório");
             return false;
         }
 
-        if (etPassword.getText().toString().length() < 6) {
-            etPassword.setError("Password inválida");
-            etPassword.requestFocus();
+        if (password.isEmpty()) {
+            etPassword.setError("Campo obrigatório");
             return false;
         }
+
         return true;
+    }
+
+    @Override
+    public void onValidateLogin(final String token, final String username) {
+        // Guardar no SharedPreferences
+        SharedPreferences sharedPreferences = getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("access_token", token);
+        editor.putString("username", username);
+        editor.apply();
+
+        // Ir para MainActivity
+        Toast.makeText(this, "Bem-vindo, " + username + "!", Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
+    public void GuestLogin(View view) {
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
     }
 }

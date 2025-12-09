@@ -53,5 +53,8 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.navigation:navigation-ui:2.7.6")
 
+    //API
+    implementation ("com.android.volley:volley:1.2.1")
+    implementation("com.github.bumptech.glide:glide:4.16.0")
 
 }
