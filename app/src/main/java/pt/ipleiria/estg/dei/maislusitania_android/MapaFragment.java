@@ -30,9 +30,28 @@ public class MapaFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         binding = FragmentMapaBinding.inflate(inflater, container, false);
 
+        // Listener do ícone de perfil (código existente)
         binding.tilPesquisa.setEndIconOnClickListener(v ->
                 startActivity(new Intent(requireActivity(), PerfilActivity.class))
         );
+
+        // NOVO: Listener para abrir LocaisFragment ao clicar na barra de pesquisa
+        binding.tilPesquisa.setOnClickListener(v -> {
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, new LocaisFragment())
+                    .addToBackStack(null)
+                    .commit();
+        });
+
+        // Também no EditText
+        binding.etPesquisa.setOnClickListener(v -> {
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, new LocaisFragment())
+                    .addToBackStack(null)
+                    .commit();
+        });
 
         final String assetName = "leaflet_map.html";
 
