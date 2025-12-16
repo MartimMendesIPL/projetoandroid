@@ -23,25 +23,32 @@ public class Local {
     }
 
     // Getters
-    public int getId() { return id; }
-    public String getNome() { return nome; }
-    public String getMorada() { return morada; }
-    public String getDistrito() { return distrito; }
-    public String getDescricao() { return descricao; }
-    public String getImagem() { return imagem; }
-    public float getAvaliacaoMedia() { return avaliacaoMedia; }
-    public boolean isFavorite() { return isFavorite; }
+    public int getId() {
+        return id; }
+    public String getNome() {
+        return nome;
+    }
+    public String getMorada() {
+        return morada;
+    }
+    public String getDistrito() {
+        return distrito;
+    }
 
-    // Métodos de compatibilidade (se necessário para o adapter existente)
-    public String getTitle() { return nome; }
-    public String getCategory() { return distrito; }
-    public String getDistance() { return morada; }
-    public String getDescription() { return descricao; }
-    public float getRating() { return avaliacaoMedia; }
-    public int getImageResId() { return 0; } // Não usado mais
-
-    // Setter para favorito
+    public String getDescricao() {
+        return descricao;
+    }
+    public String getImagem() {
+        return imagem;
+    }
+    public float getAvaliacaoMedia() {
+        return avaliacaoMedia;
+    }
+    public boolean isFavorite() {
+        return isFavorite;
+    }
     public void setFavorite(boolean favorite) {
         isFavorite = favorite;
     }
+
 }

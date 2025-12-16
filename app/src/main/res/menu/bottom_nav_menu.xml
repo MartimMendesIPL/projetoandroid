@@ -20,5 +20,4 @@
         android:icon="@drawable/ic_noticias"
         android:title="Notícias" />
 
-
 </menu>

@@ -13,22 +13,20 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
-import java.util.List;
 
 import pt.ipleiria.estg.dei.maislusitania_android.adapters.LocalAdapter;
 import pt.ipleiria.estg.dei.maislusitania_android.databinding.FragmentLocaisBinding;
 import pt.ipleiria.estg.dei.maislusitania_android.models.Local;
-import pt.ipleiria.estg.dei.maislusitania_android.utils.SingletonLusitania;
+import pt.ipleiria.estg.dei.maislusitania_android.models.SingletonLusitania;
+import pt.ipleiria.estg.dei.maislusitania_android.listeners.LocaisListener;
+import pt.ipleiria.estg.dei.maislusitania_android.models.LocaisFavDBHelper;
 
-public class LocaisFragment extends Fragment implements SingletonLusitania.LocaisListener {
+public class LocaisFragment extends Fragment implements LocaisListener {
 
     private FragmentLocaisBinding binding;
     private LocalAdapter adapter;
-    private List<Local> items;
+    private ArrayList<Local> items;
 
     @Nullable
     @Override
@@ -36,21 +34,17 @@ public class LocaisFragment extends Fragment implements SingletonLusitania.Locai
                              @Nullable Bundle savedInstanceState) {
         binding = FragmentLocaisBinding.inflate(inflater, container, false);
 
-        // Inicializar lista
         items = new ArrayList<>();
 
-        // Listener para o ícone de perfil
-        binding.tilPesquisa.setEndIconOnClickListener(v -> {
+        binding.tilPesquisa.setEndIconOnClickListener(view -> {
             Intent intent = new Intent(getActivity(), PerfilActivity.class);
             startActivity(intent);
         });
 
-        // Configurar RecyclerView
         setupRecyclerView();
 
-        // Registar listener e carregar dados da API
         SingletonLusitania.getInstance(requireContext()).setLocaisListener(this);
-        SingletonLusitania.getInstance(requireContext()).getLocaisAPI();
+        SingletonLusitania.getInstance(requireContext()).getAllLocaisAPI(getContext());
 
         return binding.getRoot();
     }
@@ -59,19 +53,27 @@ public class LocaisFragment extends Fragment implements SingletonLusitania.Locai
         RecyclerView recyclerView = binding.recyclerViewLocais;
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-
         adapter = new LocalAdapter(items, new LocalAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(Local item) {
-                Toast.makeText(getContext(), "Clicou em: " + item.getTitle(),
-                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Clicou em: " + item.getNome(), Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onFavoriteClick(Local item, int position) {
-                String msg = item.isFavorite() ?
-                        "Adicionado aos favoritos" : "Removido dos favoritos";
-                Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
+                LocaisFavDBHelper dbHelper = new LocaisFavDBHelper(getContext());
+
+                if (item.isFavorite()) {
+                    dbHelper.removerFavorito(item.getId());
+                    item.setFavorite(false);
+                    Toast.makeText(getContext(), "Removido dos favoritos", Toast.LENGTH_SHORT).show();
+                } else {
+                    dbHelper.adicionarFavorito(item);
+                    item.setFavorite(true);
+                    Toast.makeText(getContext(), "Adicionado aos favoritos", Toast.LENGTH_SHORT).show();
+                }
+
+                adapter.notifyItemChanged(position);
             }
         });
 
@@ -79,37 +81,14 @@ public class LocaisFragment extends Fragment implements SingletonLusitania.Locai
     }
 
     @Override
-    public void onLocaisLoaded(JSONArray locais) {
+    public void onLocaisLoaded(ArrayList<Local> listaLocais) {
         items.clear();
+        items.addAll(listaLocais);
 
-        try {
-
-            for (int i = 0; i < locais.length(); i++) {
-                JSONObject local = locais.getJSONObject(i);
-
-                Local item = new Local(
-                        local.optInt("id", 0),
-                        local.optString("nome", "Sem nome"),
-                        local.optString("morada", "Morada desconhecida"),
-                        local.optString("distrito", "Distrito desconhecido"),
-                        local.optString("descricao", "Sem descrição"),
-                        local.optString("imagem", ""),
-                        (float) local.optDouble("avaliacao_media", 0.0)
-                );
-
-                items.add(item);
-            }
-
-            if (adapter != null) {
-                adapter.notifyDataSetChanged();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            Toast.makeText(getContext(), "Erro ao processar locais", Toast.LENGTH_SHORT).show();
+        if (adapter != null) {
+            adapter.notifyDataSetChanged();
         }
     }
-
-
 
     @Override
     public void onLocaisError(String message) {
