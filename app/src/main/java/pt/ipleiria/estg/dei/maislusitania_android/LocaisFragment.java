@@ -61,19 +61,9 @@ public class LocaisFragment extends Fragment implements LocaisListener {
 
             @Override
             public void onFavoriteClick(Local item, int position) {
-                LocaisFavDBHelper dbHelper = new LocaisFavDBHelper(getContext());
+                // ✅ Chama a API de toggle via Singleton
+                SingletonLusitania.getInstance(requireContext()).toggleFavoritoAPI(requireContext(), item);
 
-                if (item.isFavorite()) {
-                    dbHelper.removerFavorito(item.getId());
-                    item.setFavorite(false);
-                    Toast.makeText(getContext(), "Removido dos favoritos", Toast.LENGTH_SHORT).show();
-                } else {
-                    dbHelper.adicionarFavorito(item);
-                    item.setFavorite(true);
-                    Toast.makeText(getContext(), "Adicionado aos favoritos", Toast.LENGTH_SHORT).show();
-                }
-
-                adapter.notifyItemChanged(position);
             }
         });
 

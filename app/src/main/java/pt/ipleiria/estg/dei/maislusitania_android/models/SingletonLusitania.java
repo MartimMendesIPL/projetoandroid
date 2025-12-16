@@ -32,6 +32,8 @@ public class SingletonLusitania {
     private static final String mUrlAPILogin = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/login-form";
     private static final String mUrlAPILocais = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/local-culturals";
 
+    private static final String mUrlAPIToggleFavorito = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/favoritos/toggle/";
+
     // SharedPreferences
     private static final String PREF_NAME = "MaisLusitaniaPrefs";
     private static final String KEY_USERNAME = "username";
@@ -86,6 +88,12 @@ public class SingletonLusitania {
         editor.apply();
     }
 
+    // Método para obter o token guardado
+    private String getAuthToken(Context context) {
+        SharedPreferences sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        return sharedPreferences.getString(KEY_TOKEN, null);
+    }
+
 
 
     //endregion
@@ -105,14 +113,49 @@ public class SingletonLusitania {
     }
 
     // Método auxiliar para atualizar o estado na lista em memória
-    public void toggleFavorito(Local local) {
-        if (local.isFavorite()) {
-            removeFavoritoBD(local.getId());
-            local.setFavorite(false);
-        } else {
-            addFavoritoBD(local);
-            local.setFavorite(true);
+    public void toggleFavoritoAPI(final Context context, final Local local) {
+        if (!LocalJsonParser.isConnectionInternet(context)) {
+            Toast.makeText(context, "Sem ligação à internet", Toast.LENGTH_SHORT).show();
+            return;
         }
+
+        String token = getAuthToken(context);
+
+        // ✅ VALIDAÇÃO: Verifica se o utilizador está autenticado
+        if (token == null) {
+            Toast.makeText(context, "Sessão expirada. Faça login novamente.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String url = mUrlAPIToggleFavorito + local.getId() + "?access-token=" + token;
+
+        JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST, url, null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            // Inverte o estado local
+                            local.setFavorite(!local.isFavorite());
+
+                            String mensagem = local.isFavorite() ? "Adicionado aos favoritos" : "Removido dos favoritos";
+                            Toast.makeText(context, mensagem, Toast.LENGTH_SHORT).show();
+
+                            // Notifica a UI para atualizar
+                            if (locaisListener != null)
+                                locaisListener.onLocaisLoaded(locais);
+
+                        } catch (Exception e) {
+                            Toast.makeText(context, "Erro ao atualizar favorito", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Toast.makeText(context, "Erro ao alterar favorito", Toast.LENGTH_SHORT).show();
+                    }
+                });
+        volleyQueue.add(req);
     }
 
     // LÓGICA DO LOGIN (POST)
@@ -178,27 +221,37 @@ public class SingletonLusitania {
 
 
     // LÓGICA DOS LOCAIS (Equivalente ao getAllBooksAPI - GET)
+    // CARREGAR LOCAIS COM FAVORITOS
     public void getAllLocaisAPI(final Context context) {
         if (!LocalJsonParser.isConnectionInternet(context)) {
             Toast.makeText(context, "Sem ligação à internet", Toast.LENGTH_SHORT).show();
 
-            ArrayList<Local> favoritos = getFavoritosBD();
             if (locaisListener != null)
-                locaisListener.onLocaisLoaded(favoritos);
+                locaisListener.onLocaisLoaded(new ArrayList<>());
         } else {
-            JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, mUrlAPILocais, null,
+            String token = getAuthToken(context);
+
+            // ✅ VALIDAÇÃO: Verifica se o utilizador está autenticado
+            if (token == null) {
+                Toast.makeText(context, "Sessão expirada. Faça login novamente.", Toast.LENGTH_SHORT).show();
+                if (locaisListener != null)
+                    locaisListener.onLocaisError("Sem autenticação");
+                return;
+            }
+
+            String urlComToken = mUrlAPILocais + "?access-token=" + token;
+
+            JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, urlComToken, null,
                     new Response.Listener<JSONObject>() {
                         @Override
                         public void onResponse(JSONObject response) {
                             try {
-                                // Log da resposta completa
-                                android.util.Log.d("API_RESPONSE", "Resposta completa: " + response.toString());
+                                android.util.Log.d("API_RESPONSE", "Resposta: " + response.toString());
 
-                                // Verifica se tem o campo "data"
                                 if (!response.has("data")) {
-                                    android.util.Log.e("API_ERROR", "Campo 'data' não encontrado na resposta");
+                                    android.util.Log.e("API_ERROR", "Campo 'data' não encontrado");
                                     if (locaisListener != null)
-                                        locaisListener.onLocaisError("Resposta da API inválida");
+                                        locaisListener.onLocaisError("Resposta inválida");
                                     return;
                                 }
 
@@ -206,22 +259,15 @@ public class SingletonLusitania {
                                 android.util.Log.d("API_DATA", "Total de locais: " + data.length());
 
                                 ArrayList<Local> apiLocais = LocalJsonParser.parserJsonLocais(data);
-
-                                for (Local local : apiLocais) {
-                                    if (dbHelper.isFavorito(local.getId())) {
-                                        local.setFavorite(true);
-                                    }
-                                }
-
                                 locais = apiLocais;
 
                                 if (locaisListener != null)
                                     locaisListener.onLocaisLoaded(locais);
 
                             } catch (Exception e) {
-                                android.util.Log.e("API_PARSE_ERROR", "Erro detalhado: " + e.getMessage(), e);
+                                android.util.Log.e("API_PARSE_ERROR", "Erro: " + e.getMessage(), e);
                                 if (locaisListener != null)
-                                    locaisListener.onLocaisError("Erro ao processar dados: " + e.getMessage());
+                                    locaisListener.onLocaisError("Erro ao processar dados");
                             }
                         }
                     },
@@ -230,23 +276,15 @@ public class SingletonLusitania {
                         public void onErrorResponse(VolleyError error) {
                             String mensagem = "Erro ao carregar locais";
 
-                            android.util.Log.e("API_ERROR", "Erro no pedido", error);
-
-                            if (error.networkResponse != null) {
-                                android.util.Log.e("API_ERROR", "Código HTTP: " + error.networkResponse.statusCode);
-
-                                if (error.networkResponse.data != null) {
-                                    try {
-                                        String responseBody = new String(error.networkResponse.data, "UTF-8");
-                                        android.util.Log.e("API_ERROR", "Resposta de erro: " + responseBody);
-
-                                        JSONObject jsonError = new JSONObject(responseBody);
-                                        if (jsonError.has("message")) {
-                                            mensagem = jsonError.getString("message");
-                                        }
-                                    } catch (Exception e) {
-                                        android.util.Log.e("API_ERROR", "Erro ao ler resposta de erro", e);
+                            if (error.networkResponse != null && error.networkResponse.data != null) {
+                                try {
+                                    String responseBody = new String(error.networkResponse.data, "UTF-8");
+                                    JSONObject jsonError = new JSONObject(responseBody);
+                                    if (jsonError.has("message")) {
+                                        mensagem = jsonError.getString("message");
                                     }
+                                } catch (Exception e) {
+                                    // Mantém mensagem padrão
                                 }
                             }
 
@@ -257,6 +295,7 @@ public class SingletonLusitania {
             volleyQueue.add(req);
         }
     }
+
 
 
     //endregion
