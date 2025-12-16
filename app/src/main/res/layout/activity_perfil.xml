@@ -5,7 +5,6 @@
     android:layout_height="match_parent"
     android:background="@color/white_blue">
 
-    <!-- Header com gradiente azul -->
     <View
         android:id="@+id/headerBackground"
         android:layout_width="0dp"
@@ -15,7 +14,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Botão Voltar -->
     <ImageButton
         android:id="@+id/btnVoltar"
         android:layout_width="48dp"
@@ -25,10 +23,19 @@
         android:src="@android:drawable/ic_menu_close_clear_cancel"
         android:contentDescription="Voltar"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        android:fitsSystemWindows="true"/>
+        app:layout_constraintStart_toStartOf="parent" />
 
-    <!-- Foto de Perfil -->
+    <ImageButton
+        android:id="@+id/btnLogout"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_margin="16dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@drawable/ic_logout"
+        android:tint="#FFFFFF"
+        android:contentDescription="Logout"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
     <androidx.cardview.widget.CardView
         android:id="@+id/cvProfilePhoto"
         android:layout_width="120dp"
@@ -50,7 +57,6 @@
 
     </androidx.cardview.widget.CardView>
 
-    <!-- Username -->
     <TextView
         android:id="@+id/tvUsername"
         android:layout_width="wrap_content"
@@ -64,7 +70,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Card Container com informações -->
     <androidx.cardview.widget.CardView
         android:id="@+id/cvInfoContainer"
         android:layout_width="0dp"
@@ -83,7 +88,101 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Item Email -->
+            <LinearLayout
+                android:id="@+id/layoutPrimeiroNome"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="16dp"
+                android:background="?attr/selectableItemBackground"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_name"
+                    android:tint="@color/blue_primary"
+                    android:contentDescription="Primeiro Nome" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginStart="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Primeiro Nome"
+                        android:textSize="12sp"
+                        android:textColor="#808080" />
+
+                    <TextView
+                        android:id="@+id/tvFirstName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Admin"
+                        android:textSize="16sp"
+                        android:textColor="#000000"
+                        android:layout_marginTop="4dp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginStart="56dp"
+                android:background="#E0E0E0" />
+
+            <LinearLayout
+                android:id="@+id/layoutUltimoNome"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="16dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="Último Nome"
+                    android:src="@drawable/ic_name"
+                    android:tint="@color/blue_primary"
+                    android:visibility="invisible" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Último Nome"
+                        android:textColor="#808080"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/tvLastName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Lusitania"
+                        android:textColor="#000000"
+                        android:textSize="16sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginStart="56dp"
+                android:background="#E0E0E0" />
+
             <LinearLayout
                 android:id="@+id/layoutEmail"
                 android:layout_width="match_parent"
@@ -96,7 +195,7 @@
                 <ImageView
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:src="@android:drawable/ic_dialog_email"
+                    android:src="@drawable/ic_mail"
                     android:tint="@color/blue_primary"
                     android:contentDescription="Email" />
 
@@ -122,21 +221,17 @@
                         android:textSize="16sp"
                         android:textColor="#000000"
                         android:layout_marginTop="4dp" />
-
                 </LinearLayout>
-
             </LinearLayout>
 
-            <!-- Divider -->
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:layout_marginStart="56dp"
                 android:background="#E0E0E0" />
 
-            <!-- Item Telefone -->
             <LinearLayout
-                android:id="@+id/layoutTelefone"
+                android:id="@+id/layoutMembroDesde"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
@@ -147,9 +242,9 @@
                 <ImageView
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:src="@android:drawable/stat_sys_phone_call"
+                    android:src="@drawable/ic_calender"
                     android:tint="@color/blue_primary"
-                    android:contentDescription="Telefone" />
+                    android:contentDescription="Membro desde" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -161,31 +256,27 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Telefone"
+                        android:text="Membro desde"
                         android:textSize="12sp"
                         android:textColor="#808080" />
 
                     <TextView
-                        android:id="@+id/tvTelefone"
+                        android:id="@+id/tvMemberSince"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="+351 000 000 000"
+                        android:text="Janeiro 2024"
                         android:textSize="16sp"
                         android:textColor="#000000"
                         android:layout_marginTop="4dp" />
-
                 </LinearLayout>
-
             </LinearLayout>
 
-            <!-- Divider -->
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:layout_marginStart="56dp"
                 android:background="#E0E0E0" />
 
-            <!-- Item Favoritos -->
             <LinearLayout
                 android:id="@+id/layoutFavoritos"
                 android:layout_width="match_parent"
@@ -198,7 +289,7 @@
                 <ImageView
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:src="@android:drawable/btn_star_big_on"
+                    android:src="@drawable/ic_fav_on"
                     android:tint="@color/blue_primary"
                     android:contentDescription="Favoritos" />
 
@@ -218,11 +309,9 @@
                     android:rotation="270"
                     android:tint="#808080"
                     android:contentDescription="Ver mais" />
-
             </LinearLayout>
 
         </LinearLayout>
-
     </androidx.cardview.widget.CardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
