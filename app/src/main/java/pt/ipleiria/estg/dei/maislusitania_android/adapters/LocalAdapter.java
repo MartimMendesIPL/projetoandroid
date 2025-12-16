@@ -63,10 +63,6 @@ public class LocalAdapter extends RecyclerView.Adapter<LocalAdapter.ViewHolder> 
         });
 
         holder.ivFavorite.setOnClickListener(v -> {
-            item.setFavorite(!item.isFavorite());
-            holder.ivFavorite.setImageResource(
-                    item.isFavorite() ? R.drawable.ic_fav_on : R.drawable.ic_fav_off
-            );
             if (listener != null) {
                 listener.onFavoriteClick(item, holder.getAdapterPosition());
             }
