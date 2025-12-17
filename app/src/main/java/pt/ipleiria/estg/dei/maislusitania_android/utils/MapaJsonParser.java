@@ -36,7 +36,6 @@ public class MapaJsonParser {
                 JSONObject mapa = (JSONObject) response.get(i);
                 Mapa auxlocal = parseSingleObject(mapa);
 
-                // Only add if coordinates are valid
                 if (auxlocal.getLatitude() != 0.0 && auxlocal.getLongitude() != 0.0) {
                     mapaLocais.add(auxlocal);
                 }
@@ -47,24 +46,20 @@ public class MapaJsonParser {
         return mapaLocais;
     }
 
-    // Helper method to parse a single object safely using 'opt'
     private static Mapa parseSingleObject(JSONObject mapa) {
         int id = mapa.optInt("id", 0);
         String nome = mapa.optString("nome", "Sem Nome");
-        String imagem = mapa.optString("imagem", ""); // Returns empty string if null
+        String imagem = mapa.optString("imagem", "");
         String tipo = mapa.optString("tipo", "");
 
-        // Handle coordinates carefully. If they are strings in JSON, optDouble still works.
         Double latitude = mapa.optDouble("latitude", 0.0);
         Double longitude = mapa.optDouble("longitude", 0.0);
 
-        // Use a default marker if null
         String markerImagem = mapa.optString("markerImagem", "");
 
         return new Mapa(id, nome, imagem, tipo, markerImagem, latitude, longitude);
     }
 
-    // Converts Java List -> JSON String for the WebView
     public static String mapasListToJson(ArrayList<Mapa> lista) {
         JSONArray jsonArray = new JSONArray();
         for (Mapa m : lista) {
@@ -72,14 +67,12 @@ public class MapaJsonParser {
                 JSONObject jsonObject = new JSONObject();
                 jsonObject.put("id", m.getId());
                 jsonObject.put("nome", m.getNome());
-                // Handle full URL logic here if needed
+
                 jsonObject.put("imagem", m.getImagem());
                 jsonObject.put("tipo", m.getTipo());
                 jsonObject.put("latitude", m.getLatitude());
                 jsonObject.put("longitude", m.getLongitude());
 
-                // If marker is empty, you might want to send a default path,
-                // or handle the empty string in your HTML JS.
                 jsonObject.put("markerImagem", m.getMarkerImagem());
 
                 jsonArray.put(jsonObject);

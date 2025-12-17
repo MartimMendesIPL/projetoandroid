@@ -17,10 +17,12 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import pt.ipleiria.estg.dei.maislusitania_android.listeners.EventoListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.LocaisListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.LoginListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.MapaListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.NoticiaListener;
+import pt.ipleiria.estg.dei.maislusitania_android.utils.EventosJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.LocalJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.MapaJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.NoticiaJsonParser;
@@ -40,9 +42,9 @@ public class SingletonLusitania {
     private static final String mUrlAPILogin = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/login-form";
     private static final String mUrlAPILocais = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/local-culturals";
     private static final String mUrlAPINoticias = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/noticias";
-
     private static final String mUrlAPIToggleFavorito = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/favoritos/toggle/";
     private static final String mUrlAPIMapa = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/mapas";
+    private static final String mUrlAPIEvento = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/eventos";
 
     // SharedPreferences
     private static final String PREF_NAME = "MaisLusitaniaPrefs";
@@ -53,6 +55,7 @@ public class SingletonLusitania {
     private LocaisListener locaisListener;
     private MapaListener mapaListener;
     private NoticiaListener noticiaListener;
+    private EventoListener eventoListener;
 
     //region - Construtor e Instância
     private SingletonLusitania(Context context) {
@@ -82,6 +85,11 @@ public class SingletonLusitania {
     public void setNoticiaListener(NoticiaListener noticiaListener) {
         this.noticiaListener = noticiaListener;
     }
+
+    public void setEventoListener(EventoListener eventoListener) {
+        this.eventoListener = eventoListener;
+    }
+
     //endregion
 
     //region - SharedPreferences (Sessão)
@@ -112,8 +120,6 @@ public class SingletonLusitania {
         SharedPreferences sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         return sharedPreferences.getString(KEY_TOKEN, null);
     }
-
-
 
     //endregion
 
@@ -416,27 +422,70 @@ public class SingletonLusitania {
     }
     //endregion
 
-    //region Mapas API(GET, View)
+    //region Mapas API(GetAll)
 
     public void getAllMapasAPI(final Context context) {
         // Verificar ligação à internet
         if (!UtilParser.isConnectionInternet(context)) {
             Toast.makeText(context, "Sem Ligação a internet", Toast.LENGTH_SHORT).show();
         } else {
-            // FIX 1: Changed to JsonObjectRequest because the API returns an Object { "data": [] }
             JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, mUrlAPIMapa, null,
                     new Response.Listener<JSONObject>() {
                         @Override
                         public void onResponse(JSONObject response) {
                             try {
-                                // FIX 2: Extract the "data" array from the response object
                                 JSONArray data = response.getJSONArray("data");
 
-                                // FIX 3: Parse the extracted 'data' array, not an undefined variable
                                 ArrayList<Mapa> mapaLocais = MapaJsonParser.parserJsonMapaLocais(data);
 
                                 if (mapaListener != null) {
                                     mapaListener.onMapaLoaded(mapaLocais);
+                                }
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                Toast.makeText(context, "Erro ao processar JSON: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            Toast.makeText(context, "Erro API: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+            volleyQueue.add(req);
+        }
+    }
+
+    //endregion
+
+    //region Eventos API(GET, View)
+    public void getAllEventosAPI(final Context context) {
+        // Verificar ligação à internet
+        if (!UtilParser.isConnectionInternet(context)) {
+            Toast.makeText(context, "Sem Ligação a internet", Toast.LENGTH_SHORT).show();
+        } else {
+            String token = getAuthToken(context);
+
+            if (token == null){
+                Toast.makeText(context, "Sessão expirada. Faça login novamente.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            String mUrlAPIEventosAuth = mUrlAPIEvento + "?access-token=" + token;
+            JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, mUrlAPIEventosAuth, null,
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            try {
+                                JSONArray data = response.getJSONArray("data");
+
+                                ArrayList<Evento> eventos = EventosJsonParser.parserJsonEventos(data);
+
+                                if (eventoListener != null) {
+                                    eventoListener.onEventosLoaded(eventos);
                                 }
 
                             } catch (Exception e) {
