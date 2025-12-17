@@ -1,36 +1,39 @@
 package pt.ipleiria.estg.dei.maislusitania_android.utils;
 
 import org.json.JSONArray;
-
+import org.json.JSONObject;
 import java.util.ArrayList;
-
 import pt.ipleiria.estg.dei.maislusitania_android.models.Noticia;
 
 public class NoticiaJsonParser {
-    public static ArrayList<Noticia> parserJsonNoticias(JSONArray response)
-    {
+
+    public static ArrayList<Noticia> parserJsonNoticias(JSONArray response) {
         ArrayList<Noticia> noticias = new ArrayList<>();
-        for (int i = 0; i < response.length(); i++)
-        {
-            try
-            {
-                org.json.JSONObject noticia = (org.json.JSONObject) response.get(i);
+        for (int i = 0; i < response.length(); i++) {
+            try {
+                JSONObject noticia = (JSONObject) response.get(i);
+
                 int id = noticia.getInt("id");
-                String titulo = noticia.getString("titulo");
-                String conteudo = noticia.getString("conteudo");
-                String resumo = noticia.getString("resumo");
-                String imagem = noticia.getString("imagem");
-                String dataPublicacao = noticia.getString("dataPublicacao");
-                boolean ativo = noticia.getBoolean("ativo");
-                int localId = noticia.getInt("localId");
-                boolean destaque = noticia.getBoolean("destaque");
+
+                // CORREÇÃO: A API devolve "nome", mas o modelo usa "titulo"
+                String titulo = noticia.has("nome") ? noticia.getString("nome") : noticia.optString("titulo");
+
+                // Usar optString para evitar erros se o campo não vier na lista
+                String conteudo = noticia.optString("conteudo", "");
+                String resumo = noticia.optString("resumo", "");
+                String imagem = noticia.optString("imagem", "");
+
+                // CORREÇÃO: A API devolve "data_publicacao"
+                String dataPublicacao = noticia.has("data_publicacao") ? noticia.getString("data_publicacao") : noticia.optString("dataPublicacao");
+
+                boolean ativo = noticia.optBoolean("ativo", true);
+                int localId = noticia.optInt("localId", 0);
+                boolean destaque = noticia.optBoolean("destaque", false);
 
                 Noticia auxNoticia = new Noticia(id, titulo, conteudo, resumo, imagem, dataPublicacao, ativo, localId, destaque);
                 noticias.add(auxNoticia);
-            }
-            catch (org.json.JSONException e)
-            {
-                throw new RuntimeException(e);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
         return noticias;
@@ -38,24 +41,22 @@ public class NoticiaJsonParser {
 
     public static Noticia parserJsonNoticia(String response) {
         Noticia auxNoticia = null;
-        try
-        {
-            org.json.JSONObject noticia = new org.json.JSONObject(response);
+        try {
+            JSONObject noticia = new JSONObject(response);
+
             int id = noticia.getInt("id");
-            String titulo = noticia.getString("titulo");
-            String conteudo = noticia.getString("conteudo");
-            String resumo = noticia.getString("resumo");
-            String imagem = noticia.getString("imagem");
-            String dataPublicacao = noticia.getString("dataPublicacao");
-            boolean ativo = noticia.getBoolean("ativo");
-            int localId = noticia.getInt("localId");
-            boolean destaque = noticia.getBoolean("destaque");
+            String titulo = noticia.has("nome") ? noticia.getString("nome") : noticia.optString("titulo");
+            String conteudo = noticia.optString("conteudo");
+            String resumo = noticia.optString("resumo");
+            String imagem = noticia.optString("imagem");
+            String dataPublicacao = noticia.has("data_publicacao") ? noticia.getString("data_publicacao") : noticia.optString("dataPublicacao");
+            boolean ativo = noticia.optBoolean("ativo");
+            int localId = noticia.optInt("localId");
+            boolean destaque = noticia.optBoolean("destaque");
 
             auxNoticia = new Noticia(id, titulo, conteudo, resumo, imagem, dataPublicacao, ativo, localId, destaque);
-        }
-        catch (org.json.JSONException e)
-        {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return auxNoticia;
     }

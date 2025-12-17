@@ -36,7 +36,7 @@ public class SingletonLusitania {
     // URLs
     private static final String mUrlAPILogin = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/login-form";
     private static final String mUrlAPILocais = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/local-culturals";
-    private static final String mUrlAPINoticias = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/noticias?access-token=" + KEY_TOKEN;
+    private static final String mUrlAPINoticias = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/noticias";
 
     private static final String mUrlAPIToggleFavorito = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/favoritos/toggle/";
 
@@ -69,6 +69,10 @@ public class SingletonLusitania {
 
     public void setLocaisListener(LocaisListener locaisListener) {
         this.locaisListener = locaisListener;
+    }
+
+    public void setNoticiaListener(NoticiaListener noticiaListener) {
+        this.noticiaListener = noticiaListener;
     }
     //endregion
 
@@ -309,23 +313,72 @@ public class SingletonLusitania {
 
     //region Noticias API (GET, View)
     public void getNoticiasAPI(final Context context) {
+        String token = getAuthToken(context);
+        if (token == null){
+            Toast.makeText(context, "Sessão expirada. Faça login novamente.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String mUrlAPINoticiasAuth = mUrlAPINoticias + "?access-token=" + token;
+
+        if (!UtilParser.isConnectionInternet(context)) {
+            Toast.makeText(context, "Sem Ligação a internet", Toast.LENGTH_SHORT).show();
+        }
+        else {
+            // CORREÇÃO: Usar JsonObjectRequest porque a resposta é { "data": [...] }
+            JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, mUrlAPINoticiasAuth, null, new Response.Listener<JSONObject>() {
+                @Override
+                public void onResponse(JSONObject response) {
+                    try {
+                        // Extrair o array "data" do objeto JSON
+                        JSONArray data = response.getJSONArray("data");
+                        ArrayList<Noticia> noticias = NoticiaJsonParser.parserJsonNoticias(data);
+
+                        if (noticiaListener != null)
+                            noticiaListener.onNoticiasLoaded(noticias);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Toast.makeText(context, "Erro ao processar dados das notícias", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    String message = error.getMessage() != null ? error.getMessage() : "Erro ao carregar notícias";
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+                    // log no logcat
+                    android.util.Log.e("NoticiasAPI", "Erro ao carregar notícias: " + message);
+                }
+            });
+            volleyQueue.add(req);
+        }
+    }
+
+    public void getNoticiaAPI(final int noticiaId, final Context context) {
+        String token = getAuthToken(context);
+        if (token == null){
+            Toast.makeText(context, "Sessão expirada. Faça login novamente.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String mUrlAPINoticiaAuth = mUrlAPINoticias + "/" + noticiaId + "?access-token=" + token;
         // Verificar ligação à internet
         if (!UtilParser.isConnectionInternet(context)) {
             Toast.makeText(context, "Sem Ligação a internet", Toast.LENGTH_SHORT).show();
         }
         else {
-            JsonArrayRequest req = new JsonArrayRequest(Request.Method.GET, mUrlAPINoticias,null, new Response.Listener<JSONArray>() {
+            JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, mUrlAPINoticiaAuth, null, new Response.Listener<JSONObject>() {
                 @Override
-                public void onResponse(JSONArray response) {
-                    ArrayList<Noticia> noticias = NoticiaJsonParser.parserJsonNoticias(response);
+                public void onResponse(JSONObject response) {
+                    Noticia noticia = NoticiaJsonParser.parserJsonNoticia(response.toString());
                     if (noticiaListener != null)
-                        noticiaListener.onNoticiaLoaded(noticias); // Notifica a atualização da lista de notícias
+                        noticiaListener.onNoticiaLoaded(noticia); // Notifica a atualização dos detalhes da notícia
                 }
             }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
-                    Toast.makeText(context, error.getMessage(), Toast.LENGTH_SHORT).show();
-
+                    String message = error.getMessage() != null ? error.getMessage() : "Erro ao carregar detalhes";
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
                 }
             });
             volleyQueue.add(req);
