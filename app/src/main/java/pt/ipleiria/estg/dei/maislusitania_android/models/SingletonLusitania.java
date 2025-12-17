@@ -321,8 +321,6 @@ public class SingletonLusitania {
         }
     }
 
-
-
     //endregion
 
     //region Noticias API (GET, View)
