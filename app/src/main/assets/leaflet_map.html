@@ -6,32 +6,82 @@
     <title>Mapa Portugal</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        html, body, #map { height: 100%; margin: 0; padding: 0; }
+        /* General Reset & Font matching Android */
+        html, body, #map {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', 'Arial', sans-serif;
+        }
 
-        .popup-content {
-            text-align: center;
-            min-width: 160px;
+        /* Override Leaflet Popup Style to match Android CardView */
+        .leaflet-popup-content-wrapper {
+            border-radius: 16px; /* Matches app:cardCornerRadius="16dp" */
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .leaflet-popup-content {
+            margin: 0;
+            width: 220px !important; /* Slightly wider for better layout */
+        }
+
+        /* Custom Content Container */
+        .popup-container {
+            display: flex;
+            flex-direction: column;
         }
 
         .popup-img {
             width: 100%;
-            height: 100px;
+            height: 120px;
             object-fit: cover;
-            border-radius: 4px;
-            margin-bottom: 8px;
             display: block;
+            border-bottom: 1px solid #eee;
+        }
+
+        .popup-details {
+            padding: 12px;
+            text-align: left; /* Align left like the XML list items */
+        }
+
+        .popup-title {
+            color: #204080; /* Matches android:textColor="#204080" */
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 4px;
+            display: block;
+            line-height: 1.2;
         }
 
         .popup-btn {
-            background-color: #007bff;
+            background-color: #204080; /* Matches app primary color */
             color: white;
             border: none;
-            padding: 8px 10px;
-            border-radius: 4px;
+            padding: 10px 0;
+            border-radius: 8px;
             cursor: pointer;
-            margin-top: 5px;
+            margin-top: 12px;
             width: 100%;
-            font-weight: bold;
+            font-weight: 500;
+            font-size: 14px;
+            text-transform: uppercase; /* Material design button style */
+            letter-spacing: 0.5px;
+            transition: background-color 0.2s;
+        }
+
+        .popup-btn:active {
+            background-color: #152b55; /* Darker shade for press state */
+        }
+
+        /* Remove the close button X for a cleaner look, or style it if preferred */
+        .leaflet-popup-close-button {
+            top: 8px !important;
+            right: 8px !important;
+            color: white !important;
+            text-shadow: 0 0 4px black;
+            font-size: 20px !important;
         }
     </style>
 </head>
@@ -41,7 +91,18 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-    var map = L.map('map', { zoomControl: false, attributionControl: false }).setView([39.5, -8.0], 7);
+    // Define bounds for Continental Portugal (with some padding)
+    var southWest = L.latLng(36.0, -10.0);
+    var northEast = L.latLng(43.0, -5.0);
+    var bounds = L.latLngBounds(southWest, northEast);
+
+    var map = L.map('map', {
+        zoomControl: false,
+        attributionControl: false,
+        maxBounds: bounds,         // Restrict view to these bounds
+        maxBoundsViscosity: 1.0,   // Sticky bounds (prevents dragging outside)
+        minZoom: 6                 // Prevent zooming out too far
+    }).setView([39.5, -8.0], 7);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
@@ -53,11 +114,9 @@
     function loadMarkers(locationsJson){
         markersLayer.clearLayers();
 
-        // Parse JSON String
         var locations = JSON.parse(locationsJson);
 
         locations.forEach(function(loc){
-
             var iconPath = loc.markerImagem;
             if (!iconPath || iconPath === "") {
                 iconPath = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png';
@@ -65,24 +124,29 @@
 
             var customIcon = L.icon({
                 iconUrl: iconPath,
-                iconSize: [40, 40],
-                iconAnchor: [20, 40],
-                popupAnchor: [0, -40]
+                iconSize: [56, 56],
+                iconAnchor: [28, 56],
+                popupAnchor: [0, -56]
             });
 
             var marker = L.marker([loc.latitude, loc.longitude], {icon: customIcon});
 
-            var popupContent = '<div class="popup-content">' +
-                               '<img src="' + loc.imagem + '" class="popup-img" alt="Local"/>' +
-                               '<b>' + loc.nome + '</b><br/>' +
-                               '<button class="popup-btn" onclick="onPopupClick(\'' + loc.id + '\')">Ver Mais</button>' +
-                               '</div>';
+            var popupContent = `
+                <div class="popup-container">
+                    <img src="${loc.imagem}" class="popup-img" alt="Local"/>
+                    <div class="popup-details">
+                        <span class="popup-title">${loc.nome}</span>
+                        <button class="popup-btn" onclick="onPopupClick('${loc.id}')">Ver Mais</button>
+                    </div>
+                </div>
+            `;
 
             marker.bindPopup(popupContent);
             markersLayer.addLayer(marker);
         });
 
         if(locations.length > 0){
+            // pad(0.2) ensures markers near the edge aren't covered by screen borders
             map.fitBounds(markersLayer.getBounds().pad(0.2));
         }
     }
