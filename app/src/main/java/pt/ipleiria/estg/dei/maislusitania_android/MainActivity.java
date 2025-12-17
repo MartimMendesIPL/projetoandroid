@@ -40,6 +40,8 @@ public class MainActivity extends AppCompatActivity {
                     selectedFragment = new EventosFragment();
                 } else if (item.getItemId() == R.id.navigation_noticias) {
                     selectedFragment = new NoticiasFragment();
+                } else if (item.getItemId() == R.id.navigation_locais) {
+                    selectedFragment = new LocaisFragment();
                 }
 
                 if (selectedFragment != null) {

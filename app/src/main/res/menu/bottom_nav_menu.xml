@@ -1,14 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/navigation_mapa"
-        android:icon="@drawable/ic_mapa"
-        android:title="Mapa" />
+        android:id="@+id/navigation_locais"
+        android:icon="@drawable/ic_local"
+        android:title="Locais" />
 
     <item
         android:id="@+id/navigation_bilhetes"
         android:icon="@drawable/ic_bilhetes"
         android:title="Bilhetes" />
+
+    <item
+        android:id="@+id/navigation_mapa"
+        android:icon="@drawable/ic_mapa"
+        android:title="Mapa" />
 
     <item
         android:id="@+id/navigation_eventos"
