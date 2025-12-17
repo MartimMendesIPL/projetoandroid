@@ -39,20 +39,18 @@ public class NoticiaJsonParser {
         return noticias;
     }
 
-    public static Noticia parserJsonNoticia(String response) {
+    public static Noticia parserJsonNoticia(JSONObject noticia) {
         Noticia auxNoticia = null;
         try {
-            JSONObject noticia = new JSONObject(response);
-
             int id = noticia.getInt("id");
             String titulo = noticia.has("nome") ? noticia.getString("nome") : noticia.optString("titulo");
-            String conteudo = noticia.optString("conteudo");
-            String resumo = noticia.optString("resumo");
-            String imagem = noticia.optString("imagem");
+            String conteudo = noticia.optString("conteudo", "");
+            String resumo = noticia.optString("resumo", "");
+            String imagem = noticia.optString("imagem", "");
             String dataPublicacao = noticia.has("data_publicacao") ? noticia.getString("data_publicacao") : noticia.optString("dataPublicacao");
-            boolean ativo = noticia.optBoolean("ativo");
-            int localId = noticia.optInt("localId");
-            boolean destaque = noticia.optBoolean("destaque");
+            boolean ativo = noticia.optBoolean("ativo", true);
+            int localId = noticia.optInt("localId", 0);
+            boolean destaque = noticia.optBoolean("destaque", false);
 
             auxNoticia = new Noticia(id, titulo, conteudo, resumo, imagem, dataPublicacao, ativo, localId, destaque);
         } catch (Exception e) {

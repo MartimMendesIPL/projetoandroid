@@ -57,11 +57,21 @@ public class NoticiasFragment extends Fragment implements NoticiaListener {
             @Override
             public void onNoticiaClick(int position) {
                 Noticia item = items.get(position);
-                Toast.makeText(getContext(), "Clicou em: " + item.getTitulo(), Toast.LENGTH_SHORT).show();
-                // Aqui você pode abrir os detalhes, ex:
-                // Intent intent = new Intent(getContext(), DetalhesNoticiaActivity.class);
-                // intent.putExtra("ID_NOTICIA", item.getId());
-                // startActivity(intent);
+                DetalhesNoticiaFragment fragment = new DetalhesNoticiaFragment();
+
+                Bundle args = new Bundle();
+                args.putInt("noticia_id", item.getId());
+                fragment.setArguments(args);
+
+                // Navegar para o fragmento
+                requireActivity().getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.fragment_container, fragment)
+                        .addToBackStack(null)
+                        .commit();
+                //Intent intent = new Intent(getContext(), DetalhesNoticiaFragment.class);
+                //intent.putExtra("noticia_id", item.getId());
+                //startActivity(intent);
             }
         });
 

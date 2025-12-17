@@ -378,14 +378,30 @@ public class SingletonLusitania {
             JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, mUrlAPINoticiaAuth, null, new Response.Listener<JSONObject>() {
                 @Override
                 public void onResponse(JSONObject response) {
-                    Noticia noticia = NoticiaJsonParser.parserJsonNoticia(response.toString());
-                    if (noticiaListener != null)
-                        noticiaListener.onNoticiaLoaded(noticia); // Notifica a atualização dos detalhes da notícia
+                    try {
+                        // Extrair o objeto "data" da resposta
+                        JSONObject data = response.getJSONObject("data");
+                        Noticia noticia = NoticiaJsonParser.parserJsonNoticia(data);
+
+                        if (noticia != null && noticiaListener != null) {
+                            noticiaListener.onNoticiaLoaded(noticia);
+                        } else if (noticiaListener != null) {
+                            noticiaListener.onNoticiaError("Erro ao processar dados da notícia " + noticiaId);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        if (noticiaListener != null) {
+                            noticiaListener.onNoticiaError("Erro ao processar resposta: " + e.getMessage());
+                        }
+                    }
                 }
             }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
                     String message = error.getMessage() != null ? error.getMessage() : "Erro ao carregar detalhes";
+                    if (noticiaListener != null) {
+                        noticiaListener.onNoticiaError(message);
+                    }
                     Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
                 }
             });
