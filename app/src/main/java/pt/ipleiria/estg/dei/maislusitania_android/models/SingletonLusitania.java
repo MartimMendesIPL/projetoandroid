@@ -346,22 +346,36 @@ public class SingletonLusitania {
         // Verificar ligação à internet
         if (!UtilParser.isConnectionInternet(context)) {
             Toast.makeText(context, "Sem Ligação a internet", Toast.LENGTH_SHORT).show();
-        }
-        else {
-            JsonArrayRequest req = new JsonArrayRequest(Request.Method.GET, mUrlAPIMapa,null, new Response.Listener<JSONArray>() {
-                @Override
-                public void onResponse(JSONArray response) {
-                    ArrayList<Mapa> mapaLocais = MapaJsonParser.parserJsonMapaLocais(response);
-                    if (mapaListener != null)
-                        mapaListener.onMapaLoaded(mapaLocais);
-                }
-            }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    Toast.makeText(context, error.getMessage(), Toast.LENGTH_SHORT).show();
+        } else {
+            // FIX 1: Changed to JsonObjectRequest because the API returns an Object { "data": [] }
+            JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, mUrlAPIMapa, null,
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            try {
+                                // FIX 2: Extract the "data" array from the response object
+                                JSONArray data = response.getJSONArray("data");
 
-                }
-            });
+                                // FIX 3: Parse the extracted 'data' array, not an undefined variable
+                                ArrayList<Mapa> mapaLocais = MapaJsonParser.parserJsonMapaLocais(data);
+
+                                if (mapaListener != null) {
+                                    mapaListener.onMapaLoaded(mapaLocais);
+                                }
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                Toast.makeText(context, "Erro ao processar JSON: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            Toast.makeText(context, "Erro API: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
             volleyQueue.add(req);
         }
     }
