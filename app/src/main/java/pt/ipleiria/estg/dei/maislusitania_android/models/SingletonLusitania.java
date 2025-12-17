@@ -368,7 +368,7 @@ public class SingletonLusitania {
         }
 
         String mUrlAPINoticiaAuth = mUrlAPINoticias + "/" + noticiaId + "?access-token=" + token;
-        // Verificar ligação à internet
+
         if (!UtilParser.isConnectionInternet(context)) {
             Toast.makeText(context, "Sem Ligação a internet", Toast.LENGTH_SHORT).show();
         }
@@ -377,14 +377,22 @@ public class SingletonLusitania {
                 @Override
                 public void onResponse(JSONObject response) {
                     try {
-                        // Extrair o objeto "data" da resposta
-                        JSONObject data = response.getJSONObject("data");
-                        Noticia noticia = NoticiaJsonParser.parserJsonNoticia(data);
+                        // A API devolve { "data": [{...}] } - um array com um objeto
+                        JSONArray dataArray = response.getJSONArray("data");
 
-                        if (noticia != null && noticiaListener != null) {
-                            noticiaListener.onNoticiaLoaded(noticia);
-                        } else if (noticiaListener != null) {
-                            noticiaListener.onNoticiaError("Erro ao processar dados da notícia " + noticiaId);
+                        if (dataArray.length() > 0) {
+                            JSONObject data = dataArray.getJSONObject(0);
+                            Noticia noticia = NoticiaJsonParser.parserJsonNoticia(data);
+
+                            if (noticia != null && noticiaListener != null) {
+                                noticiaListener.onNoticiaLoaded(noticia);
+                            } else if (noticiaListener != null) {
+                                noticiaListener.onNoticiaError("Erro ao processar dados da notícia " + noticiaId);
+                            }
+                        } else {
+                            if (noticiaListener != null) {
+                                noticiaListener.onNoticiaError("Notícia não encontrada");
+                            }
                         }
                     } catch (Exception e) {
                         e.printStackTrace();

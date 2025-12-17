@@ -76,6 +76,7 @@ public class DetalhesNoticiaFragment extends Fragment implements NoticiaListener
         binding.tvDataPublicacao.setText(item.getDataPublicacao());
         binding.tvConteudoNoticia.setText(item.getConteudo());
         String urlImagem = item.getImagem();
+        Toast.makeText(getContext(), urlImagem, Toast.LENGTH_SHORT).show();
 
         // Se a imagem não for nula ou vazia, carrega
         if (urlImagem != null && !urlImagem.isEmpty()) {
