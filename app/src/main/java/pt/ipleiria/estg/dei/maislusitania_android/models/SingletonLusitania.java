@@ -19,8 +19,10 @@ import java.util.ArrayList;
 
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.LocaisListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.LoginListener;
+import pt.ipleiria.estg.dei.maislusitania_android.listeners.MapaListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.NoticiaListener;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.LocalJsonParser;
+import pt.ipleiria.estg.dei.maislusitania_android.utils.MapaJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.NoticiaJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.UtilParser;
 
@@ -28,6 +30,7 @@ public class SingletonLusitania {
 
     private static volatile SingletonLusitania instance;
     private ArrayList<Local> locais;
+    private ArrayList<Mapa> mapaLocais;
     private LocaisFavDBHelper dbHelper;
     private static RequestQueue volleyQueue = null;
 
@@ -39,6 +42,7 @@ public class SingletonLusitania {
     private static final String mUrlAPINoticias = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/noticias";
 
     private static final String mUrlAPIToggleFavorito = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/favoritos/toggle/";
+    private static final String mUrlAPIMapa = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/mapas";
 
     // SharedPreferences
     private static final String PREF_NAME = "MaisLusitaniaPrefs";
@@ -47,6 +51,7 @@ public class SingletonLusitania {
     // Listeners
     private LoginListener loginListener;
     private LocaisListener locaisListener;
+    private MapaListener mapaListener;
     private NoticiaListener noticiaListener;
 
     //region - Construtor e Instância
@@ -61,6 +66,9 @@ public class SingletonLusitania {
             instance = new SingletonLusitania(context.getApplicationContext());
         }
         return instance;
+    }
+    public void setMapaListener(MapaListener mapaListener) {
+        this.mapaListener = mapaListener;
     }
 
     public void setLoginListener(LoginListener loginListener) {
@@ -132,7 +140,7 @@ public class SingletonLusitania {
 
         String token = getAuthToken(context);
 
-        // ✅ VALIDAÇÃO: Verifica se o utilizador está autenticado
+        // VALIDAÇÃO: Verifica se o utilizador está autenticado
         if (token == null) {
             Toast.makeText(context, "Sessão expirada. Faça login novamente.", Toast.LENGTH_SHORT).show();
             return;
@@ -384,5 +392,47 @@ public class SingletonLusitania {
             volleyQueue.add(req);
         }
     }
+    //endregion
+
+    //region Mapas API(GET, View)
+
+    public void getAllMapasAPI(final Context context) {
+        // Verificar ligação à internet
+        if (!UtilParser.isConnectionInternet(context)) {
+            Toast.makeText(context, "Sem Ligação a internet", Toast.LENGTH_SHORT).show();
+        } else {
+            // FIX 1: Changed to JsonObjectRequest because the API returns an Object { "data": [] }
+            JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, mUrlAPIMapa, null,
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            try {
+                                // FIX 2: Extract the "data" array from the response object
+                                JSONArray data = response.getJSONArray("data");
+
+                                // FIX 3: Parse the extracted 'data' array, not an undefined variable
+                                ArrayList<Mapa> mapaLocais = MapaJsonParser.parserJsonMapaLocais(data);
+
+                                if (mapaListener != null) {
+                                    mapaListener.onMapaLoaded(mapaLocais);
+                                }
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                Toast.makeText(context, "Erro ao processar JSON: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            Toast.makeText(context, "Erro API: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+            volleyQueue.add(req);
+        }
+    }
+
     //endregion
 }
