@@ -18,10 +18,15 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import pt.ipleiria.estg.dei.maislusitania_android.databinding.FragmentMapaBinding;
+import pt.ipleiria.estg.dei.maislusitania_android.listeners.MapaListener;
+import pt.ipleiria.estg.dei.maislusitania_android.models.Mapa;
+import pt.ipleiria.estg.dei.maislusitania_android.models.SingletonLusitania;
+import pt.ipleiria.estg.dei.maislusitania_android.utils.MapaJsonParser;
 
-public class MapaFragment extends Fragment {
+public class MapaFragment extends Fragment implements MapaListener {
     private FragmentMapaBinding binding;
 
     @Nullable
@@ -55,7 +60,11 @@ public class MapaFragment extends Fragment {
 
         final String assetName = "leaflet_map.html";
 
+        SingletonLusitania.getInstance(requireContext()).setMapaListener(this);
+        SingletonLusitania.getInstance(requireContext()).getAllMapasAPI(getContext());
+
         WebView webView = binding.webViewMap;
+        //webView.addJavascriptInterface(new WebAppInterface(requireContext()), "Android");
         webView.setBackgroundColor(Color.TRANSPARENT);
 
         WebSettings ws = webView.getSettings();
@@ -83,5 +92,24 @@ public class MapaFragment extends Fragment {
         w.setWebViewClient(null);
         w.destroy();
         binding = null;
+    }
+
+    @Override
+    public void onMapaLoaded(ArrayList<Mapa> mapaLocais) {
+        String jsonString = MapaJsonParser.mapasListToJson(mapaLocais);
+
+        if (binding != null && binding.webViewMap != null) {
+            String safeJson = jsonString.replace("'", "\\'");
+
+            binding.webViewMap.post(() ->
+                    binding.webViewMap.evaluateJavascript("loadMarkers('" + safeJson + "')", null)
+            );
+        }
+
+    }
+
+    @Override
+    public void onMapaError(String message) {
+
     }
 }
