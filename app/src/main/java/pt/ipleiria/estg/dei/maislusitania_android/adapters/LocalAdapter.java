@@ -48,29 +48,23 @@ public class LocalAdapter extends RecyclerView.Adapter<LocalAdapter.ViewHolder> 
         holder.tvCategory.setText(item.getDistrito() + " • " + item.getMorada());
         holder.ratingBar.setRating(item.getAvaliacaoMedia());
 
-        // Carregar imagem da API usando Glide (sem placeholder/error)
         Glide.with(holder.itemView.getContext())
                 .load(item.getImagem())
                 .into(holder.ivImage);
 
-        // Atualizar ícone de favorito
         holder.ivFavorite.setImageResource(
-                item.isFavorite() ? R.drawable.ic_fav_off : R.drawable.ic_fav_off
+                item.isFavorite() ? R.drawable.ic_fav_on : R.drawable.ic_fav_off
         );
 
-        // Click no item inteiro
         holder.itemView.setOnClickListener(v -> {
             if (listener != null) {
                 listener.onItemClick(item);
             }
         });
 
-        // Click no favorito
         holder.ivFavorite.setOnClickListener(v -> {
             if (listener != null) {
-                item.setFavorite(!item.isFavorite());
-                notifyItemChanged(position);
-                listener.onFavoriteClick(item, position);
+                listener.onFavoriteClick(item, holder.getAdapterPosition());
             }
         });
     }
@@ -97,6 +91,9 @@ public class LocalAdapter extends RecyclerView.Adapter<LocalAdapter.ViewHolder> 
             tvTitle = itemView.findViewById(R.id.tvItemTitle);
             tvCategory = itemView.findViewById(R.id.tvItemCategory);
             ratingBar = itemView.findViewById(R.id.ratingBar);
+
+            ivFavorite.setClickable(true);
+            ivFavorite.setFocusable(true);
         }
     }
 }
