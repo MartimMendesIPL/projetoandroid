@@ -19,7 +19,10 @@ import java.util.ArrayList;
 
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.LocaisListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.LoginListener;
+import pt.ipleiria.estg.dei.maislusitania_android.listeners.NoticiaListener;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.LocalJsonParser;
+import pt.ipleiria.estg.dei.maislusitania_android.utils.NoticiaJsonParser;
+import pt.ipleiria.estg.dei.maislusitania_android.utils.UtilParser;
 
 public class SingletonLusitania {
 
@@ -28,19 +31,23 @@ public class SingletonLusitania {
     private LocaisFavDBHelper dbHelper;
     private static RequestQueue volleyQueue = null;
 
+    private static final String KEY_TOKEN = "auth_key";
+
     // URLs
     private static final String mUrlAPILogin = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/login-form";
     private static final String mUrlAPILocais = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/local-culturals";
+    private static final String mUrlAPINoticias = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/noticias?access-token=" + KEY_TOKEN;
 
     private static final String mUrlAPIToggleFavorito = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/favoritos/toggle/";
 
     // SharedPreferences
     private static final String PREF_NAME = "MaisLusitaniaPrefs";
     private static final String KEY_USERNAME = "username";
-    private static final String KEY_TOKEN = "auth_key";
 
+    // Listeners
     private LoginListener loginListener;
     private LocaisListener locaisListener;
+    private NoticiaListener noticiaListener;
 
     //region - Construtor e Instância
     private SingletonLusitania(Context context) {
@@ -298,5 +305,31 @@ public class SingletonLusitania {
 
 
 
+    //endregion
+
+    //region Noticias API (GET, View)
+    public void getNoticiasAPI(final Context context) {
+        // Verificar ligação à internet
+        if (!UtilParser.isConnectionInternet(context)) {
+            Toast.makeText(context, "Sem Ligação a internet", Toast.LENGTH_SHORT).show();
+        }
+        else {
+            JsonArrayRequest req = new JsonArrayRequest(Request.Method.GET, mUrlAPINoticias,null, new Response.Listener<JSONArray>() {
+                @Override
+                public void onResponse(JSONArray response) {
+                    ArrayList<Noticia> noticias = NoticiaJsonParser.parserJsonNoticias(response);
+                    if (noticiaListener != null)
+                        noticiaListener.onNoticiaLoaded(noticias); // Notifica a atualização da lista de notícias
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Toast.makeText(context, error.getMessage(), Toast.LENGTH_SHORT).show();
+
+                }
+            });
+            volleyQueue.add(req);
+        }
+    }
     //endregion
 }
