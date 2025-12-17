@@ -19,28 +19,40 @@ import java.util.ArrayList;
 
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.LocaisListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.LoginListener;
+import pt.ipleiria.estg.dei.maislusitania_android.listeners.MapaListener;
+import pt.ipleiria.estg.dei.maislusitania_android.listeners.NoticiaListener;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.LocalJsonParser;
+import pt.ipleiria.estg.dei.maislusitania_android.utils.MapaJsonParser;
+import pt.ipleiria.estg.dei.maislusitania_android.utils.NoticiaJsonParser;
+import pt.ipleiria.estg.dei.maislusitania_android.utils.UtilParser;
 
 public class SingletonLusitania {
 
     private static volatile SingletonLusitania instance;
     private ArrayList<Local> locais;
+    private ArrayList<Mapa> mapaLocais;
     private LocaisFavDBHelper dbHelper;
     private static RequestQueue volleyQueue = null;
+
+    private static final String KEY_TOKEN = "auth_key";
 
     // URLs
     private static final String mUrlAPILogin = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/login-form";
     private static final String mUrlAPILocais = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/local-culturals";
+    private static final String mUrlAPINoticias = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/noticias";
 
     private static final String mUrlAPIToggleFavorito = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/favoritos/toggle/";
+    private static final String mUrlAPIMapa = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/mapas";
 
     // SharedPreferences
     private static final String PREF_NAME = "MaisLusitaniaPrefs";
     private static final String KEY_USERNAME = "username";
-    private static final String KEY_TOKEN = "auth_key";
 
+    // Listeners
     private LoginListener loginListener;
     private LocaisListener locaisListener;
+    private MapaListener mapaListener;
+    private NoticiaListener noticiaListener;
 
     //region - Construtor e Instância
     private SingletonLusitania(Context context) {
@@ -55,6 +67,9 @@ public class SingletonLusitania {
         }
         return instance;
     }
+    public void setMapaListener(MapaListener mapaListener) {
+        this.mapaListener = mapaListener;
+    }
 
     public void setLoginListener(LoginListener loginListener) {
         this.loginListener = loginListener;
@@ -62,6 +77,10 @@ public class SingletonLusitania {
 
     public void setLocaisListener(LocaisListener locaisListener) {
         this.locaisListener = locaisListener;
+    }
+
+    public void setNoticiaListener(NoticiaListener noticiaListener) {
+        this.noticiaListener = noticiaListener;
     }
     //endregion
 
@@ -121,7 +140,7 @@ public class SingletonLusitania {
 
         String token = getAuthToken(context);
 
-        // ✅ VALIDAÇÃO: Verifica se o utilizador está autenticado
+        // VALIDAÇÃO: Verifica se o utilizador está autenticado
         if (token == null) {
             Toast.makeText(context, "Sessão expirada. Faça login novamente.", Toast.LENGTH_SHORT).show();
             return;
@@ -292,6 +311,123 @@ public class SingletonLusitania {
                                 locaisListener.onLocaisError(mensagem);
                         }
                     });
+            volleyQueue.add(req);
+        }
+    }
+
+    //endregion
+
+    //region Noticias API (GET, View)
+    public void getNoticiasAPI(final Context context) {
+        String token = getAuthToken(context);
+        if (token == null){
+            Toast.makeText(context, "Sessão expirada. Faça login novamente.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String mUrlAPINoticiasAuth = mUrlAPINoticias + "?access-token=" + token;
+
+        if (!UtilParser.isConnectionInternet(context)) {
+            Toast.makeText(context, "Sem Ligação a internet", Toast.LENGTH_SHORT).show();
+        }
+        else {
+            // CORREÇÃO: Usar JsonObjectRequest porque a resposta é { "data": [...] }
+            JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, mUrlAPINoticiasAuth, null, new Response.Listener<JSONObject>() {
+                @Override
+                public void onResponse(JSONObject response) {
+                    try {
+                        // Extrair o array "data" do objeto JSON
+                        JSONArray data = response.getJSONArray("data");
+                        ArrayList<Noticia> noticias = NoticiaJsonParser.parserJsonNoticias(data);
+
+                        if (noticiaListener != null)
+                            noticiaListener.onNoticiasLoaded(noticias);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Toast.makeText(context, "Erro ao processar dados das notícias", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    String message = error.getMessage() != null ? error.getMessage() : "Erro ao carregar notícias";
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+                    // log no logcat
+                    android.util.Log.e("NoticiasAPI", "Erro ao carregar notícias: " + message);
+                }
+            });
+            volleyQueue.add(req);
+        }
+    }
+
+    public void getNoticiaAPI(final int noticiaId, final Context context) {
+        String token = getAuthToken(context);
+        if (token == null){
+            Toast.makeText(context, "Sessão expirada. Faça login novamente.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String mUrlAPINoticiaAuth = mUrlAPINoticias + "/" + noticiaId + "?access-token=" + token;
+        // Verificar ligação à internet
+        if (!UtilParser.isConnectionInternet(context)) {
+            Toast.makeText(context, "Sem Ligação a internet", Toast.LENGTH_SHORT).show();
+        }
+        else {
+            JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, mUrlAPINoticiaAuth, null, new Response.Listener<JSONObject>() {
+                @Override
+                public void onResponse(JSONObject response) {
+                    Noticia noticia = NoticiaJsonParser.parserJsonNoticia(response.toString());
+                    if (noticiaListener != null)
+                        noticiaListener.onNoticiaLoaded(noticia); // Notifica a atualização dos detalhes da notícia
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    String message = error.getMessage() != null ? error.getMessage() : "Erro ao carregar detalhes";
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+                }
+            });
+            volleyQueue.add(req);
+        }
+    }
+    //endregion
+
+    //region Mapas API(GET, View)
+
+    public void getAllMapasAPI(final Context context) {
+        // Verificar ligação à internet
+        if (!UtilParser.isConnectionInternet(context)) {
+            Toast.makeText(context, "Sem Ligação a internet", Toast.LENGTH_SHORT).show();
+        } else {
+            // FIX 1: Changed to JsonObjectRequest because the API returns an Object { "data": [] }
+            JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, mUrlAPIMapa, null,
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            try {
+                                // FIX 2: Extract the "data" array from the response object
+                                JSONArray data = response.getJSONArray("data");
+
+                                // FIX 3: Parse the extracted 'data' array, not an undefined variable
+                                ArrayList<Mapa> mapaLocais = MapaJsonParser.parserJsonMapaLocais(data);
+
+                                if (mapaListener != null) {
+                                    mapaListener.onMapaLoaded(mapaLocais);
+                                }
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                Toast.makeText(context, "Erro ao processar JSON: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            Toast.makeText(context, "Erro API: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
             volleyQueue.add(req);
         }
     }
