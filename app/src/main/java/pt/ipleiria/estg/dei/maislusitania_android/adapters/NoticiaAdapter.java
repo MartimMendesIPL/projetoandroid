@@ -93,7 +93,7 @@ public class NoticiaAdapter extends RecyclerView.Adapter<NoticiaAdapter.ViewHold
             ivImagem = itemView.findViewById(R.id.ivItemImage);
             tvTitulo = itemView.findViewById(R.id.tvItemTitle);
             tvResumo = itemView.findViewById(R.id.tvItemSummary);
-            tvData = itemView.findViewById(R.id.tvItemDate);
+            tvData = itemView.findViewById(R.id.tvItemDateFim);
 
             this.onNoticiaListener = onNoticiaListener;
             itemView.setOnClickListener(this);

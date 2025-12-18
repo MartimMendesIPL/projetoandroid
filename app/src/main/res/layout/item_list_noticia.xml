@@ -64,7 +64,7 @@
 
             <!-- Data de Publicação -->
             <TextView
-                android:id="@+id/tvItemDate"
+                android:id="@+id/tvItemDateFim"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="12/10/2023"
