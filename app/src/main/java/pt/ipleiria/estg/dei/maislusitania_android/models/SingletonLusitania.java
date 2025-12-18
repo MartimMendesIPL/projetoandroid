@@ -375,15 +375,14 @@ public class SingletonLusitania {
             Toast.makeText(context, "Sem Ligação a internet", Toast.LENGTH_SHORT).show();
         }
         else {
-            JsonArrayRequest req = new JsonArrayRequest(Request.Method.GET, mUrlAPINoticiasAuth, null, new Response.Listener<JSONArray>() {
+            String url = buildUrl(mUrlAPINoticias + "?access-token=" + token);
+            JsonArrayRequest req = new JsonArrayRequest(Request.Method.GET, url, null, new Response.Listener<JSONArray>() {
                 @Override
                 public void onResponse(JSONArray response) {
                     try {
                         ArrayList<Noticia> noticias = NoticiaJsonParser.parserJsonNoticias(response);
-
                         if (noticiaListener != null)
                             noticiaListener.onNoticiasLoaded(noticias);
-
                     } catch (Exception e) {
                         e.printStackTrace();
                         Toast.makeText(context, "Erro ao processar dados das notícias", Toast.LENGTH_SHORT).show();
@@ -416,17 +415,29 @@ public class SingletonLusitania {
             Toast.makeText(context, "Sem Ligação a internet", Toast.LENGTH_SHORT).show();
         }
         else {
-            JsonArrayRequest req = new JsonArrayRequest(Request.Method.GET, mUrlAPINoticiaAuth, null, new Response.Listener<JSONArray>() {
+            String url = buildUrl(mUrlAPINoticias + "/" + noticiaId + "?access-token=" + token);
+            JsonArrayRequest req = new JsonArrayRequest(Request.Method.GET, url, null, new Response.Listener<JSONArray>() {
                 @Override
                 public void onResponse(JSONArray response) {
-                    Noticia noticia = NoticiaJsonParser.parserJsonNoticia(response.toString());
-                    if (noticiaListener != null)
-                        noticiaListener.onNoticiaLoaded(noticia); // Notifica a atualização dos detalhes da notícia
+                    try {
+                        Noticia noticia = NoticiaJsonParser.parserJsonNoticia(response);
+                        if (noticiaListener != null) {
+                            noticiaListener.onNoticiaLoaded(noticia);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        if (noticiaListener != null) {
+                            noticiaListener.onNoticiaError("Erro ao processar resposta: " + e.getMessage());
+                        }
+                    }
                 }
             }, new Response.ErrorListener() {
                 @Override
                 public void onErrorResponse(VolleyError error) {
                     String message = error.getMessage() != null ? error.getMessage() : "Erro ao carregar detalhes";
+                    if (noticiaListener != null) {
+                        noticiaListener.onNoticiaError(message);
+                    }
                     Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
                 }
             });

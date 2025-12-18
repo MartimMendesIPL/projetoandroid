@@ -47,16 +47,12 @@ public class NoticiaAdapter extends RecyclerView.Adapter<NoticiaAdapter.ViewHold
         Noticia noticia = noticias.get(position);
 
         // Definir textos
-        holder.tvTitulo.setText(noticia.getTitulo());
+        holder.tvNome.setText(noticia.getNome());
         holder.tvResumo.setText(noticia.getResumo());
-
         // Formatar ou exibir a data como vem da API
-        holder.tvData.setText(noticia.getDataPublicacao());
-
-        // Carregar imagem com Glide
-        // Nota: Ajuste a URL base se a string 'imagem' vier apenas com o nome do ficheiro
+        holder.tvDataPublicacao.setText(noticia.getDataPublicacao());
+        // Carregar imagem usando Glide
         String urlImagem = noticia.getImagem();
-
         // Se a imagem não for nula ou vazia, carrega
         if (urlImagem != null && !urlImagem.isEmpty()) {
             Glide.with(context)
@@ -81,19 +77,21 @@ public class NoticiaAdapter extends RecyclerView.Adapter<NoticiaAdapter.ViewHold
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        TextView tvNome,
+                 tvResumo,
+                 tvDataPublicacao;
 
         ImageView ivImagem;
-        TextView tvTitulo, tvResumo, tvData;
         OnNoticiaListener onNoticiaListener;
 
         public ViewHolder(@NonNull View itemView, OnNoticiaListener onNoticiaListener) {
             super(itemView);
 
             // Vincular os IDs do layout item_list_noticia.xml
-            ivImagem = itemView.findViewById(R.id.ivItemImage);
-            tvTitulo = itemView.findViewById(R.id.tvItemTitle);
-            tvResumo = itemView.findViewById(R.id.tvItemSummary);
-            tvData = itemView.findViewById(R.id.tvItemDateFim);
+            ivImagem = itemView.findViewById(R.id.ivImagem);
+            tvNome= itemView.findViewById(R.id.tvNome);
+            tvResumo = itemView.findViewById(R.id.tvResumo);
+            tvDataPublicacao = itemView.findViewById(R.id.tvDataPublicacao);
 
             this.onNoticiaListener = onNoticiaListener;
             itemView.setOnClickListener(this);
