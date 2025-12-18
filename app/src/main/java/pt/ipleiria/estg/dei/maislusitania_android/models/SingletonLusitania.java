@@ -47,7 +47,8 @@ public class SingletonLusitania {
     private static final String mUrlAPILogin = "/login-form";
     private static final String mUrlAPILocais = "/local-culturals";
     private static final String mUrlAPINoticias = "/noticias";
-    private static final String mUrlAPIToggleFavorito = "/toggle/";
+    private static final String mUrladdFavorito = "/favoritos/add";
+    private static final String mUrlAPIremoveFavorito = "/favoritos/remove";
     private static final String mUrlAPIMapa = "/mapas";
     private static final String mUrlAPIEvento = "/eventos";
 
@@ -188,41 +189,53 @@ public class SingletonLusitania {
         }
 
         String token = getAuthToken(context);
-
-        // VALIDAÇÃO: Verifica se o utilizador está autenticado
         if (token == null) {
             Toast.makeText(context, "Sessão expirada. Faça login novamente.", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        String url = mUrlAPIToggleFavorito + local.getId() + "?access-token=" + token;
+        String url;
+        int method;
 
-        JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST, url, null,
+        if (local.isFavorite()) {
+            // ✅ REMOVER: usar DELETE
+            url = buildUrl(mUrlAPIremoveFavorito + "/" + local.getId()) + "?access-token=" + token;
+            method = Request.Method.DELETE;
+        } else {
+            // ✅ ADICIONAR: usar POST
+            url = buildUrl(mUrladdFavorito + "/" + local.getId()) + "?access-token=" + token;
+            method = Request.Method.POST;
+        }
+
+
+        //Mostrar url no logcat
+        android.util.Log.d("URL", url);
+
+
+        // 2. Criar o pedido (usando o URL dinâmico)
+        JsonObjectRequest req = new JsonObjectRequest(method, url, null,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        try {
-                            // Inverte o estado local
-                            local.setFavorite(!local.isFavorite());
+                        // Inverte o estado local apenas após o sucesso da API
+                        local.setFavorite(!local.isFavorite());
 
-                            String mensagem = local.isFavorite() ? "Adicionado aos favoritos" : "Removido dos favoritos";
-                            Toast.makeText(context, mensagem, Toast.LENGTH_SHORT).show();
+                        String mensagem = local.isFavorite() ? "Adicionado aos favoritos" : "Removido dos favoritos";
+                        Toast.makeText(context, mensagem, Toast.LENGTH_SHORT).show();
 
-                            // Notifica a UI para atualizar
-                            if (locaisListener != null)
-                                locaisListener.onLocaisLoaded(locais);
-
-                        } catch (Exception e) {
-                            Toast.makeText(context, "Erro ao atualizar favorito", Toast.LENGTH_SHORT).show();
+                        // Notifica a UI
+                        if (locaisListener != null) {
+                            locaisListener.onLocaisLoaded(locais);
                         }
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Toast.makeText(context, "Erro ao alterar favorito", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, "Erro ao alterar favorito no servidor", Toast.LENGTH_SHORT).show();
                     }
                 });
+
         volleyQueue.add(req);
     }
 
@@ -310,7 +323,8 @@ public class SingletonLusitania {
         }
 
         // 3. Prepare Request
-        String url = mUrlAPILocais + "?access-token=" + token;
+
+        String url = buildUrl(mUrlAPILocais) + "?access-token=" + token;
 
         JsonArrayRequest req = new JsonArrayRequest(Request.Method.GET, url, null,
                 new Response.Listener<JSONArray>() {
@@ -354,6 +368,9 @@ public class SingletonLusitania {
             Toast.makeText(context, "Sessão expirada. Faça login novamente.", Toast.LENGTH_SHORT).show();
             return;
         }
+
+        String mUrlAPINoticiasAuth = buildUrl(mUrlAPINoticias) + "?access-token=" + token;
+
         if (!UtilParser.isConnectionInternet(context)) {
             Toast.makeText(context, "Sem Ligação a internet", Toast.LENGTH_SHORT).show();
         }
@@ -390,6 +407,10 @@ public class SingletonLusitania {
             Toast.makeText(context, "Sessão expirada. Faça login novamente.", Toast.LENGTH_SHORT).show();
             return;
         }
+
+        String mUrlAPINoticiaAuth = buildUrl(mUrlAPINoticias) + "/" + noticiaId +"?access-token=" + token;
+
+        // Verificar ligação à internet
         if (!UtilParser.isConnectionInternet(context)) {
             Toast.makeText(context, "Sem Ligação a internet", Toast.LENGTH_SHORT).show();
         }
@@ -475,7 +496,8 @@ public class SingletonLusitania {
             return;
         }
 
-        String mUrlUserAuth = mUrlUser + "/me?access-token=" + token;
+        String mUrlUserAuth = buildUrl(mUrlUser) + "/me?access-token=" + token;
+
         // Verificar ligação à internet
         if (!UtilParser.isConnectionInternet(context)) {
             Toast.makeText(context, "Sem Ligação a internet", Toast.LENGTH_SHORT).show();
@@ -513,7 +535,8 @@ public class SingletonLusitania {
                 return;
             }
 
-            String mUrlAPIEventosAuth = mUrlAPIEvento + "?access-token=" + token;
+            String mUrlAPIEventosAuth = buildUrl(mUrlAPIEvento) + "?access-token=" + token;
+
             JsonArrayRequest req = new JsonArrayRequest(Request.Method.GET, mUrlAPIEventosAuth, null,
                     new Response.Listener<JSONArray>() {
                         @Override
