@@ -88,4 +88,31 @@ public class LoginActivity extends AppCompatActivity implements LoginListener {
         MainActivity();
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
     }
+
+    //Popup Alterar API e guardar na shareprefence
+    public void AlterarAPI(View view) {
+        android.app.AlertDialog.Builder builder =
+                new android.app.AlertDialog.Builder(LoginActivity.this);
+
+        // Inflate custom view
+        android.view.LayoutInflater inflater = getLayoutInflater();
+        android.view.View dialogView = inflater.inflate(R.layout.dialog_change_url, null);
+        android.widget.EditText etMainUrl = dialogView.findViewById(R.id.etMainUrl);
+
+        // Pre-fill current value
+        etMainUrl.setText(SingletonLusitania.getInstance(getApplicationContext()).buildUrl(""));
+
+        builder.setView(dialogView)
+                .setTitle("Configurar URL")
+                .setPositiveButton("Guardar", (dialog, which) -> {
+                    String url = etMainUrl.getText().toString().trim(); //guarda a url
+                    if (!url.isEmpty()) {
+                        SingletonLusitania.getInstance(getApplicationContext()).setMainUrl(url);
+                        Toast.makeText(LoginActivity.this, "URL guardada", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss())
+                .create()
+                .show();
+    }
 }

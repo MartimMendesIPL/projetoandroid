@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="130dp"
     android:layout_marginStart="16dp"
     android:layout_marginEnd="16dp"
     android:layout_marginTop="8dp"
@@ -67,9 +67,8 @@
                     android:isIndicator="true"
                     android:progressTint="#FFD700"
                     android:progressBackgroundTint="#5A5A5A"
-                    android:secondaryProgressTint="#5A5A5A" />
-
-
+                    android:secondaryProgressTint="#5A5A5A"
+                    />
             </LinearLayout>
 
             <!-- Categoria e Distância -->
@@ -80,7 +79,7 @@
                 android:text="Category • $$ • 1-2 miles away"
                 android:textSize="13sp"
                 android:textColor="#808080"
-                android:layout_marginTop="6dp" />
+                android:layout_marginTop="10dp" />
 
         </LinearLayout>
 

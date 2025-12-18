@@ -22,10 +22,12 @@ import pt.ipleiria.estg.dei.maislusitania_android.listeners.LocaisListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.LoginListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.MapaListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.NoticiaListener;
+import pt.ipleiria.estg.dei.maislusitania_android.listeners.PerfilListener;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.EventosJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.LocalJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.MapaJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.NoticiaJsonParser;
+import pt.ipleiria.estg.dei.maislusitania_android.utils.UserJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.UtilParser;
 
 public class SingletonLusitania {
@@ -36,19 +38,27 @@ public class SingletonLusitania {
     private LocaisFavDBHelper dbHelper;
     private static RequestQueue volleyQueue = null;
 
+    private Context context;
+    private String mainUrl;
+
     private static final String KEY_TOKEN = "auth_key";
 
     // URLs
-    private static final String mUrlAPILogin = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/login-form";
-    private static final String mUrlAPILocais = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/local-culturals";
-    private static final String mUrlAPINoticias = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/noticias";
-    private static final String mUrlAPIToggleFavorito = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/favoritos/toggle/";
-    private static final String mUrlAPIMapa = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/mapas";
-    private static final String mUrlAPIEvento = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/eventos";
+    private static final String mUrlAPILogin = "/login-form";
+    private static final String mUrlAPILocais = "/local-culturals";
+    private static final String mUrlAPINoticias = "/noticias";
+    private static final String mUrlAPIToggleFavorito = "/toggle/";
+    private static final String mUrlAPIMapa = "/mapas";
+    private static final String mUrlAPIEvento = "/eventos";
+
+    private static final String mUrlUser = "/user-profile";
 
     // SharedPreferences
     private static final String PREF_NAME = "MaisLusitaniaPrefs";
     private static final String KEY_USERNAME = "username";
+
+    private static final String KEY_MAIN_URL = "main_url";
+    private static final String DEFAULT_MAIN_URL = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/";
 
     // Listeners
     private LoginListener loginListener;
@@ -57,11 +67,17 @@ public class SingletonLusitania {
     private NoticiaListener noticiaListener;
     private EventoListener eventoListener;
 
+    private PerfilListener perfilListener;
+
     //region - Construtor e Instância
     private SingletonLusitania(Context context) {
         locais = new ArrayList<>();
         dbHelper = new LocaisFavDBHelper(context);
         volleyQueue = Volley.newRequestQueue(context);
+        this.context = context;
+
+        SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        mainUrl = prefs.getString(KEY_MAIN_URL, DEFAULT_MAIN_URL);
     }
 
     public static synchronized SingletonLusitania getInstance(Context context) {
@@ -86,15 +102,43 @@ public class SingletonLusitania {
         this.noticiaListener = noticiaListener;
     }
 
+    public void setPerfilListener(PerfilListener perfilListener) {
+        this.perfilListener = perfilListener;
+    }
     public void setEventoListener(EventoListener eventoListener) {
         this.eventoListener = eventoListener;
     }
 
     //endregion
 
+    // region Gestão da URL da API
+
+    //guarda o novo url no SharedPreferences
+    public void setMainUrl(String url) {
+        this.mainUrl = url;
+        SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putString(KEY_MAIN_URL, url).apply();
+    }
+
+    //construtor simples de endpoints
+    public String buildUrl(String endpoint) {
+        String base = this.mainUrl;
+
+        // Remove barra final da base se existir
+        if (base.endsWith("/")) {
+            base = base.substring(0, base.length() - 1);
+        }
+
+        // Adiciona barra inicial ao endpoint se não tiver
+        if (!endpoint.startsWith("/")) {
+            endpoint = "/" + endpoint;
+        }
+
+        return base + endpoint;
+    }
+    //endregion
+
     //region - SharedPreferences (Sessão)
-    // Mantive esta parte igual porque a professora não tinha Login no exemplo,
-    // mas a lógica é de armazenamento local simples.
     public void guardarUtilizador(Context context, String username, String token) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -124,7 +168,6 @@ public class SingletonLusitania {
     //endregion
 
     //region - CRUD Local (Favoritos)
-    // A professora expõe métodos diretos para a BD aqui
     public ArrayList<Local> getFavoritosBD() {
         return dbHelper.getAllFavoritos();
     }
@@ -196,7 +239,9 @@ public class SingletonLusitania {
                 Toast.makeText(context, "Erro", Toast.LENGTH_SHORT).show();
             }
 
-            JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST, mUrlAPILogin, jsonBody,
+            String url = buildUrl(mUrlAPILogin);
+
+            JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST, url, jsonBody,
                     new Response.Listener<JSONObject>() {
                         @Override
                         public void onResponse(JSONObject response) {
@@ -243,82 +288,61 @@ public class SingletonLusitania {
         }
     }
 
-
-
-    // LÓGICA DOS LOCAIS (Equivalente ao getAllBooksAPI - GET)
-    // CARREGAR LOCAIS COM FAVORITOS
+    // LÓGICA DOS LOCAIS
     public void getAllLocaisAPI(final Context context) {
+        // 1. Check Internet
         if (!LocalJsonParser.isConnectionInternet(context)) {
             Toast.makeText(context, "Sem ligação à internet", Toast.LENGTH_SHORT).show();
-
-            if (locaisListener != null)
+            if (locaisListener != null) {
                 locaisListener.onLocaisLoaded(new ArrayList<>());
-        } else {
-            String token = getAuthToken(context);
-
-            // ✅ VALIDAÇÃO: Verifica se o utilizador está autenticado
-            if (token == null) {
-                Toast.makeText(context, "Sessão expirada. Faça login novamente.", Toast.LENGTH_SHORT).show();
-                if (locaisListener != null)
-                    locaisListener.onLocaisError("Sem autenticação");
-                return;
             }
-
-            String urlComToken = mUrlAPILocais + "?access-token=" + token;
-
-            JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, urlComToken, null,
-                    new Response.Listener<JSONObject>() {
-                        @Override
-                        public void onResponse(JSONObject response) {
-                            try {
-                                android.util.Log.d("API_RESPONSE", "Resposta: " + response.toString());
-
-                                if (!response.has("data")) {
-                                    android.util.Log.e("API_ERROR", "Campo 'data' não encontrado");
-                                    if (locaisListener != null)
-                                        locaisListener.onLocaisError("Resposta inválida");
-                                    return;
-                                }
-
-                                JSONArray data = response.getJSONArray("data");
-                                android.util.Log.d("API_DATA", "Total de locais: " + data.length());
-
-                                ArrayList<Local> apiLocais = LocalJsonParser.parserJsonLocais(data);
-                                locais = apiLocais;
-
-                                if (locaisListener != null)
-                                    locaisListener.onLocaisLoaded(locais);
-
-                            } catch (Exception e) {
-                                android.util.Log.e("API_PARSE_ERROR", "Erro: " + e.getMessage(), e);
-                                if (locaisListener != null)
-                                    locaisListener.onLocaisError("Erro ao processar dados");
-                            }
-                        }
-                    },
-                    new Response.ErrorListener() {
-                        @Override
-                        public void onErrorResponse(VolleyError error) {
-                            String mensagem = "Erro ao carregar locais";
-
-                            if (error.networkResponse != null && error.networkResponse.data != null) {
-                                try {
-                                    String responseBody = new String(error.networkResponse.data, "UTF-8");
-                                    JSONObject jsonError = new JSONObject(responseBody);
-                                    if (jsonError.has("message")) {
-                                        mensagem = jsonError.getString("message");
-                                    }
-                                } catch (Exception e) {
-                                    // Mantém mensagem padrão
-                                }
-                            }
-
-                            if (locaisListener != null)
-                                locaisListener.onLocaisError(mensagem);
-                        }
-                    });
-            volleyQueue.add(req);
+            return;
         }
+
+        // 2. Check Token
+        String token = getAuthToken(context);
+        if (token == null) {
+            Toast.makeText(context, "Sessão expirada. Faça login novamente.", Toast.LENGTH_SHORT).show();
+            if (locaisListener != null) {
+                locaisListener.onLocaisError("Sem autenticação");
+            }
+            return;
+        }
+
+        // 3. Prepare Request
+        String url = mUrlAPILocais + "?access-token=" + token;
+
+        JsonArrayRequest req = new JsonArrayRequest(Request.Method.GET, url, null,
+                new Response.Listener<JSONArray>() {
+                    @Override
+                    public void onResponse(JSONArray response) {
+                        try {
+                            locais = LocalJsonParser.parserJsonLocais(response);
+
+                            // Update UI
+                            if (locaisListener != null) {
+                                locaisListener.onLocaisLoaded(locais);
+                            }
+
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            if (locaisListener != null) {
+                                locaisListener.onLocaisError("Erro ao processar dados");
+                            }
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        String message = error.getMessage() != null ? error.getMessage() : "Erro ao carregar locais";
+                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+                        // log no logcat
+                        android.util.Log.e("LocaisAPI", "Erro ao carregar locais: " + message);
+                    }
+                });
+
+        volleyQueue.add(req);
     }
 
     //endregion
@@ -409,14 +433,15 @@ public class SingletonLusitania {
         if (!UtilParser.isConnectionInternet(context)) {
             Toast.makeText(context, "Sem Ligação a internet", Toast.LENGTH_SHORT).show();
         } else {
-            JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, mUrlAPIMapa, null,
-                    new Response.Listener<JSONObject>() {
-                        @Override
-                        public void onResponse(JSONObject response) {
-                            try {
-                                JSONArray data = response.getJSONArray("data");
 
-                                ArrayList<Mapa> mapaLocais = MapaJsonParser.parserJsonMapaLocais(data);
+            String url = buildUrl(mUrlAPIMapa);
+
+            JsonArrayRequest req = new JsonArrayRequest(Request.Method.GET, url, null,
+                    new Response.Listener<JSONArray>() {
+                        @Override
+                        public void onResponse(JSONArray response) {
+                            try {
+                                ArrayList<Mapa> mapaLocais = MapaJsonParser.parserJsonMapaLocais(response);
 
                                 if (mapaListener != null) {
                                     mapaListener.onMapaLoaded(mapaLocais);
@@ -441,6 +466,41 @@ public class SingletonLusitania {
 
     //endregion
 
+    //region - Get User Profile
+
+    public void getUserProfileAPI(final Context context) {
+
+        String token = getAuthToken(context);
+        if (token == null){
+            Toast.makeText(context, "Sessão expirada. Faça login novamente.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String mUrlUserAuth = mUrlUser + "/me?access-token=" + token;
+        // Verificar ligação à internet
+        if (!UtilParser.isConnectionInternet(context)) {
+            Toast.makeText(context, "Sem Ligação a internet", Toast.LENGTH_SHORT).show();
+        }
+        else {
+            JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, mUrlUserAuth, null, new Response.Listener<JSONObject>() {
+                @Override
+                public void onResponse(JSONObject response) {
+                    User user = UserJsonParser.parserJsonUser(response.toString());
+                    if (perfilListener != null)
+                        perfilListener.onPerfilLoaded(user); // Notifica a atualização o utilizador
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    String message = error.getMessage() != null ? error.getMessage() : "Erro ao carregar utilizador";
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+                }
+            });
+            volleyQueue.add(req); // FIXED: Added volleyQueue.add
+        } // FIXED: Closed else block
+    } // FIXED: Closed method block
+    //endregion
+
     //region Eventos API(GET, View)
     public void getAllEventosAPI(final Context context) {
         // Verificar ligação à internet
@@ -455,14 +515,12 @@ public class SingletonLusitania {
             }
 
             String mUrlAPIEventosAuth = mUrlAPIEvento + "?access-token=" + token;
-            JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, mUrlAPIEventosAuth, null,
-                    new Response.Listener<JSONObject>() {
+            JsonArrayRequest req = new JsonArrayRequest(Request.Method.GET, mUrlAPIEventosAuth, null,
+                    new Response.Listener<JSONArray>() {
                         @Override
-                        public void onResponse(JSONObject response) {
+                        public void onResponse(JSONArray response) {
                             try {
-                                JSONArray data = response.getJSONArray("data");
-
-                                ArrayList<Evento> eventos = EventosJsonParser.parserJsonEventos(data);
+                                ArrayList<Evento> eventos = EventosJsonParser.parserJsonEventos(response);
 
                                 if (eventoListener != null) {
                                     eventoListener.onEventosLoaded(eventos);
@@ -484,6 +542,5 @@ public class SingletonLusitania {
             volleyQueue.add(req);
         }
     }
-
     //endregion
 }

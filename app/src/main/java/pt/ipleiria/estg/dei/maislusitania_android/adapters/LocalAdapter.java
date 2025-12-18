@@ -45,7 +45,7 @@ public class LocalAdapter extends RecyclerView.Adapter<LocalAdapter.ViewHolder> 
         Local item = items.get(position);
 
         holder.tvTitle.setText(item.getNome());
-        holder.tvCategory.setText(item.getDistrito() + " • " + item.getMorada());
+        holder.tvCategory.setText(item.getDistrito());
         holder.ratingBar.setRating(item.getAvaliacaoMedia());
 
         Glide.with(holder.itemView.getContext())
