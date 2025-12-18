@@ -10,10 +10,6 @@
         android:icon="@drawable/ic_bilhetes"
         android:title="Bilhetes" />
 
-    <item
-        android:id="@+id/navigation_mapa"
-        android:icon="@drawable/ic_mapa"
-        android:title="Mapa" />
 
     <item
         android:id="@+id/navigation_eventos"
