@@ -336,18 +336,13 @@ public class SingletonLusitania {
             Toast.makeText(context, "Sem Ligação a internet", Toast.LENGTH_SHORT).show();
         }
         else {
-            // CORREÇÃO: Usar JsonObjectRequest porque a resposta é { "data": [...] }
-            JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, mUrlAPINoticiasAuth, null, new Response.Listener<JSONObject>() {
+            JsonArrayRequest req = new JsonArrayRequest(Request.Method.GET, mUrlAPINoticiasAuth, null, new Response.Listener<JSONArray>() {
                 @Override
-                public void onResponse(JSONObject response) {
+                public void onResponse(JSONArray response) {
                     try {
-                        // Extrair o array "data" do objeto JSON
-                        JSONArray data = response.getJSONArray("data");
-                        ArrayList<Noticia> noticias = NoticiaJsonParser.parserJsonNoticias(data);
-
+                        ArrayList<Noticia> noticias = NoticiaJsonParser.parserJsonNoticias(response);
                         if (noticiaListener != null)
                             noticiaListener.onNoticiasLoaded(noticias);
-
                     } catch (Exception e) {
                         e.printStackTrace();
                         Toast.makeText(context, "Erro ao processar dados das notícias", Toast.LENGTH_SHORT).show();
@@ -372,33 +367,18 @@ public class SingletonLusitania {
             Toast.makeText(context, "Sessão expirada. Faça login novamente.", Toast.LENGTH_SHORT).show();
             return;
         }
-
         String mUrlAPINoticiaAuth = mUrlAPINoticias + "/" + noticiaId + "?access-token=" + token;
-
         if (!UtilParser.isConnectionInternet(context)) {
             Toast.makeText(context, "Sem Ligação a internet", Toast.LENGTH_SHORT).show();
         }
         else {
-            JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, mUrlAPINoticiaAuth, null, new Response.Listener<JSONObject>() {
+            JsonArrayRequest req = new JsonArrayRequest(Request.Method.GET, mUrlAPINoticiaAuth, null, new Response.Listener<JSONArray>() {
                 @Override
-                public void onResponse(JSONObject response) {
+                public void onResponse(JSONArray response) {
                     try {
-                        // A API devolve { "data": [{...}] } - um array com um objeto
-                        JSONArray dataArray = response.getJSONArray("data");
-
-                        if (dataArray.length() > 0) {
-                            JSONObject data = dataArray.getJSONObject(0);
-                            Noticia noticia = NoticiaJsonParser.parserJsonNoticia(data);
-
-                            if (noticia != null && noticiaListener != null) {
-                                noticiaListener.onNoticiaLoaded(noticia);
-                            } else if (noticiaListener != null) {
-                                noticiaListener.onNoticiaError("Erro ao processar dados da notícia " + noticiaId);
-                            }
-                        } else {
-                            if (noticiaListener != null) {
-                                noticiaListener.onNoticiaError("Notícia não encontrada");
-                            }
+                        Noticia noticia = NoticiaJsonParser.parserJsonNoticia(response);
+                        if (noticiaListener != null) {
+                            noticiaListener.onNoticiaLoaded(noticia);
                         }
                     } catch (Exception e) {
                         e.printStackTrace();

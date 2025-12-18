@@ -33,16 +33,6 @@ public class DetalhesNoticiaFragment extends Fragment implements NoticiaListener
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentDetalhesNoticiaBinding.inflate(inflater, container, false);
 
-        // Listener para o ícone de perfil (ícone à direita)
-        binding.tilPesquisa.setEndIconOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Abrir activity de perfil
-                Intent intent = new Intent(getActivity(), PerfilActivity.class);
-                startActivity(intent);
-            }
-        });
-
         Bundle args = getArguments();
         if (args != null) {
             int noticiaId = args.getInt(NOTICIA_ID);
@@ -72,11 +62,11 @@ public class DetalhesNoticiaFragment extends Fragment implements NoticiaListener
         }
         item = noticia;
 
-        binding.tvTituloNoticia.setText(item.getTitulo());
-        binding.tvDataPublicacao.setText(item.getDataPublicacao());
-        binding.tvConteudoNoticia.setText(item.getConteudo());
+        binding.tvDNome.setText(item.getNome());
+        binding.tvDDataPublicacao.setText(item.getDataPublicacao());
+        binding.tvDConteudo.setText(item.getConteudo());
         String urlImagem = item.getImagem();
-        Toast.makeText(getContext(), urlImagem, Toast.LENGTH_SHORT).show();
+        //Toast.makeText(getContext(), urlImagem, Toast.LENGTH_SHORT).show();
 
         // Se a imagem não for nula ou vazia, carrega
         if (urlImagem != null && !urlImagem.isEmpty()) {
@@ -85,9 +75,9 @@ public class DetalhesNoticiaFragment extends Fragment implements NoticiaListener
                     .placeholder(R.drawable.ic_launcher_background) // Imagem de placeholder enquanto carrega
                     .error(R.drawable.ic_launcher_background)       // Imagem em caso de erro
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
-                    .into(binding.ivNoticiaHeader);
+                    .into(binding.ivDImagem);
         } else {
-            binding.ivNoticiaHeader.setImageResource(R.drawable.ic_launcher_background);
+            binding.ivDImagem.setImageResource(R.drawable.ic_launcher_background);
         }
     }
 
