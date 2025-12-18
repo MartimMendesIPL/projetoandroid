@@ -100,7 +100,7 @@ public class LoginActivity extends AppCompatActivity implements LoginListener {
         android.widget.EditText etMainUrl = dialogView.findViewById(R.id.etMainUrl);
 
         // Pre-fill current value
-        etMainUrl.setText(SingletonLusitania.getInstance(getApplicationContext()).getMainUrl());
+        etMainUrl.setText(SingletonLusitania.getInstance(getApplicationContext()).buildUrl(""));
 
         builder.setView(dialogView)
                 .setTitle("Configurar URL")
