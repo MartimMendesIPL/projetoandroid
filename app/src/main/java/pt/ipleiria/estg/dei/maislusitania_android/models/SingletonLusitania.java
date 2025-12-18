@@ -22,10 +22,12 @@ import pt.ipleiria.estg.dei.maislusitania_android.listeners.LocaisListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.LoginListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.MapaListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.NoticiaListener;
+import pt.ipleiria.estg.dei.maislusitania_android.listeners.PerfilListener;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.EventosJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.LocalJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.MapaJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.NoticiaJsonParser;
+import pt.ipleiria.estg.dei.maislusitania_android.utils.UserJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.UtilParser;
 
 public class SingletonLusitania {
@@ -36,19 +38,32 @@ public class SingletonLusitania {
     private LocaisFavDBHelper dbHelper;
     private static RequestQueue volleyQueue = null;
 
+
+    private Context context;
+    private String mainUrl;
+
     private static final String KEY_TOKEN = "auth_key";
 
+
+
     // URLs
-    private static final String mUrlAPILogin = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/login-form";
+    private static final String mUrlAPILogin = "/login-form";
     private static final String mUrlAPILocais = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/local-culturals";
     private static final String mUrlAPINoticias = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/noticias";
     private static final String mUrlAPIToggleFavorito = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/favoritos/toggle/";
     private static final String mUrlAPIMapa = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/mapas";
     private static final String mUrlAPIEvento = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/eventos";
 
+    private static final String mUrlUser = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/user-profile";
+
     // SharedPreferences
     private static final String PREF_NAME = "MaisLusitaniaPrefs";
     private static final String KEY_USERNAME = "username";
+
+    private static final String KEY_MAIN_URL = "main_url";
+    private static final String DEFAULT_MAIN_URL = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/";
+
+
 
     // Listeners
     private LoginListener loginListener;
@@ -57,11 +72,19 @@ public class SingletonLusitania {
     private NoticiaListener noticiaListener;
     private EventoListener eventoListener;
 
+    private PerfilListener perfilListener;
+
+
+
     //region - Construtor e Instância
     private SingletonLusitania(Context context) {
         locais = new ArrayList<>();
         dbHelper = new LocaisFavDBHelper(context);
         volleyQueue = Volley.newRequestQueue(context);
+        this.context = context;
+
+        SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        mainUrl = prefs.getString(KEY_MAIN_URL, DEFAULT_MAIN_URL);
     }
 
     public static synchronized SingletonLusitania getInstance(Context context) {
@@ -86,11 +109,44 @@ public class SingletonLusitania {
         this.noticiaListener = noticiaListener;
     }
 
+    public void setPerfilListener(PerfilListener perfilListener) {
+        this.perfilListener = perfilListener;
     public void setEventoListener(EventoListener eventoListener) {
         this.eventoListener = eventoListener;
     }
 
     //endregion
+
+    // region Gestão da URL da API
+    //devolve o url principal guardado
+    public String getMainUrl() {
+        return mainUrl;
+    }
+
+    //guarda o novo url no SharedPreferences
+    public void setMainUrl(String url) {
+        this.mainUrl = url;
+        SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putString(KEY_MAIN_URL, url).apply();
+    }
+
+    //construtor simples de endpoints
+    public String buildUrl(String endpoint) {
+        String base = getMainUrl();
+
+        // Remove barra final da base se existir
+        if (base.endsWith("/")) {
+            base = base.substring(0, base.length() - 1);
+        }
+
+        // Adiciona barra inicial ao endpoint se não tiver
+        if (!endpoint.startsWith("/")) {
+            endpoint = "/" + endpoint;
+        }
+
+        return base + endpoint;
+    }
+//endregion
 
     //region - SharedPreferences (Sessão)
     // Mantive esta parte igual porque a professora não tinha Login no exemplo,
@@ -412,6 +468,38 @@ public class SingletonLusitania {
 
     //endregion
 
+
+
+    //region - Get User Profile
+
+    public void getUserProfileAPI(final Context context) {
+
+        String token = getAuthToken(context);
+        if (token == null){
+            Toast.makeText(context, "Sessão expirada. Faça login novamente.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String mUrlUserAuth = mUrlUser + "/me?access-token=" + token;
+        // Verificar ligação à internet
+        if (!UtilParser.isConnectionInternet(context)) {
+            Toast.makeText(context, "Sem Ligação a internet", Toast.LENGTH_SHORT).show();
+        }
+        else {
+            JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, mUrlUserAuth, null, new Response.Listener<JSONObject>() {
+                @Override
+                public void onResponse(JSONObject response) {
+                    User user = UserJsonParser.parserJsonUser(response.toString());
+                    if (perfilListener != null)
+                        perfilListener.onPerfilLoaded(user); // Notifica a atualização o utilizador
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    String message = error.getMessage() != null ? error.getMessage() : "Erro ao carregar utilizador";
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+                }
+            });
     //region Eventos API(GET, View)
     public void getAllEventosAPI(final Context context) {
         // Verificar ligação à internet
