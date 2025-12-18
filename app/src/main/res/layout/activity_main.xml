@@ -30,4 +30,28 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- ✅ FAB do Mapa (botão flutuante central) -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_mapa"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="40dp"
+        android:src="@drawable/ic_mapa"
+        android:contentDescription="Mapa"
+        app:fabSize="auto"
+        app:fabCustomSize="64dp"
+        app:tint="@android:color/white"
+        app:backgroundTint="@color/blue_primary"
+        app:elevation="100dp"
+        app:borderWidth="0dp"
+        app:rippleColor="@android:color/transparent"
+        app:maxImageSize="36dp"
+        app:layout_constraintBottom_toBottomOf="@id/bottom_navigation"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+
+
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>
