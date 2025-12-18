@@ -489,7 +489,6 @@ public class SingletonLusitania {
     //region - Get User Profile
 
     public void getUserProfileAPI(final Context context) {
-
         String token = getAuthToken(context);
         if (token == null){
             Toast.makeText(context, "Sessão expirada. Faça login novamente.", Toast.LENGTH_SHORT).show();
@@ -501,26 +500,40 @@ public class SingletonLusitania {
         // Verificar ligação à internet
         if (!UtilParser.isConnectionInternet(context)) {
             Toast.makeText(context, "Sem Ligação a internet", Toast.LENGTH_SHORT).show();
+            return;
         }
-        else {
-            JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, mUrlUserAuth, null, new Response.Listener<JSONObject>() {
-                @Override
-                public void onResponse(JSONObject response) {
-                    User user = UserJsonParser.parserJsonUser(response.toString());
-                    if (perfilListener != null)
-                        perfilListener.onPerfilLoaded(user); // Notifica a atualização o utilizador
-                }
-            }, new Response.ErrorListener() {
-                @Override
-                public void onErrorResponse(VolleyError error) {
-                    String message = error.getMessage() != null ? error.getMessage() : "Erro ao carregar utilizador";
-                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
-                }
-            });
-            volleyQueue.add(req); // FIXED: Added volleyQueue.add
-        } // FIXED: Closed else block
-    } // FIXED: Closed method block
-    //endregion
+
+        // ✅ Usar JsonArrayRequest em vez de JsonObjectRequest
+        JsonArrayRequest req = new JsonArrayRequest(Request.Method.GET, mUrlUserAuth, null,
+                new Response.Listener<JSONArray>() {
+                    @Override
+                    public void onResponse(JSONArray response) {
+                        android.util.Log.d("UserProfile", "Response: " + response.toString());
+
+                        User user = UserJsonParser.parserJsonUser(response.toString());
+                        if (user != null && perfilListener != null) {
+                            perfilListener.onPerfilLoaded(user);
+                        } else if (perfilListener != null) {
+                            perfilListener.onPerfilError("Erro ao processar dados do utilizador");
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        String message = error.getMessage() != null ? error.getMessage() : "Erro ao carregar utilizador";
+                        android.util.Log.e("UserProfile", "Error: " + message);
+
+                        if (perfilListener != null) {
+                            perfilListener.onPerfilError(message);
+                        }
+                        Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+        volleyQueue.add(req);
+    }
+
 
     //region Eventos API(GET, View)
     public void getAllEventosAPI(final Context context) {
