@@ -38,23 +38,20 @@ public class SingletonLusitania {
     private LocaisFavDBHelper dbHelper;
     private static RequestQueue volleyQueue = null;
 
-
     private Context context;
     private String mainUrl;
 
     private static final String KEY_TOKEN = "auth_key";
 
-
-
     // URLs
     private static final String mUrlAPILogin = "/login-form";
-    private static final String mUrlAPILocais = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/local-culturals";
-    private static final String mUrlAPINoticias = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/noticias";
-    private static final String mUrlAPIToggleFavorito = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/favoritos/toggle/";
-    private static final String mUrlAPIMapa = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/mapas";
-    private static final String mUrlAPIEvento = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/eventos";
+    private static final String mUrlAPILocais = "/local-culturals";
+    private static final String mUrlAPINoticias = "/noticias";
+    private static final String mUrlAPIToggleFavorito = "/toggle/";
+    private static final String mUrlAPIMapa = "/mapas";
+    private static final String mUrlAPIEvento = "/eventos";
 
-    private static final String mUrlUser = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/user-profile";
+    private static final String mUrlUser = "/user-profile";
 
     // SharedPreferences
     private static final String PREF_NAME = "MaisLusitaniaPrefs";
@@ -62,8 +59,6 @@ public class SingletonLusitania {
 
     private static final String KEY_MAIN_URL = "main_url";
     private static final String DEFAULT_MAIN_URL = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/";
-
-
 
     // Listeners
     private LoginListener loginListener;
@@ -73,8 +68,6 @@ public class SingletonLusitania {
     private EventoListener eventoListener;
 
     private PerfilListener perfilListener;
-
-
 
     //region - Construtor e Instância
     private SingletonLusitania(Context context) {
@@ -111,6 +104,7 @@ public class SingletonLusitania {
 
     public void setPerfilListener(PerfilListener perfilListener) {
         this.perfilListener = perfilListener;
+    }
     public void setEventoListener(EventoListener eventoListener) {
         this.eventoListener = eventoListener;
     }
@@ -118,10 +112,6 @@ public class SingletonLusitania {
     //endregion
 
     // region Gestão da URL da API
-    //devolve o url principal guardado
-    public String getMainUrl() {
-        return mainUrl;
-    }
 
     //guarda o novo url no SharedPreferences
     public void setMainUrl(String url) {
@@ -132,7 +122,7 @@ public class SingletonLusitania {
 
     //construtor simples de endpoints
     public String buildUrl(String endpoint) {
-        String base = getMainUrl();
+        String base = this.mainUrl;
 
         // Remove barra final da base se existir
         if (base.endsWith("/")) {
@@ -146,11 +136,9 @@ public class SingletonLusitania {
 
         return base + endpoint;
     }
-//endregion
+    //endregion
 
     //region - SharedPreferences (Sessão)
-    // Mantive esta parte igual porque a professora não tinha Login no exemplo,
-    // mas a lógica é de armazenamento local simples.
     public void guardarUtilizador(Context context, String username, String token) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -180,7 +168,6 @@ public class SingletonLusitania {
     //endregion
 
     //region - CRUD Local (Favoritos)
-    // A professora expõe métodos diretos para a BD aqui
     public ArrayList<Local> getFavoritosBD() {
         return dbHelper.getAllFavoritos();
     }
@@ -252,7 +239,9 @@ public class SingletonLusitania {
                 Toast.makeText(context, "Erro", Toast.LENGTH_SHORT).show();
             }
 
-            JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST, mUrlAPILogin, jsonBody,
+            String url = buildUrl(mUrlAPILogin);
+
+            JsonObjectRequest req = new JsonObjectRequest(Request.Method.POST, url, jsonBody,
                     new Response.Listener<JSONObject>() {
                         @Override
                         public void onResponse(JSONObject response) {
@@ -299,8 +288,7 @@ public class SingletonLusitania {
         }
     }
 
-    // LÓGICA DOS LOCAIS (Equivalente ao getAllBooksAPI - GET)
-    // CARREGAR LOCAIS COM FAVORITOS
+    // LÓGICA DOS LOCAIS
     public void getAllLocaisAPI(final Context context) {
         // 1. Check Internet
         if (!LocalJsonParser.isConnectionInternet(context)) {
@@ -438,7 +426,10 @@ public class SingletonLusitania {
         if (!UtilParser.isConnectionInternet(context)) {
             Toast.makeText(context, "Sem Ligação a internet", Toast.LENGTH_SHORT).show();
         } else {
-            JsonArrayRequest req = new JsonArrayRequest(Request.Method.GET, mUrlAPIMapa, null,
+
+            String url = buildUrl(mUrlAPIMapa);
+
+            JsonArrayRequest req = new JsonArrayRequest(Request.Method.GET, url, null,
                     new Response.Listener<JSONArray>() {
                         @Override
                         public void onResponse(JSONArray response) {
@@ -467,8 +458,6 @@ public class SingletonLusitania {
     }
 
     //endregion
-
-
 
     //region - Get User Profile
 
@@ -500,6 +489,11 @@ public class SingletonLusitania {
                     Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
                 }
             });
+            volleyQueue.add(req); // FIXED: Added volleyQueue.add
+        } // FIXED: Closed else block
+    } // FIXED: Closed method block
+    //endregion
+
     //region Eventos API(GET, View)
     public void getAllEventosAPI(final Context context) {
         // Verificar ligação à internet
@@ -541,6 +535,5 @@ public class SingletonLusitania {
             volleyQueue.add(req);
         }
     }
-
     //endregion
 }
