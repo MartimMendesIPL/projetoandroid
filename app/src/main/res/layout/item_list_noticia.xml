@@ -19,7 +19,7 @@
 
         <!-- Imagem da Notícia -->
         <ImageView
-            android:id="@+id/ivItemImage"
+            android:id="@+id/ivImagem"
             android:layout_width="120dp"
             android:layout_height="140dp"
             android:scaleType="centerCrop"
@@ -39,7 +39,7 @@
 
             <!-- Título -->
             <TextView
-                android:id="@+id/tvItemTitle"
+                android:id="@+id/tvNome"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Título da Notícia"
@@ -51,7 +51,7 @@
 
             <!-- Resumo -->
             <TextView
-                android:id="@+id/tvItemSummary"
+                android:id="@+id/tvResumo"
                 android:layout_width="wrap_content"
                 android:layout_height="0dp"
                 android:layout_weight="1"
@@ -64,7 +64,7 @@
 
             <!-- Data de Publicação -->
             <TextView
-                android:id="@+id/tvItemDateFim"
+                android:id="@+id/tvDataPublicacao"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="12/10/2023"

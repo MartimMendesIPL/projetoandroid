@@ -3,34 +3,30 @@ package pt.ipleiria.estg.dei.maislusitania_android.utils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import java.util.ArrayList;
+
+import pt.ipleiria.estg.dei.maislusitania_android.models.Evento;
 import pt.ipleiria.estg.dei.maislusitania_android.models.Noticia;
 
 public class NoticiaJsonParser {
 
     public static ArrayList<Noticia> parserJsonNoticias(JSONArray response) {
+
         ArrayList<Noticia> noticias = new ArrayList<>();
+
         for (int i = 0; i < response.length(); i++) {
             try {
+                // Obtém o objeto JSON da posição i
                 JSONObject noticia = (JSONObject) response.get(i);
-
+                // Extrai os campos necessários
                 int id = noticia.getInt("id");
-
-                // CORREÇÃO: A API devolve "nome", mas o modelo usa "titulo"
-                String titulo = noticia.has("nome") ? noticia.getString("nome") : noticia.optString("titulo");
-
-                // Usar optString para evitar erros se o campo não vier na lista
+                String nome = noticia.getString("nome");
+                String resumo = noticia.getString("resumo");
+                String imagem = noticia.getString("imagem");
+                String dataPublicacao = noticia.getString("data_publicacao");
+                // Cria o campo conteudo apenas para criar o objeto, mesmo que não seja usado aqui
                 String conteudo = noticia.optString("conteudo", "");
-                String resumo = noticia.optString("resumo", "");
-                String imagem = noticia.optString("imagem", "");
-
-                // CORREÇÃO: A API devolve "data_publicacao"
-                String dataPublicacao = noticia.has("data_publicacao") ? noticia.getString("data_publicacao") : noticia.optString("dataPublicacao");
-
-                boolean ativo = noticia.optBoolean("ativo", true);
-                int localId = noticia.optInt("localId", 0);
-                boolean destaque = noticia.optBoolean("destaque", false);
-
-                Noticia auxNoticia = new Noticia(id, titulo, conteudo, resumo, imagem, dataPublicacao, ativo, localId, destaque);
+                // Cria o objeto Noticia
+                Noticia auxNoticia = new Noticia(id, nome, resumo, conteudo, imagem, dataPublicacao);
                 noticias.add(auxNoticia);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -39,25 +35,30 @@ public class NoticiaJsonParser {
         return noticias;
     }
 
-    public static Noticia parserJsonNoticia(String response) {
+    public static Noticia parserJsonNoticia(JSONArray response) {
         Noticia auxNoticia = null;
         try {
-            JSONObject noticia = new JSONObject(response);
+            if (response == null || response.length() == 0) {
+                android.util.Log.e("NoticiaParser", "Array vazio ou nulo");
+                return null;
+            }
+
+            JSONObject noticia = (JSONObject) response.get(0);
+            android.util.Log.d("NoticiaParser", "JSON recebido: " + noticia.toString());
 
             int id = noticia.getInt("id");
-            String titulo = noticia.has("nome") ? noticia.getString("nome") : noticia.optString("titulo");
-            String conteudo = noticia.optString("conteudo");
-            String resumo = noticia.optString("resumo");
-            String imagem = noticia.optString("imagem");
-            String dataPublicacao = noticia.has("data_publicacao") ? noticia.getString("data_publicacao") : noticia.optString("dataPublicacao");
-            boolean ativo = noticia.optBoolean("ativo");
-            int localId = noticia.optInt("localId");
-            boolean destaque = noticia.optBoolean("destaque");
+            String nome = noticia.getString("nome");
+            String resumo = noticia.optString("resumo", "");
+            String conteudo = noticia.getString("conteudo");
+            String imagem = noticia.getString("imagem");
+            String dataPublicacao = noticia.getString("data_publicacao");
 
-            auxNoticia = new Noticia(id, titulo, conteudo, resumo, imagem, dataPublicacao, ativo, localId, destaque);
+            auxNoticia = new Noticia(id, nome, resumo, conteudo, imagem, dataPublicacao);
+            return auxNoticia;
         } catch (Exception e) {
+            android.util.Log.e("NoticiaParser", "Erro ao fazer parse: " + e.getMessage(), e);
             e.printStackTrace();
         }
-        return auxNoticia;
+        return null;
     }
 }
