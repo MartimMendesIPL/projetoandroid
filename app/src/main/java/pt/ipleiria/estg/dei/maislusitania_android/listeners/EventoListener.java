@@ -6,7 +6,7 @@ import pt.ipleiria.estg.dei.maislusitania_android.models.Evento;
 
 public interface EventoListener {
     void onEventosLoaded(ArrayList<Evento> listaEventos);
-    void onEventoLoaded(ArrayList<Evento> evento);
+    void onEventoLoaded(Evento evento);
     void onEventoError(String message);
 
 }

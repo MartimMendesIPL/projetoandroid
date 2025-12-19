@@ -89,7 +89,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-    var southWest = L.latLng(36.0, -10.0);
+    var southWest = L.latLng(32.0, -32.0);
     var northEast = L.latLng(43.0, -5.0);
     var bounds = L.latLngBounds(southWest, northEast);
 
@@ -98,7 +98,7 @@
         attributionControl: false,
         maxBounds: bounds,
         maxBoundsViscosity: 1.0,
-        minZoom: 6
+        minZoom: 4
     }).setView([39.5, -8.0], 7);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {

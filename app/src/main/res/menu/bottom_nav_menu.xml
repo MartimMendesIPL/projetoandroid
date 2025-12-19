@@ -10,6 +10,12 @@
         android:icon="@drawable/ic_bilhetes"
         android:title="Bilhetes" />
 
+    <!-- THE PLACEHOLDER -->
+    <item
+        android:id="@+id/navigation_placeholder"
+        android:title="  "
+        android:enabled="false"
+        android:icon="@android:color/transparent" />
 
     <item
         android:id="@+id/navigation_eventos"

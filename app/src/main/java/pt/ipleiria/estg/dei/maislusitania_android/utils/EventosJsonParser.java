@@ -4,6 +4,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import java.util.ArrayList;
 import pt.ipleiria.estg.dei.maislusitania_android.models.Evento;
+import pt.ipleiria.estg.dei.maislusitania_android.models.Noticia;
 
 public class EventosJsonParser {
     public static ArrayList<Evento> parserJsonEventos(JSONArray response) {
@@ -36,18 +37,29 @@ public class EventosJsonParser {
         return eventos;
     }
 
-    public static Evento parserJsonEvento(String response) {
+    public static Evento parserJsonEvento(JSONArray response) {
+        Evento auxEvento = null;
         try {
-            JSONObject evento = new JSONObject(response);
-            int id = evento.optInt("id", 0);
-            String local = evento.optString("local", "");
-            String titulo = evento.optString("titulo", "");
-            String descricao = evento.optString("descricao", "");
-            String imagem = evento.optString("imagem", "");
-            String dataInicio = evento.optString("dataInicio", "");
-            String dataFim = evento.optString("dataFim", "");
+            if (response == null || response.length() == 0) {
+                android.util.Log.e("EventoParser", "String vazia ou nula");
+                return null;
+            }
 
-            return new Evento(id, local, titulo, descricao, imagem, dataInicio, dataFim);
+            // Get the first object from the array
+            JSONObject evento = (JSONObject) response.get(0);
+
+            android.util.Log.d("EventoParser", "JSON recebido: " + evento.toString());
+
+            int id = evento.optInt("id", 0);
+            String local = evento.optString("local", "Sem local");
+            String titulo = evento.optString("titulo", "Sem título");
+            String descricao = evento.optString("descricao", "Sem descrição");
+            String imagem = evento.optString("imagem", "");
+            String dataInicio = evento.optString("data_inicio", ""); // Fixed key name based on parserJsonEventos
+            String dataFim = evento.optString("data_fim", "");       // Fixed key name based on parserJsonEventos
+
+            auxEvento = new Evento(id, local, titulo, descricao, imagem, dataInicio, dataFim);
+            return auxEvento;
         } catch (Exception e) {
             e.printStackTrace();
         }
