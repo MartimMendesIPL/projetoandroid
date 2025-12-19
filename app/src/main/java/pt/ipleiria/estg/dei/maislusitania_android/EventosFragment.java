@@ -64,11 +64,19 @@ public class EventosFragment extends Fragment implements EventoListener {
             @Override
             public void onEventoClick(int position) {
                 Evento item = items.get(position);
-                Toast.makeText(getContext(), "Clicou em: " + item.getTitulo(), Toast.LENGTH_SHORT).show();
-                // Aqui você pode abrir os detalhes, ex:
-                // Intent intent = new Intent(getContext(), DetalhesNoticiaActivity.class);
-                // intent.putExtra("ID_NOTICIA", item.getId());
-                // startActivity(intent);
+
+                DetalhesEventoFragment fragment = new DetalhesEventoFragment();
+
+                Bundle args = new Bundle();
+                args.putInt("evento_id", item.getId());
+                fragment.setArguments(args);
+
+                // Navegar para o fragmento
+                requireActivity().getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.fragment_container, fragment)
+                        .addToBackStack(null)
+                        .commit();
             }
         });
 
@@ -88,19 +96,19 @@ public class EventosFragment extends Fragment implements EventoListener {
         items.addAll(listaEventos);
 
         if (eventoAdapter != null) {
-            // Se tiver criado um metodo updateNoticias no adapter, use-o, senão notifyDataSetChanged
+            // Se tiver criado um metodo updateEventos no adapter, use-o, senão notifyDataSetChanged
             eventoAdapter.notifyDataSetChanged();
         }
     }
 
     @Override
-    public void onEventoLoaded(ArrayList<Evento> evento) {
-        // Este metodo é usado para carregar uma única notícia (detalhes),
+    public void onEventoLoaded(Evento evento) {
+        // Este metodo é usado para carregar um único evento(detalhes),
     }
 
     @Override
     public void onEventoError(String message) {
-        // Corrigido o nome do metodo (era onErrorNoticias)
+        // Corrigido o nome do metodo (era onErrorEventos)
         Toast.makeText(getContext(), "Erro: " + message, Toast.LENGTH_SHORT).show();
     }
 }

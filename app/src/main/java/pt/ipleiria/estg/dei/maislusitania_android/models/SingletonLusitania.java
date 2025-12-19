@@ -407,9 +407,6 @@ public class SingletonLusitania {
             Toast.makeText(context, "Sessão expirada. Faça login novamente.", Toast.LENGTH_SHORT).show();
             return;
         }
-
-        String mUrlAPINoticiaAuth = buildUrl(mUrlAPINoticias) + "/" + noticiaId +"?access-token=" + token;
-
         // Verificar ligação à internet
         if (!UtilParser.isConnectionInternet(context)) {
             Toast.makeText(context, "Sem Ligação a internet", Toast.LENGTH_SHORT).show();
@@ -503,7 +500,7 @@ public class SingletonLusitania {
             return;
         }
 
-        // ✅ Usar JsonArrayRequest em vez de JsonObjectRequest
+        // Usar JsonArrayRequest em vez de JsonObjectRequest
         JsonArrayRequest req = new JsonArrayRequest(Request.Method.GET, mUrlUserAuth, null,
                 new Response.Listener<JSONArray>() {
                     @Override
@@ -577,5 +574,57 @@ public class SingletonLusitania {
             volleyQueue.add(req);
         }
     }
+
+    public void getEventoAPI(final int eventoId, final Context context) {
+
+        //toast do id do evento
+        Toast.makeText(context, "Evento ID: " + eventoId, Toast.LENGTH_SHORT).show();
+
+
+        String token = getAuthToken(context);
+        if (token == null){
+            Toast.makeText(context, "Sessão expirada. Faça login novamente.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Verificar ligação à internet
+        if (!UtilParser.isConnectionInternet(context)) {
+            Toast.makeText(context, "Sem Ligação a internet", Toast.LENGTH_SHORT).show();
+        }
+
+        else {
+            String url = buildUrl(mUrlAPIEvento) + "/" + eventoId + "?access-token=" + token;
+            JsonArrayRequest req = new JsonArrayRequest(Request.Method.GET, url, null, new Response.Listener<JSONArray>() {
+                @Override
+                public void onResponse(JSONArray response) {
+                    try {
+                        android.util.Log.d("EventoAPI", "Response: " + response.toString());
+                        Evento evento = EventosJsonParser.parserJsonEvento(response);
+                        if (eventoListener != null) {
+                            eventoListener.onEventoLoaded(evento);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        if (eventoListener != null) {
+                            eventoListener.onEventoError("Erro ao processar resposta: " + e.getMessage());
+                        }
+                    }
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    String message = error.getMessage() != null ? error.getMessage() : "Erro ao carregar detalhes";
+                    //log no logcat
+                    android.util.Log.e("EventoAPI", "Erro ao carregar detalhes: " + message);
+                    if (eventoListener != null) {
+                        eventoListener.onEventoError(message);
+                    }
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+                }
+            });
+            volleyQueue.add(req);
+        }
+    }
+
     //endregion
 }

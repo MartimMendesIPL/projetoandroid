@@ -22,14 +22,18 @@ public class MainActivity extends AppCompatActivity {
         bottomNavigationView = findViewById(R.id.bottom_navigation);
         FloatingActionButton fabMapa = findViewById(R.id.fab_mapa);
 
-        // ✅ Carregar o fragmento Mapa por padrão (tela inicial)
+        //Botao placeholder para criar espaço no menu
+        bottomNavigationView.getMenu().findItem(R.id.navigation_placeholder).setEnabled(false);
+
+
+        // Carregar o fragmento Mapa por padrão (tela inicial)
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, new MapaFragment())
                     .commit();
         }
 
-        // ✅ Listener do FAB do Mapa
+        // Listener do FAB do Mapa
         fabMapa.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -46,10 +50,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // ✅ Listener do BottomNavigationView
+        // Listener do BottomNavigationView
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                if (item.getItemId() == R.id.navigation_placeholder){
+                    return false;
+                }
+
                 Fragment selectedFragment = null;
 
                 if (item.getItemId() == R.id.navigation_bilhetes) {
