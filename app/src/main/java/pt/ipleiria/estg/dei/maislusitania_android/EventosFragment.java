@@ -47,6 +47,28 @@ public class EventosFragment extends Fragment implements EventoListener {
             }
         });
 
+        binding.tilPesquisa.getEditText().setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH ||
+                    actionId == android.view.inputmethod.EditorInfo.IME_ACTION_DONE) {
+
+                String query = binding.tilPesquisa.getEditText().getText().toString().trim();
+
+                // Verificar se a query está vazia
+                if (query.isEmpty()) {
+                    // Se estiver recarregar os mapas
+                    SingletonLusitania.getInstance(requireContext()).getAllEventosAPI(getContext());
+                } else {
+                    // Chamar o metodo de pesquisa
+                    SingletonLusitania.getInstance(requireContext()).searchEventoAPI(getContext(), query);
+                }
+
+                // Esconder o teclado
+                hideKeyboard();
+                return true;
+            }
+            return false;
+        });
+
         setupRecyclerView();
 
         // Configurar o listener e pedir os dados à API
@@ -110,5 +132,14 @@ public class EventosFragment extends Fragment implements EventoListener {
     public void onEventoError(String message) {
         // Corrigido o nome do metodo (era onErrorEventos)
         Toast.makeText(getContext(), "Erro: " + message, Toast.LENGTH_SHORT).show();
+    }
+
+    private void hideKeyboard() {
+        View view = this.getView();
+        if (view != null) {
+            android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager)
+                    requireContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 }
