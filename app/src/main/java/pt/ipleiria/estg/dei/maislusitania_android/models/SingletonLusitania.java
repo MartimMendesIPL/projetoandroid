@@ -443,7 +443,7 @@ public class SingletonLusitania {
     }
     //endregion
 
-    //region Mapas API(GetAll)
+    //region Mapas API(GetAll, Search)
 
     public void getAllMapasAPI(final Context context) {
         // Verificar ligação à internet
@@ -474,6 +474,39 @@ public class SingletonLusitania {
                         @Override
                         public void onErrorResponse(VolleyError error) {
                             Toast.makeText(context, "Erro API: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+            volleyQueue.add(req);
+        }
+    }
+
+    public void searchMapaAPI(final Context context, final String query) {
+        // Verificar ligação à internet
+        if (!UtilParser.isConnectionInternet(context)) {
+            Toast.makeText(context, "Sem Ligação a internet", Toast.LENGTH_SHORT).show();
+        } else {
+            String url = buildUrl(mUrlAPIMapa + "/search/" + query);
+
+            JsonArrayRequest req = new JsonArrayRequest(Request.Method.GET, url, null,
+                    new Response.Listener<JSONArray>() {
+                        @Override
+                        public void onResponse(JSONArray response) {
+                            try {
+                                ArrayList<Mapa> mapaLocais = MapaJsonParser.parserJsonMapaLocais(response);
+                                if (mapaListener != null) {
+                                    mapaListener.onMapaLoaded(mapaLocais);
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                Toast.makeText(context, "Erro ao processar JSON: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    },
+                    new Response.ErrorListener() {
+                        @Override
+                        public void onErrorResponse(VolleyError error) {
+                            Toast.makeText(context, "Erro na pesquisa: " + error.getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     });
 
@@ -532,7 +565,7 @@ public class SingletonLusitania {
     }
 
 
-    //region Eventos API(GET, View)
+    //region Eventos API(GET, View, Search)
     public void getAllEventosAPI(final Context context) {
         // Verificar ligação à internet
         if (!UtilParser.isConnectionInternet(context)) {
@@ -624,6 +657,51 @@ public class SingletonLusitania {
             });
             volleyQueue.add(req);
         }
+    }
+
+    public void searchEventoAPI(final Context context, final String query) {
+        // Verificar ligação à internet
+        if (!UtilParser.isConnectionInternet(context)) {
+            Toast.makeText(context, "Sem Ligação a internet", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Verificar token (necessário para Eventos, baseado no getAllEventosAPI)
+        String token = getAuthToken(context);
+        if (token == null) {
+            Toast.makeText(context, "Sessão expirada. Faça login novamente.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Construir URL com endpoint de eventos e token
+        String url = buildUrl(mUrlAPIEvento + "/search/" + query) + "?access-token=" + token;
+
+        JsonArrayRequest req = new JsonArrayRequest(Request.Method.GET, url, null,
+                new Response.Listener<JSONArray>() {
+                    @Override
+                    public void onResponse(JSONArray response) {
+                        try {
+                            // Usar o parser de Eventos
+                            ArrayList<Evento> eventos = EventosJsonParser.parserJsonEventos(response);
+
+                            // Notificar o listener de Eventos
+                            if (eventoListener != null) {
+                                eventoListener.onEventosLoaded(eventos);
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                            Toast.makeText(context, "Erro ao processar JSON: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Toast.makeText(context, "Erro na pesquisa: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+        volleyQueue.add(req);
     }
 
     //endregion

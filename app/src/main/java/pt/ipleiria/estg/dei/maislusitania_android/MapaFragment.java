@@ -40,20 +40,26 @@ public class MapaFragment extends Fragment implements MapaListener {
                 startActivity(new Intent(requireActivity(), PerfilActivity.class))
         );
 
-        binding.tilPesquisa.setOnClickListener(v -> {
-            requireActivity().getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.fragment_container, new LocaisFragment())
-                    .addToBackStack(null)
-                    .commit();
-        });
+        binding.tilPesquisa.getEditText().setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH ||
+                    actionId == android.view.inputmethod.EditorInfo.IME_ACTION_DONE) {
 
-        binding.etPesquisa.setOnClickListener(v -> {
-            requireActivity().getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.fragment_container, new LocaisFragment())
-                    .addToBackStack(null)
-                    .commit();
+                String query = binding.tilPesquisa.getEditText().getText().toString().trim();
+
+                // Verificar se a query está vazia
+                if (query.isEmpty()) {
+                    // Se estiver recarregar os mapas
+                    SingletonLusitania.getInstance(requireContext()).getAllMapasAPI(getContext());
+                } else {
+                    // Chamar o metodo de pesquisa
+                    SingletonLusitania.getInstance(requireContext()).searchMapaAPI(getContext(), query);
+                }
+
+                // Esconder o teclado
+                hideKeyboard();
+                return true;
+            }
+            return false;
         });
 
         final String assetName = "leaflet_map.html";
@@ -113,6 +119,10 @@ public class MapaFragment extends Fragment implements MapaListener {
             pendingMapas = mapaLocais;
         }
     }
+    @Override
+    public void onMapaError(String message) {
+        Toast.makeText(getContext(), "Erro Mapas: " + message, Toast.LENGTH_SHORT).show();
+    }
 
     private void loadMarkersOnMap(ArrayList<Mapa> mapaLocais) {
         if (binding == null || binding.webViewMap == null || mapaLocais == null) return;
@@ -126,8 +136,12 @@ public class MapaFragment extends Fragment implements MapaListener {
         );
     }
 
-    @Override
-    public void onMapaError(String message) {
-        Toast.makeText(getContext(), "Erro Mapas: " + message, Toast.LENGTH_SHORT).show();
+    private void hideKeyboard() {
+        View view = this.getView();
+        if (view != null) {
+            android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager)
+                    requireContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 }
