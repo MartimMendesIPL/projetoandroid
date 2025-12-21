@@ -173,6 +173,8 @@ public class SingletonLusitania {
     /**
      * Helper para fazer pedidos que esperam um JSONObject.
      */
+
+    //TODO: Fazer a API retornar sempre um JSONArray para usar apenas um helper e simplificar o Singleton!!!!
     private void makeJsonObjectRequest(Context context, int method, String endpoint, boolean requiresAuth,
                                        JSONObject jsonBody,
                                        final Response.Listener<JSONObject> onSuccess,
