@@ -18,7 +18,7 @@ public class LoginActivity extends AppCompatActivity implements LoginListener {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // 1. VERIFICAÇÃO AUTOMÁTICA (SharedPreferences via Singleton)
+        // VERIFICAÇÃO AUTOMÁTICA (SharedPreferences via Singleton)
         // Se já tem token guardado, salta o login
         if (SingletonLusitania.getInstance(this).isUtilizadorLogado(this)) {
             MainActivity();
