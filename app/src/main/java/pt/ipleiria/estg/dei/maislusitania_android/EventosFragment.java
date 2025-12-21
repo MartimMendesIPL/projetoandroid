@@ -2,6 +2,10 @@ package pt.ipleiria.estg.dei.maislusitania_android;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,85 +25,90 @@ import pt.ipleiria.estg.dei.maislusitania_android.listeners.EventoListener;
 import pt.ipleiria.estg.dei.maislusitania_android.models.Evento;
 import pt.ipleiria.estg.dei.maislusitania_android.models.SingletonLusitania;
 
-
 public class EventosFragment extends Fragment implements EventoListener {
 
     private FragmentEventosBinding binding;
     private EventoAdapter eventoAdapter;
     private ArrayList<Evento> items;
 
+    // Variáveis para a Pesquisa Dinâmica
+    private Handler searchHandler = new Handler(Looper.getMainLooper());
+    private Runnable searchRunnable;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentEventosBinding.inflate(inflater, container, false);
-
         items = new ArrayList<>();
 
-        // Listener para o ícone de perfil (ícone à direita)
-        binding.tilPesquisa.setEndIconOnClickListener(new View.OnClickListener() {
+        //Configurar Listeners
+        setupSearchListeners();
 
-            @Override
-            public void onClick(View v) {
-                // Abrir activity de perfil
-                Intent intent = new Intent(getActivity(), PerfilActivity.class);
-                startActivity(intent);
-            }
+        binding.tilPesquisa.setEndIconOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), PerfilActivity.class);
+            startActivity(intent);
         });
 
-        binding.tilPesquisa.getEditText().setOnEditorActionListener((v, actionId, event) -> {
-            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_SEARCH ||
-                    actionId == android.view.inputmethod.EditorInfo.IME_ACTION_DONE) {
-
-                String query = binding.tilPesquisa.getEditText().getText().toString().trim();
-
-                // Verificar se a query está vazia
-                if (query.isEmpty()) {
-                    // Se estiver recarregar os mapas
-                    SingletonLusitania.getInstance(requireContext()).getAllEventosAPI(getContext());
-                } else {
-                    // Chamar o metodo de pesquisa
-                    SingletonLusitania.getInstance(requireContext()).searchEventoAPI(getContext(), query);
-                }
-
-                // Esconder o teclado
-                hideKeyboard();
-                return true;
-            }
-            return false;
-        });
-
+        //Configurar a RecyclerView
         setupRecyclerView();
 
-        // Configurar o listener e pedir os dados à API
+        // Iniciar os dados
         SingletonLusitania.getInstance(requireContext()).setEventoListener(this);
         SingletonLusitania.getInstance(requireContext()).getAllEventosAPI(getContext());
 
         return binding.getRoot();
     }
 
+    /**
+     * Configura a pesquisa dinâmica com delay para evitar chamadas excessivas à API.
+     */
+    private void setupSearchListeners() {
+        binding.tilPesquisa.getEditText().addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // Se o utilizador continuar a escrever, removemos a pesquisa feita anteriormente
+                if (searchRunnable != null) {
+                    searchHandler.removeCallbacks(searchRunnable);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                searchRunnable = () -> {
+                    String query = s.toString().trim();
+
+                    if (query.isEmpty()) {
+                        SingletonLusitania.getInstance(requireContext()).getAllEventosAPI(getContext());
+                    } else {
+                        SingletonLusitania.getInstance(requireContext()).searchEventoAPI(getContext(), query);
+                    }
+                };
+                // Aguarda 500ms após a última tecla antes de pesquisar
+                searchHandler.postDelayed(searchRunnable, 500);
+            }
+        });
+    }
+
     private void setupRecyclerView() {
         RecyclerView recyclerView = binding.recyclerViewEventos;
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        eventoAdapter = new EventoAdapter(getContext(), items, new EventoAdapter.OnEventoListener() {
-            @Override
-            public void onEventoClick(int position) {
-                Evento item = items.get(position);
+        eventoAdapter = new EventoAdapter(getContext(), items, position -> {
+            Evento item = items.get(position);
 
-                DetalhesEventoFragment fragment = new DetalhesEventoFragment();
+            DetalhesEventoFragment fragment = new DetalhesEventoFragment();
+            Bundle args = new Bundle();
+            args.putInt("evento_id", item.getId());
+            fragment.setArguments(args);
 
-                Bundle args = new Bundle();
-                args.putInt("evento_id", item.getId());
-                fragment.setArguments(args);
-
-                // Navegar para o fragmento
-                requireActivity().getSupportFragmentManager()
-                        .beginTransaction()
-                        .replace(R.id.fragment_container, fragment)
-                        .addToBackStack(null)
-                        .commit();
-            }
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, fragment)
+                    .addToBackStack(null)
+                    .commit();
         });
 
         recyclerView.setAdapter(eventoAdapter);
@@ -107,6 +116,10 @@ public class EventosFragment extends Fragment implements EventoListener {
 
     @Override
     public void onDestroyView() {
+        // Limpar callbacks de pesquisa pendentes
+        if (searchHandler != null && searchRunnable != null) {
+            searchHandler.removeCallbacks(searchRunnable);
+        }
         super.onDestroyView();
         binding = null;
     }
@@ -118,28 +131,17 @@ public class EventosFragment extends Fragment implements EventoListener {
         items.addAll(listaEventos);
 
         if (eventoAdapter != null) {
-            // Se tiver criado um metodo updateEventos no adapter, use-o, senão notifyDataSetChanged
             eventoAdapter.notifyDataSetChanged();
         }
     }
 
     @Override
     public void onEventoLoaded(Evento evento) {
-        // Este metodo é usado para carregar um único evento(detalhes),
+        // Método usado para carregar um único evento (não usado na lista)
     }
 
     @Override
     public void onEventoError(String message) {
-        // Corrigido o nome do metodo (era onErrorEventos)
         Toast.makeText(getContext(), "Erro: " + message, Toast.LENGTH_SHORT).show();
-    }
-
-    private void hideKeyboard() {
-        View view = this.getView();
-        if (view != null) {
-            android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager)
-                    requireContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE);
-            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-        }
     }
 }
