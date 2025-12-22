@@ -16,7 +16,7 @@ import pt.ipleiria.estg.dei.maislusitania_android.models.Local;
 
 public class LocalJsonParser {
 
-    // 1. Método para converter um Objeto JSON num Objeto Java (Local)
+    // 1. Metodo para converter um Objeto JSON num Objeto Java (Local)
     public static Local parserJsonLocal(String response) {
         Local auxlocal = null;
         try
@@ -31,8 +31,6 @@ public class LocalJsonParser {
             float avaliacaoMedia = (float) local.optDouble("avaliacao_media", 0.0);
 
 
-
-
             auxlocal = new Local(id, nome, morada, distrito, descricao, imagem, avaliacaoMedia);
         }
         catch (JSONException e)
@@ -42,7 +40,7 @@ public class LocalJsonParser {
         return auxlocal;
     }
 
-    // 2. Método para converter uma LISTA de JSONs numa LISTA de Locais
+    // 2. Metodo para converter uma LISTA de JSONs numa LISTA de Locais
         @NonNull
         public static ArrayList<Local> parserJsonLocais(JSONArray response) {
             ArrayList<Local> locais = new ArrayList<>();
@@ -71,10 +69,13 @@ public class LocalJsonParser {
         }
 
 
-    // 3. Método para verificar a Internet
+    // 3. Metodo para verificar a Internet
     public static boolean isConnectionInternet(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = cm.getActiveNetworkInfo();
         return networkInfo != null && networkInfo.isConnected();
     }
+
+    // 4 . Metodo para pesquisar locais ajuda ai IA
+    
 }
