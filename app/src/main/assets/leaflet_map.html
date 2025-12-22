@@ -89,8 +89,8 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-    var southWest = L.latLng(36.0, -10.0);
-    var northEast = L.latLng(43.0, -5.0);
+    var southWest = L.latLng(32.0, -32.0);
+    var northEast = L.latLng(45.0, -5.0);
     var bounds = L.latLngBounds(southWest, northEast);
 
     var map = L.map('map', {
@@ -98,8 +98,8 @@
         attributionControl: false,
         maxBounds: bounds,
         maxBoundsViscosity: 1.0,
-        minZoom: 6
-    }).setView([39.5, -8.0], 7);
+        minZoom: 4
+    }).setView([39.8, -7.9], 7);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
@@ -144,7 +144,7 @@
                 minWidth: 160
             });
 
-            // NEW: Center the map smoothly on the marker when clicked
+            // Centrar o mapa quando um marker é clicado
             marker.on('click', function() {
                 map.panTo(this.getLatLng(), {
                     animate: true,
@@ -154,10 +154,6 @@
 
             markersLayer.addLayer(marker);
         });
-
-        if(locations.length > 0){
-            map.fitBounds(markersLayer.getBounds().pad(0.2));
-        }
     }
 
     function onPopupClick(id){

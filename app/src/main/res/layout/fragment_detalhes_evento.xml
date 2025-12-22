@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white_blue">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Imagem -->
+        <ImageView
+            android:id="@+id/ivDImagem"
+            android:layout_width="match_parent"
+            android:layout_height="280dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_launcher_background"
+            tools:ignore="ContentDescription" />
+
+        <!-- Conteúdo com fundo personalizado -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="-40dp"
+            android:layout_marginStart="0dp"
+            android:layout_marginEnd="0dp"
+            android:background="@drawable/card_background"
+            android:elevation="8dp"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <!-- Data com ícone -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="16dp">
+
+                <View
+                    android:layout_width="6dp"
+                    android:layout_height="6dp"
+                    android:background="@color/blue_primary"
+                    android:layout_marginEnd="8dp" />
+
+                <TextView
+                    android:id="@+id/tvDDataInicio"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="20 Out 2023"
+                    android:textSize="13sp"
+                    android:textColor="@color/blue_primary"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.05" />
+
+                <TextView
+                    android:id="@+id/tvDDataFim"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="20 Out 2023"
+                    android:textSize="13sp"
+                    android:textColor="@color/blue_primary"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.05" />
+            </LinearLayout>
+
+            <!-- Título -->
+            <TextView
+                android:id="@+id/tvDNome"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Restauração do Palácio da Pena concluída com sucesso"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="#1A1A1A"
+                android:lineSpacingExtra="4dp"
+                android:layout_marginBottom="20dp" />
+
+            <!-- Divisor -->
+            <View
+                android:layout_width="60dp"
+                android:layout_height="3dp"
+                android:background="@color/blue_primary"
+                android:layout_marginBottom="20dp" />
+
+            <!-- Conteúdo -->
+            <TextView
+                android:id="@+id/tvDConteudo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Após meses de trabalho intensivo, as obras de restauração na fachada norte do Palácio da Pena foram finalmente concluídas.\n\nOs visitantes podem agora apreciar as cores vibrantes originais que caracterizam este monumento icónico de Sintra."
+                android:textSize="16sp"
+                android:lineSpacingExtra="8dp"
+                android:textColor="#424242"
+                android:justificationMode="inter_word" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>

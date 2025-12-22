@@ -18,43 +18,36 @@ public class UserJsonParser {
     // 1. Método para converter um Objeto JSON num Objeto Java (user)
     public static User parserJsonUser(String response) {
         User auxuser = null;
-        try
-        {
-            JSONObject jsonResponse = new JSONObject(response);
+        try {
+            JSONArray jsonArray = new JSONArray(response);
 
-            // ✅ Verificar se a resposta foi bem-sucedida
-            if (!jsonResponse.optBoolean("success", false)) {
-                android.util.Log.e("UserJsonParser", "API retornou success: false");
+            // ✅ Verificar se o array não está vazio
+            if (jsonArray.length() == 0) {
+                android.util.Log.e("UserJsonParser", "Array vazio");
                 return null;
             }
 
-            // ✅ Aceder ao objeto 'data' que contém os dados do utilizador
-            if (!jsonResponse.has("data")) {
-                android.util.Log.e("UserJsonParser", "Campo 'data' não encontrado");
-                return null;
-            }
-
-            JSONObject user = jsonResponse.getJSONObject("data");
-
+            // ✅ Pegar o primeiro objeto do array
+            JSONObject user = jsonArray.getJSONObject(0);
 
             int id = user.getInt("id");
             String primeiroNome = user.getString("primeiro_nome");
             String ultimoNome = user.getString("ultimo_nome");
-            String imagemPerfil = user.getString("imagem_perfil");
+            String imagemPerfil = user.optString("imagem_perfil", ""); // ✅ Usar optString para null
             int userId = user.getInt("user_id");
             String username = user.getString("username");
             String email = user.getString("email");
             String dataAdesao = user.getString("data_adesao");
 
-
             auxuser = new User(id, primeiroNome, ultimoNome, imagemPerfil, userId, username, email, dataAdesao);
-        }
-        catch (JSONException e)
-        {
-            throw new RuntimeException(e);
+
+        } catch (JSONException e) {
+            android.util.Log.e("UserJsonParser", "Erro ao parsear JSON: " + e.getMessage());
+            e.printStackTrace();
         }
         return auxuser;
     }
+
 
     // 2. Método para verificar a Internet
     public static boolean isConnectionInternet(Context context) {
