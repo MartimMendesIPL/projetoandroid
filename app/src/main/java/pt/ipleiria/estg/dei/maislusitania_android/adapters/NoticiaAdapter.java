@@ -48,7 +48,7 @@ public class NoticiaAdapter extends RecyclerView.Adapter<NoticiaAdapter.ViewHold
 
         // Definir textos
         holder.tvNome.setText(noticia.getNome());
-        holder.tvResumo.setText(noticia.getResumo());
+        holder.tvLocalNome.setText(noticia.getLocal_nome());
         // Formatar ou exibir a data como vem da API
         holder.tvDataPublicacao.setText(noticia.getDataPublicacao());
         // Carregar imagem usando Glide
@@ -78,7 +78,7 @@ public class NoticiaAdapter extends RecyclerView.Adapter<NoticiaAdapter.ViewHold
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         TextView tvNome,
-                 tvResumo,
+                 tvLocalNome,
                  tvDataPublicacao;
 
         ImageView ivImagem;
@@ -90,7 +90,7 @@ public class NoticiaAdapter extends RecyclerView.Adapter<NoticiaAdapter.ViewHold
             // Vincular os IDs do layout item_list_noticia.xml
             ivImagem = itemView.findViewById(R.id.ivImagem);
             tvNome= itemView.findViewById(R.id.tvNome);
-            tvResumo = itemView.findViewById(R.id.tvResumo);
+            tvLocalNome = itemView.findViewById(R.id.tvResumo);
             tvDataPublicacao = itemView.findViewById(R.id.tvDataPublicacao);
 
             this.onNoticiaListener = onNoticiaListener;
