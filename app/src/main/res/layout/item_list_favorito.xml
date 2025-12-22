@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="130dp"
+    android:layout_marginStart="16dp"
+    android:layout_marginEnd="16dp"
+    android:layout_marginTop="8dp"
+    android:layout_marginBottom="8dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="4dp"
+    app:cardBackgroundColor="#FFFFFF">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="140dp"
+        android:orientation="horizontal">
+
+        <!-- Imagem do Local (SEM CardView interno) -->
+        <ImageView
+            android:id="@+id/ivItemImage"
+            android:layout_width="150dp"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:background="#E8EFF9"
+            android:contentDescription="Imagem do local" />
+
+
+        <!-- Informações do Item -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp">
+
+            <!-- Título -->
+            <TextView
+                android:id="@+id/tvItemTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="List item"
+                android:textSize="18sp"
+                android:fontFamily="@font/georgiab"
+                android:textColor="#204080"
+                android:maxLines="2"
+                android:ellipsize="end" />
+
+            <!-- Rating (Estrelas) -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp">
+
+                <RatingBar
+                    android:id="@+id/ratingBar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="?android:attr/ratingBarStyleSmall"
+                    android:numStars="5"
+                    android:rating="0"
+                    android:isIndicator="true"
+                    android:progressTint="#FFD700"
+                    android:progressBackgroundTint="#5A5A5A"
+                    android:secondaryProgressTint="#5A5A5A"
+                    />
+            </LinearLayout>
+
+            <!-- Categoria e Distância -->
+            <TextView
+                android:id="@+id/tvItemCategory"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Category • $$ • 1-2 miles away"
+                android:textSize="13sp"
+                android:textColor="#808080"
+                android:layout_marginTop="10dp" />
+
+        </LinearLayout>
+
+        <!-- Ícone de Favorito -->
+        <ImageView
+            android:id="@+id/ivFavorite"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:src="@drawable/ic_fav_off"
+            app:tint="@color/blue_primary"
+            android:layout_gravity="center_vertical"
+            android:layout_marginEnd="16dp"
+            android:contentDescription="Favorito" />
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

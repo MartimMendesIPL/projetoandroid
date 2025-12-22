@@ -10,6 +10,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 import pt.ipleiria.estg.dei.maislusitania_android.databinding.ActivityPerfilBinding;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.PerfilListener;
+import pt.ipleiria.estg.dei.maislusitania_android.models.Favorito;
 import pt.ipleiria.estg.dei.maislusitania_android.models.SingletonLusitania;
 import pt.ipleiria.estg.dei.maislusitania_android.models.User;
 
@@ -32,9 +33,13 @@ public class PerfilActivity extends AppCompatActivity {
         binding.btnVoltar.setOnClickListener(v -> finish());
 
         // Ver Favoritos
-        binding.layoutFavoritos.setOnClickListener(v ->
-                Toast.makeText(this, "A abrir favoritos...", Toast.LENGTH_SHORT).show()
-        );
+        binding.layoutFavoritos.setOnClickListener(v -> {
+            FavoritoFragment fragment = new FavoritoFragment();
+            getSupportFragmentManager().beginTransaction()
+                    .replace(android.R.id.content, fragment)
+                    .addToBackStack(null)
+                    .commit();
+        });
 
         // Botão Logout
         binding.btnLogout.setOnClickListener(v -> {
