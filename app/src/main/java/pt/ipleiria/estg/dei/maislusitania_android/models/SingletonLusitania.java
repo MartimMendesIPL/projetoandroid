@@ -18,6 +18,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.EventoListener;
+import pt.ipleiria.estg.dei.maislusitania_android.listeners.FavoritoListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.LocaisListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.LoginListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.MapaListener;
@@ -29,11 +30,13 @@ import pt.ipleiria.estg.dei.maislusitania_android.utils.MapaJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.NoticiaJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.UserJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.UtilParser;
+import pt.ipleiria.estg.dei.maislusitania_android.utils.FavoritoJsonParser;
 
 public class SingletonLusitania {
 
     private static volatile SingletonLusitania instance;
     private ArrayList<Local> locais;
+    private ArrayList<Favorito> favoritos;
     private final LocaisFavDBHelper dbHelper;
     private static RequestQueue volleyQueue = null;
 
@@ -66,6 +69,7 @@ public class SingletonLusitania {
     private NoticiaListener noticiaListener;
     private EventoListener eventoListener;
     private PerfilListener perfilListener;
+    private FavoritoListener favoritoListener;
 
     //region - Construtor e Instância
     private SingletonLusitania(Context context) {
@@ -97,6 +101,7 @@ public class SingletonLusitania {
     public void setNoticiaListener(NoticiaListener noticiaListener) { this.noticiaListener = noticiaListener; }
     public void setPerfilListener(PerfilListener perfilListener) { this.perfilListener = perfilListener; }
     public void setEventoListener(EventoListener eventoListener) { this.eventoListener = eventoListener; }
+    public void setFavoritoListener(FavoritoListener favoritoListener) { this.favoritoListener = favoritoListener; }
     //endregion
 
     // region Gestão da URL e Sessão
@@ -226,7 +231,23 @@ public class SingletonLusitania {
         dbHelper.removerFavorito(id);
     }
 
-    public void toggleFavoritoAPI(final Context context, final Local local) {
+    public void getallFavoritosAPI(final Context context) {
+        makeJsonArrayRequest(context, Request.Method.GET, "/favoritos", true,
+                response -> {
+                    try {
+                        ArrayList<Favorito> favoritos = FavoritoJsonParser.parserJsonFavoritos(response);
+                        if (favoritoListener != null) favoritoListener.onFavoritosLoaded(favoritos);
+                    } catch (Exception e) {
+                        if (favoritoListener != null) favoritoListener.onFavoritosError("Erro JSON Favoritos");
+                    }
+                },
+                error -> {
+                    if (favoritoListener != null) favoritoListener.onFavoritosError(error.getMessage());
+                }
+        );
+    }
+
+    public void toggleFavoritoAPI(final Context context, final Local local) { // para os locais
         // Define Endpoint e Metodo baseado no estado atual
         String endpoint;
         int method;
@@ -249,6 +270,31 @@ public class SingletonLusitania {
                     if (locaisListener != null) {
                         locaisListener.onLocaisLoaded(locais);
                     }
+                },
+                error -> Toast.makeText(context, "Erro ao alterar favorito", Toast.LENGTH_SHORT).show()
+        );
+    }
+    public void toggleFavoritoAPI(final Context context, final Favorito favorito) { // para os favoritos (quando fiz esse codigo só eu e deus sabiamos, agora só deus sabe)
+        // Define Endpoint e Metodo baseado no estado atual
+        String endpoint;
+        int method;
+
+        if (favorito.isFavorite()) {
+            endpoint = mUrlAPIremoveFavorito + "/" + favorito.getLocalId();
+            method = Request.Method.DELETE;
+        } else {
+            endpoint = mUrladdFavorito + "/" + favorito.getLocalId();
+            method = Request.Method.POST;
+        }
+
+        // Usa o helper (requiresAuth = true)
+        makeJsonObjectRequest(context, method, endpoint, true, null,
+                response -> {
+                    favorito.setFavorite(!favorito.isFavorite());
+                    String mensagem = favorito.isFavorite() ? "Adicionado aos favoritos" : "Removido dos favoritos";
+                    Toast.makeText(context, mensagem, Toast.LENGTH_SHORT).show();
+                    // Atualiza a lista de favoritos
+                    SingletonLusitania.getInstance(context).getallFavoritosAPI(context);
                 },
                 error -> Toast.makeText(context, "Erro ao alterar favorito", Toast.LENGTH_SHORT).show()
         );
