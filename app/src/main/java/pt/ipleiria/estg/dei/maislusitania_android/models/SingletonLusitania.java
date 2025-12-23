@@ -139,6 +139,21 @@ public class SingletonLusitania {
         SharedPreferences sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         return sharedPreferences.getString(KEY_TOKEN, null);
     }
+
+    private Favorito MakeFavoritoFromLocal(Local local, int utilizadorid) {
+        Favorito favorito = new Favorito(
+                local.getFavoriteId(),
+                utilizadorid,
+                local.getId(),
+                local.getImagem(),
+                local.getNome(),
+                local.getDistrito(),
+                local.getAvaliacaoMedia(),
+                UtilParser.getCurrentDateString(),
+                true
+        );
+        return favorito;
+    }
     //endregion
 
     //region - Helpers Volley
@@ -219,12 +234,12 @@ public class SingletonLusitania {
     //endregion
 
     //region - CRUD Local (Favoritos BD & API)
-    public ArrayList<Local> getFavoritosBD() {
+    public ArrayList<Favorito> getFavoritosBD() {
         return dbHelper.getAllFavoritos();
     }
 
-    public void addFavoritoBD(Local local) {
-        dbHelper.adicionarFavorito(local);
+    public void addFavoritoBD(Favorito favorito) {
+        dbHelper.adicionarFavorito(favorito);
     }
 
     public void removeFavoritoBD(int id) {
@@ -232,6 +247,11 @@ public class SingletonLusitania {
     }
 
     public void getallFavoritosAPI(final Context context) {
+        if (!UtilParser.isConnectionInternet(context)){
+            favoritos = getFavoritosBD();
+            if (favoritoListener != null) favoritoListener.onFavoritosLoaded(favoritos);
+            return;
+        }
         makeJsonArrayRequest(context, Request.Method.GET, "/favoritos", true,
                 response -> {
                     try {
@@ -255,9 +275,15 @@ public class SingletonLusitania {
         if (local.isFavorite()) {
             endpoint = mUrlAPIremoveFavorito + "/" + local.getId();
             method = Request.Method.DELETE;
+            // Remover dos favoritos locais
+            removeFavoritoBD(local.getFavoriteId());
+
         } else {
             endpoint = mUrladdFavorito + "/" + local.getId();
             method = Request.Method.POST;
+            // Adicionar aos favoritos locais
+            Favorito fav = MakeFavoritoFromLocal(local, 1); // 1 é o utilizadorid fictício
+            addFavoritoBD(fav);
         }
 
         // Usa o helper (requiresAuth = true)
@@ -282,9 +308,14 @@ public class SingletonLusitania {
         if (favorito.isFavorite()) {
             endpoint = mUrlAPIremoveFavorito + "/" + favorito.getLocalId();
             method = Request.Method.DELETE;
+            // Remover dos favoritos locais
+            removeFavoritoBD(favorito.getId());
+
         } else {
             endpoint = mUrladdFavorito + "/" + favorito.getLocalId();
             method = Request.Method.POST;
+            // Adicionar aos favoritos locais
+            addFavoritoBD(favorito);
         }
 
         // Usa o helper (requiresAuth = true)
