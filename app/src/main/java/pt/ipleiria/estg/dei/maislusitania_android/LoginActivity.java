@@ -67,7 +67,7 @@ public class LoginActivity extends AppCompatActivity implements LoginListener {
     }
 
     @Override
-    public void onValidateLogin(final String token, final String username) {
+    public void onValidateLogin(final String token, final String username, final String user_id) {
         runOnUiThread(() -> {
             // 2. GUARDAR NAS PREFS (via Singleton)
             SingletonLusitania.getInstance(this).guardarUtilizador(this,username, token, user_id);
