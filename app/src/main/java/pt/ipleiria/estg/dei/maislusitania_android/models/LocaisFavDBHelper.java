@@ -14,7 +14,7 @@ public class LocaisFavDBHelper extends SQLiteOpenHelper {
 
 
     // força o onUpgrade a correr para recriar a tabela com as novas colunas.
-    private static final int DB_VERSION = 3;
+    private static final int DB_VERSION = 6;
 
     private static final String TABLE_FAVORITOS = "favoritos";
 
@@ -37,17 +37,17 @@ public class LocaisFavDBHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        // Criar tabela com TODOS os campos
         String sql = "CREATE TABLE " + TABLE_FAVORITOS + "(" +
-                ID + " INTEGER PRIMARY KEY, " +
+                ID + " INTEGER, " +
                 UTILIZADORID + " INTEGER, " +
                 LOCALID + " INTEGER, " +
                 NOME + " TEXT, " +
                 DISTRITO + " TEXT, " +
                 IMAGEM + " TEXT, " +
-                AVALIACAO + " REAL," + // REAL é o tipo para float/double em SQLite
+                AVALIACAO + " REAL, " +
                 DATAADICAO + " TEXT, " +
-                ISFAVORITE + " INTEGER DEFAULT 1" +  // 1 para true, 0 para false
+                ISFAVORITE + " INTEGER DEFAULT 1, " +
+                "PRIMARY KEY (" + UTILIZADORID + ", " + LOCALID + ")" +
                 ");";
         db.execSQL(sql);
     }
@@ -63,26 +63,34 @@ public class LocaisFavDBHelper extends SQLiteOpenHelper {
 
     public void adicionarFavorito(Favorito favorito) {
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues values = new ContentValues();
 
-        // Guardar TUDO o que vem do objeto Local
-        values.put(ID, favorito.getId());
-        values.put(UTILIZADORID, favorito.getUtilizadorId());
-        values.put(LOCALID, favorito.getLocalId());
-        values.put(NOME, favorito.getLocalNome());
-        values.put(DISTRITO, favorito.getLocalDistrito());
-        values.put(IMAGEM, favorito.getLocalImagem());
-        values.put(AVALIACAO, favorito.getAvaliacaoMedia());
-        values.put(DATAADICAO, favorito.getDataAdicao());
-        values.put(ISFAVORITE, favorito.isFavorite() ? 1 : 0);
+        // Verifica se já existe
+        Cursor cursor = db.query(TABLE_FAVORITOS, null,
+                UTILIZADORID + " = ? AND " + LOCALID + " = ?",
+                new String[]{String.valueOf(favorito.getUtilizadorId()), String.valueOf(favorito.getLocalId())},
+                null, null, null);
 
-        // Insere ou substitui se já existir (conflito de ID)
-        db.insertWithOnConflict(TABLE_FAVORITOS, null, values, SQLiteDatabase.CONFLICT_REPLACE);
+        if (cursor.getCount() == 0) {
+            ContentValues values = new ContentValues();
+            values.put(ID, favorito.getId());
+            values.put(UTILIZADORID, favorito.getUtilizadorId());
+            values.put(LOCALID, favorito.getLocalId());
+            values.put(NOME, favorito.getLocalNome());
+            values.put(DISTRITO, favorito.getLocalDistrito());
+            values.put(IMAGEM, favorito.getLocalImagem());
+            values.put(AVALIACAO, favorito.getAvaliacaoMedia());
+            values.put(DATAADICAO, favorito.getDataAdicao());
+            values.put(ISFAVORITE, favorito.isFavorite() ? 1 : 0);
+
+            db.insert(TABLE_FAVORITOS, null, values);
+        }
+        cursor.close();
     }
 
-    public void removerFavorito(int id) {
+
+    public void removerFavorito(int localid, int utilizadorid) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(TABLE_FAVORITOS, ID + " = ?", new String[]{String.valueOf(id)});
+        db.delete(TABLE_FAVORITOS, LOCALID + " = ? AND " + UTILIZADORID + " = ?", new String[]{String.valueOf(localid), String.valueOf(utilizadorid)});
     }
 
     public boolean isFavorito(int id) {

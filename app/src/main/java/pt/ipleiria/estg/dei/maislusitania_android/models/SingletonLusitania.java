@@ -164,7 +164,7 @@ public class SingletonLusitania {
 
     private Favorito MakeFavoritoFromLocal(Local local, int utilizadorid) {
         Favorito favorito = new Favorito(
-                local.getId(),
+                local.getFavoritoId() + 1,
                 utilizadorid,
                 local.getId(),
                 local.getImagem(),
@@ -264,8 +264,8 @@ public class SingletonLusitania {
         dbHelper.adicionarFavorito(favorito);
     }
 
-    public void removeFavoritoBD(int id) {
-        dbHelper.removerFavorito(id);
+    public void removeFavoritoBD(int id, int utilizadorid) {
+        dbHelper.removerFavorito(id , utilizadorid);
     }
 
     public void getallFavoritosAPI(final Context context) {
@@ -303,7 +303,7 @@ public class SingletonLusitania {
             endpoint = mUrlAPIremoveFavorito + "/" + local.getId();
             method = Request.Method.DELETE;
             // Remover dos favoritos locais
-            removeFavoritoBD(local.getId());
+            removeFavoritoBD(local.getId(), getUserId(context));
 
         } else {
             endpoint = mUrladdFavorito + "/" + local.getId();
@@ -336,7 +336,7 @@ public class SingletonLusitania {
             endpoint = mUrlAPIremoveFavorito + "/" + favorito.getLocalId();
             method = Request.Method.DELETE;
             // Remover dos favoritos locais
-            removeFavoritoBD(favorito.getId());
+            removeFavoritoBD(favorito.getLocalId(), getUserId(context));
 
         } else {
             endpoint = mUrladdFavorito + "/" + favorito.getLocalId();
