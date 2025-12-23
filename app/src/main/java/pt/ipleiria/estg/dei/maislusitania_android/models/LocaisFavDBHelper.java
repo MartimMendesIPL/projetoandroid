@@ -14,7 +14,7 @@ public class LocaisFavDBHelper extends SQLiteOpenHelper {
 
 
     // força o onUpgrade a correr para recriar a tabela com as novas colunas.
-    private static final int DB_VERSION = 2;
+    private static final int DB_VERSION = 3;
 
     private static final String TABLE_FAVORITOS = "favoritos";
 
@@ -40,6 +40,7 @@ public class LocaisFavDBHelper extends SQLiteOpenHelper {
         // Criar tabela com TODOS os campos
         String sql = "CREATE TABLE " + TABLE_FAVORITOS + "(" +
                 ID + " INTEGER PRIMARY KEY, " +
+                UTILIZADORID + " INTEGER, " +
                 LOCALID + " INTEGER, " +
                 NOME + " TEXT, " +
                 DISTRITO + " TEXT, " +
@@ -66,6 +67,7 @@ public class LocaisFavDBHelper extends SQLiteOpenHelper {
 
         // Guardar TUDO o que vem do objeto Local
         values.put(ID, favorito.getId());
+        values.put(UTILIZADORID, favorito.getUtilizadorId());
         values.put(LOCALID, favorito.getLocalId());
         values.put(NOME, favorito.getLocalNome());
         values.put(DISTRITO, favorito.getLocalDistrito());
@@ -103,9 +105,9 @@ public class LocaisFavDBHelper extends SQLiteOpenHelper {
                         cursor.getInt(cursor.getColumnIndexOrThrow(ID)),
                         cursor.getInt(cursor.getColumnIndexOrThrow(UTILIZADORID)),
                         cursor.getInt(cursor.getColumnIndexOrThrow(LOCALID)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(NOME)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(DISTRITO)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(IMAGEM)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(IMAGEM)),  // localImagem
+                        cursor.getString(cursor.getColumnIndexOrThrow(NOME)),    // localNome
+                        cursor.getString(cursor.getColumnIndexOrThrow(DISTRITO)), // localDistrito
                         cursor.getFloat(cursor.getColumnIndexOrThrow(AVALIACAO)),
                         cursor.getString(cursor.getColumnIndexOrThrow(DATAADICAO)),
                         cursor.getInt(cursor.getColumnIndexOrThrow(ISFAVORITE)) == 1

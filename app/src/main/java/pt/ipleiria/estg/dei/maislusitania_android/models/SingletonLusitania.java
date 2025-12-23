@@ -112,7 +112,7 @@ public class SingletonLusitania {
     public void setPerfilListener(PerfilListener perfilListener) { this.perfilListener = perfilListener; }
     public void setEventoListener(EventoListener eventoListener) { this.eventoListener = eventoListener; }
     public void setFavoritoListener(FavoritoListener favoritoListener) { this.favoritoListener = favoritoListener; }
-    public void setBilheteListener(BilheteListener BilheteListener) { this.bilheteListener = BilheteListener; }
+    public void setBilhetesListener(BilheteListener BilheteListener) { this.bilheteListener = BilheteListener; }
 
     //endregion
 
@@ -152,10 +152,19 @@ public class SingletonLusitania {
         SharedPreferences sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         return sharedPreferences.getString(KEY_TOKEN, null);
     }
+    private int getUserId(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        String userIdStr = prefs.getString(KEY_USER_ID, "-1");
+        try {
+            return Integer.parseInt(userIdStr);
+        } catch (NumberFormatException e) {
+            return -1; // Valor padrão se não for um número válido
+        }
+    }
 
     private Favorito MakeFavoritoFromLocal(Local local, int utilizadorid) {
         Favorito favorito = new Favorito(
-                local.getFavoriteId(),
+                local.getId(),
                 utilizadorid,
                 local.getId(),
                 local.getImagem(),
@@ -262,6 +271,11 @@ public class SingletonLusitania {
     public void getallFavoritosAPI(final Context context) {
         if (!UtilParser.isConnectionInternet(context)){
             favoritos = getFavoritosBD();
+            // log no logcat
+            for (Favorito fav : favoritos) {
+                android.util.Log.i("FAVORITOS_OFFLINE", "Favorito carregado offline: " + fav.getLocalNome());
+
+            }
             if (favoritoListener != null) favoritoListener.onFavoritosLoaded(favoritos);
             return;
         }
@@ -289,13 +303,13 @@ public class SingletonLusitania {
             endpoint = mUrlAPIremoveFavorito + "/" + local.getId();
             method = Request.Method.DELETE;
             // Remover dos favoritos locais
-            removeFavoritoBD(local.getFavoriteId());
+            removeFavoritoBD(local.getId());
 
         } else {
             endpoint = mUrladdFavorito + "/" + local.getId();
             method = Request.Method.POST;
             // Adicionar aos favoritos locais
-            Favorito fav = MakeFavoritoFromLocal(local, 1); // 1 é o utilizadorid fictício
+            Favorito fav = MakeFavoritoFromLocal(local, getUserId(context));
             addFavoritoBD(fav);
         }
 
