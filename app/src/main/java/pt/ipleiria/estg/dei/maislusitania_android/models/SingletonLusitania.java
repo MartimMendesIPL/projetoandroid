@@ -56,6 +56,7 @@ public class SingletonLusitania {
     private static final String mUrlAPILogin = "/login-form";
     private static final String mUrlAPILocais = "/local-culturals";
     private static final String mUrlAPINoticias = "/noticias";
+    private static final String mUrlAPIFavoritos = "/favoritos";
     private static final String mUrladdFavorito = "/favoritos/add";
     private static final String mUrlAPIremoveFavorito = "/favoritos/remove";
     private static final String mUrlAPIMapa = "/mapas";
@@ -232,7 +233,7 @@ public class SingletonLusitania {
     }
 
     public void getallFavoritosAPI(final Context context) {
-        makeJsonArrayRequest(context, Request.Method.GET, "/favoritos", true,
+        makeJsonArrayRequest(context, Request.Method.GET, mUrlAPIFavoritos, true,
                 response -> {
                     try {
                         ArrayList<Favorito> favoritos = FavoritoJsonParser.parserJsonFavoritos(response);
@@ -429,7 +430,7 @@ public class SingletonLusitania {
     public void getUserProfileAPI(final Context context) {
         makeJsonArrayRequest(context, Request.Method.GET, mUrlUser + "/me", true,
                 response -> {
-                    User user = UserJsonParser.parserJsonUser(response.toString());
+                    User user = UserJsonParser.parserJsonUser(response);
                     if (user != null && perfilListener != null) {
                         perfilListener.onPerfilLoaded(user);
                     } else if (perfilListener != null) {
