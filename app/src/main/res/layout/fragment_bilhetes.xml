@@ -41,16 +41,17 @@
             android:paddingBottom="12dp" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Bilhetes"
-        android:textSize="24sp"
-        android:textColor="#204080"
-        android:fontFamily="@font/georgiab"
-        app:layout_constraintTop_toTopOf="parent"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewBilhetes"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:padding="8dp"
+        android:clipToPadding="false"
+        app:layout_constraintTop_toBottomOf="@id/tilPesquisa"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

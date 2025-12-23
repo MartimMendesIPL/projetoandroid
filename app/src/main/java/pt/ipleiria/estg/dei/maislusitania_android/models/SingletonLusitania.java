@@ -17,6 +17,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import pt.ipleiria.estg.dei.maislusitania_android.listeners.BilheteListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.EventoListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.FavoritoListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.LocaisListener;
@@ -24,6 +25,7 @@ import pt.ipleiria.estg.dei.maislusitania_android.listeners.LoginListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.MapaListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.NoticiaListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.PerfilListener;
+import pt.ipleiria.estg.dei.maislusitania_android.utils.BilhetesJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.EventosJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.LocalJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.MapaJsonParser;
@@ -49,6 +51,8 @@ public class SingletonLusitania {
     private static final String KEY_USERNAME = "username";
     private static final String KEY_MAIN_URL = "main_url";
 
+    private static final String KEY_USER_ID = "user_id";
+
     // Default URL
     private static final String DEFAULT_MAIN_URL = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/";
 
@@ -63,6 +67,9 @@ public class SingletonLusitania {
     private static final String mUrlAPIEvento = "/eventos";
     private static final String mUrlUser = "/user-profile";
 
+    private static final String mUrlAPIBilhete = "/reservas/bilhetes";
+
+
     // Listeners
     private LoginListener loginListener;
     private LocaisListener locaisListener;
@@ -71,6 +78,8 @@ public class SingletonLusitania {
     private EventoListener eventoListener;
     private PerfilListener perfilListener;
     private FavoritoListener favoritoListener;
+
+    private BilheteListener bilheteListener;
 
     //region - Construtor e Instância
     private SingletonLusitania(Context context) {
@@ -103,6 +112,8 @@ public class SingletonLusitania {
     public void setPerfilListener(PerfilListener perfilListener) { this.perfilListener = perfilListener; }
     public void setEventoListener(EventoListener eventoListener) { this.eventoListener = eventoListener; }
     public void setFavoritoListener(FavoritoListener favoritoListener) { this.favoritoListener = favoritoListener; }
+    public void setBilheteListener(BilheteListener BilheteListener) { this.bilheteListener = BilheteListener; }
+
     //endregion
 
     // region Gestão da URL e Sessão
@@ -119,11 +130,12 @@ public class SingletonLusitania {
         return base + endpoint;
     }
 
-    public void guardarUtilizador(Context context, String username, String token) {
+    public void guardarUtilizador(Context context, String username, String token, String user_id) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString(KEY_USERNAME, username);
         editor.putString(KEY_TOKEN, token);
+        editor.putString(KEY_USER_ID, user_id);
         editor.apply();
     }
 
@@ -319,8 +331,9 @@ public class SingletonLusitania {
                     try {
                         String token = response.getString("auth_key");
                         String user = response.getString("username");
-                        guardarUtilizador(context, user, token);
-                        if (loginListener != null) loginListener.onValidateLogin(token, user);
+                        String user_id = response.getString("user_id");
+                        guardarUtilizador(context, user, token, user_id);
+                        if (loginListener != null) loginListener.onValidateLogin(token, user, user_id);
                     } catch (Exception e) {
                         Toast.makeText(context, "Erro no Login: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
@@ -483,6 +496,22 @@ public class SingletonLusitania {
                         if (eventoListener != null) eventoListener.onEventosLoaded(eventos);
                     } catch (Exception e) {
                         Toast.makeText(context, "Erro JSON Pesquisa Eventos", Toast.LENGTH_SHORT).show();
+                    }
+                },
+                null
+        );
+    }
+    //endregion
+
+    //region - Bilhetes API
+    public void getAllBilhetesAPI(final Context context) {
+        makeJsonArrayRequest(context, Request.Method.GET, mUrlAPIBilhete, true,
+                response -> {
+                    try {
+                        ArrayList<Bilhete> bilhetes = BilhetesJsonParser.parserJsonBilhetes(response);
+                        if (bilheteListener != null) bilheteListener.onBilhetesLoaded(bilhetes);
+                    } catch (Exception e) {
+                        Toast.makeText(context, "Erro JSON Bilhetes", Toast.LENGTH_SHORT).show();
                     }
                 },
                 null
