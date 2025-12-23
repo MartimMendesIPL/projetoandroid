@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="150dp"
+    android:layout_marginStart="16dp"
+    android:layout_marginEnd="16dp"
+    android:layout_marginTop="8dp"
+    android:layout_marginBottom="8dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="4dp"
+    app:cardBackgroundColor="#FFFFFF">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <!-- Imagem do Local -->
+        <ImageView
+            android:id="@+id/ivBilheteImage"
+            android:layout_width="150dp"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:background="#E8EFF9"
+            android:contentDescription="Imagem do local" />
+
+        <!-- Informações do Bilhete -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp">
+
+            <!-- Nome do Local -->
+            <TextView
+                android:id="@+id/tvBilheteLocal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Museu Nacional de Arte Antiga"
+                android:textSize="18sp"
+                android:fontFamily="@font/georgiab"
+                android:textColor="#204080"
+                android:maxLines="2"
+                android:ellipsize="end" />
+
+            <!-- Data -->
+            <TextView
+                android:id="@+id/tvBilheteData"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="25 de novembro, 2025"
+                android:textSize="13sp"
+                android:textColor="#5A5A5A"
+                android:layout_marginTop="8dp" />
+
+            <!-- Tipo de Bilhete -->
+            <TextView
+                android:id="@+id/tvBilheteTipo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tipo: Adulto"
+                android:textSize="13sp"
+                android:textColor="#5A5A5A"
+                android:layout_marginTop="4dp" />
+
+            <!-- Estado -->
+            <TextView
+                android:id="@+id/tvBilheteEstado"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Estado: Confirmada"
+                android:textSize="13sp"
+                android:textColor="#28A745"
+                android:layout_marginTop="4dp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

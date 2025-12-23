@@ -16,19 +16,17 @@ import pt.ipleiria.estg.dei.maislusitania_android.models.User;
 
 public class UserJsonParser {
     // 1. Método para converter um Objeto JSON num Objeto Java (user)
-    public static User parserJsonUser(String response) {
+    public static User parserJsonUser(JSONArray response) {
         User auxuser = null;
         try {
-            JSONArray jsonArray = new JSONArray(response);
-
-            // ✅ Verificar se o array não está vazio
-            if (jsonArray.length() == 0) {
+            //Verificar se o array não está vazio
+            if (response.length() == 0) {
                 android.util.Log.e("UserJsonParser", "Array vazio");
                 return null;
             }
 
-            // ✅ Pegar o primeiro objeto do array
-            JSONObject user = jsonArray.getJSONObject(0);
+            //Pegar o primeiro objeto do array
+            JSONObject user = response.getJSONObject(0);
 
             int id = user.getInt("id");
             String primeiroNome = user.getString("primeiro_nome");

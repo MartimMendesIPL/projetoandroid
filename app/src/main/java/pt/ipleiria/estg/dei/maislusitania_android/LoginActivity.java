@@ -70,7 +70,7 @@ public class LoginActivity extends AppCompatActivity implements LoginListener {
     public void onValidateLogin(final String token, final String username) {
         runOnUiThread(() -> {
             // 2. GUARDAR NAS PREFS (via Singleton)
-            SingletonLusitania.getInstance(this).guardarUtilizador(this,username, token);
+            SingletonLusitania.getInstance(this).guardarUtilizador(this,username, token, user_id);
 
             Toast.makeText(this, "Bem-vindo, " + username + "!", Toast.LENGTH_SHORT).show();
             MainActivity();
