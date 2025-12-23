@@ -29,9 +29,10 @@ public class LocalJsonParser {
             String descricao = local.getString("descricao");
             String imagem = local.getString("imagem");
             float avaliacaoMedia = (float) local.optDouble("avaliacao_media", 0.0);
+            int favorito_id = local.optInt("favorito_id", -1);
 
 
-            auxlocal = new Local(id, nome, morada, distrito, descricao, imagem, avaliacaoMedia);
+            auxlocal = new Local(id, nome, morada, distrito, descricao, imagem, avaliacaoMedia, favorito_id);
         }
         catch (JSONException e)
         {
@@ -55,10 +56,12 @@ public class LocalJsonParser {
                     String imagem = local.getString("imagem");
                     float avaliacaoMedia = (float) local.optDouble("avaliacao_media", 0.0);
                     boolean favorito = local.optBoolean("favorito", false);
+                    int favorito_id = local.optInt("favorito_id", -1);
 
 
 
-                    Local auxlocal = new Local(id, nome, morada, distrito, descricao, imagem, avaliacaoMedia);
+
+                    Local auxlocal = new Local(id, nome, morada, distrito, descricao, imagem, avaliacaoMedia, favorito_id);
                     auxlocal.setFavorite(favorito);
                     locais.add(auxlocal);
                 } catch (JSONException e) {

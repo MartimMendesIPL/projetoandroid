@@ -10,8 +10,10 @@ public class Local {
     private float avaliacaoMedia;
     private boolean isFavorite;
 
+    private int favorito_id;
+
     public Local(int id, String nome, String morada, String distrito,
-                 String descricao, String imagem, float avaliacaoMedia) {
+                 String descricao, String imagem, float avaliacaoMedia, int favorito_id) {
         this.id = id;
         this.nome = nome;
         this.morada = morada;
@@ -20,6 +22,7 @@ public class Local {
         this.imagem = imagem;
         this.avaliacaoMedia = avaliacaoMedia;
         this.isFavorite = false;
+        this.favorito_id = -1;
     }
 
     // Getters
@@ -47,6 +50,12 @@ public class Local {
     public boolean isFavorite() {
         return isFavorite;
     }
+
+    public int getFavoritoId() {
+        return favorito_id;
+    }
+
+    // Setters
     public void setFavorite(boolean favorite) {
         isFavorite = favorite;
     }
