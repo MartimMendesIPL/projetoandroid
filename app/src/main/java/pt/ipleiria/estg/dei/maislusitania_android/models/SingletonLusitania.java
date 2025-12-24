@@ -112,6 +112,9 @@ public class SingletonLusitania {
     public void setEventoListener(EventoListener eventoListener) { this.eventoListener = eventoListener; }
     public void setFavoritoListener(FavoritoListener favoritoListener) { this.favoritoListener = favoritoListener; }
     public void setBilheteListener(BilheteListener BilheteListener) { this.bilheteListener = BilheteListener; }
+    private BilheteListener bilhetesListener;
+
+
 
     //endregion
 

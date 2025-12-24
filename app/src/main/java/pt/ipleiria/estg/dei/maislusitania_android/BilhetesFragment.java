@@ -39,24 +39,22 @@ public class BilhetesFragment extends Fragment implements BilheteListener {
         binding = FragmentBilhetesBinding.inflate(inflater, container, false);
         bilhetes = new ArrayList<>();
 
-        // Listener para o ícone de perfil (ícone à direita)
-        binding.tilPesquisa.setEndIconOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Abrir activity de perfil
-                Intent intent = new Intent(getActivity(), PerfilActivity.class);
-                startActivity(intent);
-            }
+        // Listener para o ícone de perfil
+        binding.tilPesquisa.setEndIconOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), PerfilActivity.class);
+            startActivity(intent);
         });
 
-        //Configurar a RecyclerView
+        // Configurar a RecyclerView
         setupRecyclerView();
 
-        // Iniciar os dados
-        SingletonLusitania.getInstance(requireContext()).setBilhetesListener(this);
+        // IMPORTANTE: Definir o listener ANTES de fazer a chamada à API
+        SingletonLusitania.getInstance(requireContext()).setBilheteListener(this);
         SingletonLusitania.getInstance(requireContext()).getAllBilhetesAPI(getContext());
+
         return binding.getRoot();
     }
+
 
     private void setupRecyclerView() {
         RecyclerView recyclerView = binding.recyclerViewBilhetes;
