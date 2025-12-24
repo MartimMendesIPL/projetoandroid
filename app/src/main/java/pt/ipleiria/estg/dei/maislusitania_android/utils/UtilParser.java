@@ -10,4 +10,8 @@ public class UtilParser {
         NetworkInfo networkInfo = cm.getActiveNetworkInfo();
         return networkInfo != null && networkInfo.isConnected();
     }
+
+    public static String getCurrentDateString() {
+        return new java.util.Date().toString();
+    }
 }
