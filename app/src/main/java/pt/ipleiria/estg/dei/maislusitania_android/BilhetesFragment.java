@@ -10,28 +10,23 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.LinearLayoutManager;
-
-import pt.ipleiria.estg.dei.maislusitania_android.listeners.BilheteListener;
-import pt.ipleiria.estg.dei.maislusitania_android.models.Bilhete;
-import pt.ipleiria.estg.dei.maislusitania_android.adapters.BilheteAdapter;
-
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import pt.ipleiria.estg.dei.maislusitania_android.adapters.BilheteAdapter;
 import pt.ipleiria.estg.dei.maislusitania_android.databinding.FragmentBilhetesBinding;
+import pt.ipleiria.estg.dei.maislusitania_android.listeners.BilheteListener;
+import pt.ipleiria.estg.dei.maislusitania_android.models.Bilhete;
 import pt.ipleiria.estg.dei.maislusitania_android.models.SingletonLusitania;
 
 public class BilhetesFragment extends Fragment implements BilheteListener {
     private FragmentBilhetesBinding binding;
 
     private BilheteAdapter bilheteAdapter;
-    private List<Bilhete> bilhetes;
-
-
-
+    private ArrayList<Bilhete> bilhetes; // Alterado para ArrayList para bater certo com o EventosFragment
 
     @Nullable
     @Override
@@ -48,18 +43,19 @@ public class BilhetesFragment extends Fragment implements BilheteListener {
         // Configurar a RecyclerView
         setupRecyclerView();
 
-        // IMPORTANTE: Definir o listener ANTES de fazer a chamada à API
-        SingletonLusitania.getInstance(requireContext()).setBilheteListener(this);
-        SingletonLusitania.getInstance(requireContext()).getAllBilhetesAPI(getContext());
+        // Definir o listener e chamar a API
+        // Usar requireContext() em ambos para garantir que o contexto é válido
+        SingletonLusitania.getInstance(requireContext()).setBilhetesListener(this);
+        SingletonLusitania.getInstance(requireContext()).getAllBilhetesAPI(requireContext());
 
         return binding.getRoot();
     }
-
 
     private void setupRecyclerView() {
         RecyclerView recyclerView = binding.recyclerViewBilhetes;
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
+        // Passamos a lista 'bilhetes' para o adapter. O adapter guarda uma referência para esta lista.
         bilheteAdapter = new BilheteAdapter(bilhetes, new BilheteAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(Bilhete bilhete) {
@@ -67,36 +63,38 @@ public class BilhetesFragment extends Fragment implements BilheteListener {
             }
         });
 
-        recyclerView.setAdapter(bilheteAdapter); // <- Passar a instância, não a classe
+        recyclerView.setAdapter(bilheteAdapter);
     }
 
     @Override
-        public void onDestroyView() {
-            super.onDestroyView();
-            binding = null;
-        }
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
+    }
 
+    @Override
+    public void onBilhetesLoaded(ArrayList<Bilhete> listaBilhetes) {
+        // LÓGICA IGUAL AO EVENTOSFRAGMENT:
+        // Em vez de substituir a lista no adapter, limpamos a nossa lista local e adicionamos os novos itens.
+        // Como o adapter tem uma referência para esta lista 'bilhetes', ele vai ver as mudanças.
 
-        @Override
-        public void onBilhetesLoaded(ArrayList<Bilhete> listaBilhetes) {
+        bilhetes.clear();
+        bilhetes.addAll(listaBilhetes);
 
-            // Atualizar a lista local e o adapter
-            bilhetes.clear();
-            bilhetes.addAll(listaBilhetes);
-
-            if (bilheteAdapter != null) {
-                bilheteAdapter.notifyDataSetChanged();
-            }
-
-        }
-
-        @Override
-        public void onBilheteLoaded(Bilhete bilhete) {
-
-        }
-
-        @Override
-        public void onBilhetesError(String message) {
-
+        if (bilheteAdapter != null) {
+            bilheteAdapter.notifyDataSetChanged();
+            // Toast para debug (podes remover depois)
+            // Toast.makeText(getContext(), "Carregados " + listaBilhetes.size() + " bilhetes", Toast.LENGTH_SHORT).show();
         }
     }
+
+    @Override
+    public void onBilhetesError(String message) {
+        Toast.makeText(getContext(), "Erro: " + message, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onBilheteLoaded(Bilhete bilhete) {
+        // Não usado na lista
+    }
+}
