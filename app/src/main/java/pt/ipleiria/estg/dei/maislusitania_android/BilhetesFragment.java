@@ -49,7 +49,7 @@ public class BilhetesFragment extends Fragment implements BilheteListener {
         setupRecyclerView();
 
         // IMPORTANTE: Definir o listener ANTES de fazer a chamada à API
-        SingletonLusitania.getInstance(requireContext()).setBilheteListener(this);
+        SingletonLusitania.getInstance(requireContext()).setBilhetesListener(this);
         SingletonLusitania.getInstance(requireContext()).getAllBilhetesAPI(getContext());
 
         return binding.getRoot();

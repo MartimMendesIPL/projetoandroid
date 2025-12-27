@@ -78,7 +78,6 @@ public class SingletonLusitania {
     private EventoListener eventoListener;
     private PerfilListener perfilListener;
     private FavoritoListener favoritoListener;
-
     private BilheteListener bilheteListener;
 
     //region - Construtor e Instância
@@ -279,7 +278,7 @@ public class SingletonLusitania {
             if (favoritoListener != null) favoritoListener.onFavoritosLoaded(favoritos);
             return;
         }
-        makeJsonArrayRequest(context, Request.Method.GET, "/favoritos", true,
+        makeJsonArrayRequest(context, Request.Method.GET, mUrlAPIFavoritos, true,
                 response -> {
                     try {
                         ArrayList<Favorito> favoritos = FavoritoJsonParser.parserJsonFavoritos(response);
