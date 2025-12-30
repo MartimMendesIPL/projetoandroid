@@ -38,12 +38,7 @@ public class ViewBilhetesFragment extends Fragment implements BilheteListener {
         binding = FragmentViewBilhetesBinding.inflate(inflater, container, false);
         listaBilhetes = new ArrayList<>();
 
-        if (binding.tilPesquisa != null) {
-            binding.tilPesquisa.setEndIconOnClickListener(v -> {
-                Intent intent = new Intent(getActivity(), PerfilActivity.class);
-                startActivity(intent);
-            });
-        }
+        binding.btnVoltar.setOnClickListener(v -> requireActivity().onBackPressed());
 
         setupRecyclerView();
 
