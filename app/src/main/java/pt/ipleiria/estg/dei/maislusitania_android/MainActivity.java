@@ -1,5 +1,7 @@
 package pt.ipleiria.estg.dei.maislusitania_android;
 
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import androidx.annotation.NonNull;
@@ -9,6 +11,11 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import android.view.MenuItem;
+import android.widget.Toast;
+
+import pt.ipleiria.estg.dei.maislusitania_android.models.SingletonLusitania;
+import pt.ipleiria.estg.dei.maislusitania_android.utils.MqttHelper;
+import pt.ipleiria.estg.dei.maislusitania_android.utils.NotificationHelper;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -18,6 +25,26 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        NotificationHelper.createNotificationChannel(this);
+
+        MqttHelper mqttHelper = MqttHelper.getInstance();
+
+        // Definir listener para restaurar subscrições após conexão
+        mqttHelper.setConnectionListener(new MqttHelper.MqttConnectionListener() {
+            @Override
+            public void onConnected() {
+                // Restaurar subscrições apenas após conexão estabelecida
+                SingletonLusitania.getInstance(MainActivity.this).getallFavoritosAPI(MainActivity.this);
+            }
+
+            @Override
+            public void onConnectionFailed(String error) {
+                android.util.Log.e("MainActivity", "Falha na conexão MQTT: " + error);
+            }
+        });
+        // Conectar MQTT
+        mqttHelper.connect(this);
 
         bottomNavigationView = findViewById(R.id.bottom_navigation);
         FloatingActionButton fabMapa = findViewById(R.id.fab_mapa);
