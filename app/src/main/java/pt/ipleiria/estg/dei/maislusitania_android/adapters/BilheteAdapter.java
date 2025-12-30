@@ -10,6 +10,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,6 +64,7 @@ public class BilheteAdapter extends RecyclerView.Adapter<BilheteAdapter.BilheteV
         Bilhete bilhete = bilhetes.get(position);
 
         // Preenche os dados
+
         holder.tvBilheteLocal.setText(bilhete.getLocal().getNome());
         holder.tvBilheteData.setText(formatarData(bilhete.getDataVisita()));
         holder.tvBilheteTipo.setText("Tipo: " + bilhete.getTipoBilhete());
@@ -90,7 +93,7 @@ public class BilheteAdapter extends RecyclerView.Adapter<BilheteAdapter.BilheteV
         });
 
         // Carregar imagem (com Glide ou Picasso)
-        // Glide.with(holder.itemView.getContext()).load(imagemUrl).into(holder.ivBilheteImage);
+        //Glide.with(holder.itemView.getContext()).load(imagemUrl).into(holder.ivBilheteImage);
     }
 
     @Override
