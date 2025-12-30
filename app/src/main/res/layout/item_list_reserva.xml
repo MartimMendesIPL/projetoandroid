@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="16dp"
+    android:layout_marginEnd="16dp"
+    android:layout_marginTop="8dp"
+    android:layout_marginBottom="8dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="4dp"
+    app:cardBackgroundColor="#FFFFFF">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:orientation="horizontal">
+
+        <!-- Imagem do Local (loaded via Glide based on local_id) -->
+        <ImageView
+            android:id="@+id/ivReservaImagem"
+            android:layout_width="140dp"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:background="#E8EFF9"
+            android:contentDescription="Imagem do local"
+            tools:srcCompat="@tools:sample/backgrounds/scenic" />
+
+        <!-- Informações da Reserva -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:gravity="center_vertical">
+
+            <!-- Nome do Local -->
+            <TextView
+                android:id="@+id/tvReservaLocal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="Museu Nacional de Arte Antiga"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#204080"
+                android:maxLines="2"
+                android:ellipsize="end" />
+
+            <!-- Data Visita -->
+            <TextView
+                android:id="@+id/tvReservaData"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="25 de Novembro, 2025"
+                android:textSize="14sp"
+                android:textColor="#5A5A5A"
+                android:layout_marginTop="6dp" />
+
+            <!-- Preço Total -->
+            <TextView
+                android:id="@+id/tvReservaPreco"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="Total: 15.50€"
+                android:textSize="14sp"
+                android:textColor="#5A5A5A"
+                android:layout_marginTop="4dp" />
+
+            <!-- Estado -->
+            <TextView
+                android:id="@+id/tvReservaEstado"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="Confirmada"
+                android:textSize="14sp"
+                android:textColor="#28A745"
+                android:layout_marginTop="8dp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

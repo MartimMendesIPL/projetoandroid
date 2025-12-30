@@ -37,40 +37,60 @@
             android:layout_marginBottom="16dp" />
 
     </LinearLayout>
-    <ImageButton
-        android:id="@+id/btnVoltar"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:background="?android:attr/selectableItemBackground"
-        android:src="@android:drawable/ic_menu_close_clear_cancel"
-        android:contentDescription="Voltar"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
 
+    <!-- BOTÃO VOLTAR REPOSICIONADO -->
+    <!-- Azul com ícone branco para contrastar com fundo claro -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/btnVoltar"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="24dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
+        app:cardBackgroundColor="@color/blue_primary"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="4dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="Voltar"
+            android:padding="12dp"
+            android:src="@android:drawable/ic_menu_revert"
+            app:tint="#FFFFFF" />
+    </androidx.cardview.widget.CardView>
+
+    <!-- TÍTULO (Alinhado verticalmente com o botão de voltar) -->
     <TextView
         android:id="@+id/tvMeusFavoritos"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
         android:text="Meus Favoritos"
         android:textSize="24sp"
         android:textStyle="bold"
         android:textColor="@color/blue_primary"
         android:gravity="center"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toTopOf="@id/btnVoltar"
+        app:layout_constraintBottom_toBottomOf="@id/btnVoltar"
         app:layout_constraintStart_toEndOf="@id/btnVoltar"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginEnd="72dp" />
+    <!-- MarginEnd 72dp (48+24) para compensar o botão na esquerda e manter o texto visualmente centrado,
+         ou remova se preferir o texto encostado à esquerda -->
 
     <!-- RecyclerView para a lista de locais -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewFavorito"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="16dp"
         android:clipToPadding="false"
-        android:paddingBottom="8dp"
-        app:layout_constraintTop_toBottomOf="@id/tvMeusFavoritos"
+        android:paddingBottom="16dp"
+        app:layout_constraintTop_toBottomOf="@id/btnVoltar"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
