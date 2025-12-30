@@ -2,6 +2,10 @@ package pt.ipleiria.estg.dei.maislusitania_android;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +31,10 @@ public class ReservasFragment extends Fragment implements ReservaListener {
     private ReservaAdapter reservaAdapter;
     private ArrayList<Reserva> reservas;
 
+    // Variáveis para a Pesquisa Dinâmica
+    private Handler searchHandler = new Handler(Looper.getMainLooper());
+    private Runnable searchRunnable;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -41,6 +49,9 @@ public class ReservasFragment extends Fragment implements ReservaListener {
 
         // Configurar a RecyclerView
         setupRecyclerView();
+        setupSearchListeners();
+
+        //TODO: Search de reservas
 
         // Configurar o Singleton e pedir os dados à API
         SingletonLusitania.getInstance(requireContext()).setReservaListener(this);
@@ -70,6 +81,35 @@ public class ReservasFragment extends Fragment implements ReservaListener {
         });
 
         recyclerView.setAdapter(reservaAdapter);
+    }
+
+    private void setupSearchListeners() {
+        binding.tilPesquisa.getEditText().addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // Se o utilizador continuar a escrever, é apagada a pesquisa feita anteriormente
+                if (searchRunnable != null) {
+                    searchHandler.removeCallbacks(searchRunnable);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                searchRunnable = () -> {
+                    String query = s.toString().trim();
+                    if (query.isEmpty()) {
+                        SingletonLusitania.getInstance(requireContext()).getAllReservasAPI(getContext());
+                    } else {
+                        SingletonLusitania.getInstance(requireContext()).searchReservaAPI(getContext(), query);
+                    }
+                };
+                // Aguarda 500ms após a última tecla antes de pesquisar
+                searchHandler.postDelayed(searchRunnable, 500);
+            }
+        });
     }
 
     @Override
