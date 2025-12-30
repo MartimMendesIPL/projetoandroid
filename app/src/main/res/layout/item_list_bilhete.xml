@@ -1,85 +1,351 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView
+<com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="150dp"
-    android:layout_marginStart="16dp"
-    android:layout_marginEnd="16dp"
-    android:layout_marginTop="8dp"
-    android:layout_marginBottom="8dp"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="8dp"
     app:cardCornerRadius="16dp"
-    app:cardElevation="4dp"
-    app:cardBackgroundColor="#FFFFFF">
+    app:cardElevation="6dp"
+    app:cardBackgroundColor="@android:color/white"
+    app:strokeColor="#5E7CE2"
+    app:strokeWidth="2dp">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="horizontal">
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
-        <!-- Imagem do Local -->
-        <ImageView
-            android:id="@+id/ivBilheteImage"
-            android:layout_width="150dp"
-            android:layout_height="match_parent"
-            android:scaleType="centerCrop"
-            android:background="#E8EFF9"
-            android:contentDescription="Imagem do local" />
+        <!-- Header Section -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:background="#5E7CE2"
+            android:paddingHorizontal="16dp">
 
-        <!-- Informações do Bilhete -->
+            <!-- Ticket Icon (Left) -->
+            <ImageView
+                android:id="@+id/ivBilheteIcon"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/ic_bilhetes"
+                app:tint="#FFFFFF"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+            <!-- Status Pill (Right) -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="50dp"
+                app:cardBackgroundColor="#FFFFFF"
+                app:strokeWidth="0dp"
+                app:cardElevation="0dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent">
+
+                <TextView
+                    android:id="@+id/tvBilheteEstado"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="6dp"
+                    tools:text="CONFIRMADA"
+                    android:textColor="#5E7CE2"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:textAllCaps="true"
+                    android:letterSpacing="0.05"/>
+            </com.google.android.material.card.MaterialCardView>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Body Content -->
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:orientation="vertical"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="12dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp">
+            android:padding="20dp">
 
-            <!-- Nome do Local -->
+            <!-- Title -->
             <TextView
                 android:id="@+id/tvBilheteLocal"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Museu Nacional de Arte Antiga"
-                android:textSize="18sp"
-                android:fontFamily="@font/georgiab"
-                android:textColor="#204080"
-                android:maxLines="2"
-                android:ellipsize="end" />
+                tools:text="Museu Nacional de Arte Antiga"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="#2D4F85"
+                android:layout_marginBottom="4dp"/>
 
-            <!-- Data -->
-            <TextView
-                android:id="@+id/tvBilheteData"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="25 de novembro, 2025"
-                android:textSize="13sp"
-                android:textColor="#5A5A5A"
-                android:layout_marginTop="8dp" />
-
-            <!-- Tipo de Bilhete -->
+            <!-- Subtitle -->
             <TextView
                 android:id="@+id/tvBilheteTipo"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Tipo: Adulto"
-                android:textSize="13sp"
-                android:textColor="#5A5A5A"
-                android:layout_marginTop="4dp" />
+                tools:text="Adulto"
+                android:textSize="15sp"
+                android:textColor="#555555"
+                android:layout_marginBottom="24dp"/>
 
-            <!-- Estado -->
-            <TextView
-                android:id="@+id/tvBilheteEstado"
-                android:layout_width="wrap_content"
+            <!-- Grid Row 1 -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Estado: Confirmada"
-                android:textSize="13sp"
-                android:textColor="#28A745"
-                android:layout_marginTop="4dp"
-                android:textStyle="bold" />
+                android:orientation="horizontal"
+                android:baselineAligned="false"
+                android:layout_marginBottom="12dp">
 
+                <!-- Box 1: Date -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    app:cardCornerRadius="8dp"
+                    app:strokeColor="#E0E0E0"
+                    app:strokeWidth="1dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="#FAFAFA"
+                    android:layout_marginEnd="6dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal"
+                        android:padding="12dp"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@android:drawable/ic_menu_today"
+                            app:tint="#5E7CE2"/>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_marginStart="8dp">
+                            <TextView
+                                android:text="DATA DE VISITA"
+                                android:textSize="9sp"
+                                android:textColor="#808080"
+                                android:textStyle="bold"
+                                android:textAllCaps="true"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
+                            <TextView
+                                android:id="@+id/tvBilheteData"
+                                tools:text="01/01/2026"
+                                android:textSize="13sp"
+                                android:textStyle="bold"
+                                android:textColor="#333"
+                                android:layout_marginTop="2dp"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Box 2: Code -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    app:cardCornerRadius="8dp"
+                    app:strokeColor="#E0E0E0"
+                    app:strokeWidth="1dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="#FAFAFA"
+                    android:layout_marginStart="6dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal"
+                        android:padding="12dp"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@android:drawable/ic_menu_info_details"
+                            app:tint="#5E7CE2"/>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_marginStart="8dp">
+                            <TextView
+                                android:text="CÓDIGO"
+                                android:textSize="9sp"
+                                android:textColor="#808080"
+                                android:textStyle="bold"
+                                android:textAllCaps="true"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
+                            <TextView
+                                android:id="@+id/tvBilheteCodigo"
+                                tools:text="#000008-2"
+                                android:textSize="13sp"
+                                android:textStyle="bold"
+                                android:textColor="#333"
+                                android:fontFamily="monospace"
+                                android:layout_marginTop="2dp"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+
+            <!-- Grid Row 2 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:baselineAligned="false">
+
+                <!-- Box 3: Type -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    app:cardCornerRadius="8dp"
+                    app:strokeColor="#E0E0E0"
+                    app:strokeWidth="1dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="#FAFAFA"
+                    android:layout_marginEnd="6dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal"
+                        android:padding="12dp"
+                        android:gravity="center_vertical">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@android:drawable/ic_menu_myplaces"
+                            app:tint="#5E7CE2"/>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_marginStart="8dp">
+                            <TextView
+                                android:text="TIPO DE BILHETE"
+                                android:textSize="9sp"
+                                android:textColor="#808080"
+                                android:textStyle="bold"
+                                android:textAllCaps="true"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
+                            <TextView
+                                android:id="@+id/tvBilheteTipoDetalhe"
+                                tools:text="Adulto"
+                                android:textSize="13sp"
+                                android:textStyle="bold"
+                                android:textColor="#333"
+                                android:layout_marginTop="2dp"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Box 4: Price -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    app:cardCornerRadius="8dp"
+                    app:strokeColor="#E0E0E0"
+                    app:strokeWidth="1dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="#FAFAFA"
+                    android:layout_marginStart="6dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal"
+                        android:padding="12dp"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:text="€"
+                            android:gravity="center"
+                            android:textSize="18sp"
+                            android:textColor="#5E7CE2"
+                            android:textStyle="bold"/>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_marginStart="8dp">
+                            <TextView
+                                android:text="PREÇO"
+                                android:textSize="9sp"
+                                android:textColor="#808080"
+                                android:textStyle="bold"
+                                android:textAllCaps="true"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
+                            <TextView
+                                android:id="@+id/tvBilhetePreco"
+                                tools:text="10,00€"
+                                android:textSize="13sp"
+                                android:textStyle="bold"
+                                android:textColor="#333"
+                                android:layout_marginTop="2dp"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"/>
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
         </LinearLayout>
+
+        <!-- Dashed Divider Line -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginHorizontal="20dp"
+            android:background="#DDDDDD"
+            android:layerType="software" />
+
+        <!-- Large QR Code Area -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:paddingVertical="16dp"
+            android:paddingHorizontal="24dp"
+            android:background="#FFFFFF">
+
+            <ImageView
+                android:id="@+id/ivQrCode"
+                android:layout_width="match_parent"
+                android:layout_height="312dp"
+                android:contentDescription="Código QR do Bilhete"
+                android:scaleType="fitCenter"
+                android:src="@android:drawable/ic_menu_gallery"
+                tools:background="#000000" />
+        </LinearLayout>
+
     </LinearLayout>
-</androidx.cardview.widget.CardView>
+</com.google.android.material.card.MaterialCardView>

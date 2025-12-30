@@ -4,8 +4,6 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
-import androidx.annotation.NonNull;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -16,67 +14,68 @@ import pt.ipleiria.estg.dei.maislusitania_android.models.Bilhete;
 
 public class BilhetesJsonParser {
 
-    // 1. Método para converter um Objeto JSON num Objeto Java (Bilhete)
-    public static Bilhete parserJsonBilhete(String response) {
-        Bilhete auxBilhete = null;
-        try {
-            JSONObject bilhete = new JSONObject(response);
-            String codigo = bilhete.getString("codigo");
-            int reserva_id = bilhete.getInt("reserva_id");
-
-            // Parser do objeto local aninhado
-            JSONObject localJson = bilhete.getJSONObject("local");
-            int localId = localJson.getInt("id");
-            String localNome = localJson.getString("nome");
-            Bilhete.Local local = new Bilhete.Local(localId, localNome);
-
-            String data_visita = bilhete.getString("data_visita");
-            String tipo_bilhete = bilhete.getString("tipo_bilhete");
-            String preco = bilhete.getString("preco");
-            String estado = bilhete.getString("estado");
-            String data_criacao = bilhete.getString("data_criacao");
-
-            auxBilhete = new Bilhete(codigo, reserva_id, local, data_visita,
-                    tipo_bilhete, preco, estado, data_criacao);
-        } catch (JSONException e) {
-            throw new RuntimeException(e);
-        }
-        return auxBilhete;
-    }
-
-    // 2. Método para converter uma LISTA de JSONs numa LISTA de Bilhetes
-    @NonNull
+    /**
+     * Converte um JSONArray (resposta da API) numa lista de objetos Bilhete
+     */
     public static ArrayList<Bilhete> parserJsonBilhetes(JSONArray response) {
         ArrayList<Bilhete> bilhetes = new ArrayList<>();
-        for (int i = 0; i < response.length(); i++) {
-            try {
-                JSONObject bilhete = (JSONObject) response.get(i);
-                String codigo = bilhete.getString("codigo");
-                int reserva_id = bilhete.getInt("reserva_id");
-
-                // Parser do objeto local aninhado
-                JSONObject localJson = bilhete.getJSONObject("local");
-                int localId = localJson.getInt("id");
-                String localNome = localJson.getString("nome");
-                Bilhete.Local local = new Bilhete.Local(localId, localNome);
-
-                String data_visita = bilhete.getString("data_visita");
-                String tipo_bilhete = bilhete.getString("tipo_bilhete");
-                String preco = bilhete.getString("preco");
-                String estado = bilhete.getString("estado");
-                String data_criacao = bilhete.getString("data_criacao");
-
-                Bilhete auxBilhete = new Bilhete(codigo, reserva_id, local, data_visita,
-                        tipo_bilhete, preco, estado, data_criacao);
-                bilhetes.add(auxBilhete);
-            } catch (JSONException e) {
-                throw new RuntimeException(e);
+        if (response != null) {
+            for (int i = 0; i < response.length(); i++) {
+                try {
+                    JSONObject jsonObject = response.getJSONObject(i);
+                    Bilhete bilhete = parserJsonBilhete(jsonObject);
+                    bilhetes.add(bilhete);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         }
         return bilhetes;
     }
 
-    // 3. Método para verificar a Internet
+    /**
+     * Converte um único JSONObject num objeto Bilhete
+     */
+    public static Bilhete parserJsonBilhete(JSONObject jsonObject) {
+        try {
+            String codigo = jsonObject.getString("codigo");
+            int reserva_id = jsonObject.getInt("reserva_id");
+            int local_id = jsonObject.getInt("local_id");
+            String local_nome = jsonObject.getString("local_nome");
+            String data_visita = jsonObject.getString("data_visita");
+            int tipo_bilhete_id = jsonObject.getInt("tipo_bilhete_id");
+            String tipo_bilhete_nome = jsonObject.getString("tipo_bilhete_nome");
+            String estado = jsonObject.getString("estado");
+
+            String precoStr = jsonObject.getString("preco");
+            double preco = 0.0;
+            try {
+                preco = Double.parseDouble(precoStr.replace(",", ""));
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+            }
+
+            return new Bilhete(
+                    codigo,
+                    reserva_id,
+                    local_id,
+                    local_nome,
+                    data_visita,
+                    tipo_bilhete_id,
+                    tipo_bilhete_nome,
+                    preco,
+                    estado
+            );
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Verifica se existe ligação à Internet
+     */
     public static boolean isConnectionInternet(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = cm.getActiveNetworkInfo();
