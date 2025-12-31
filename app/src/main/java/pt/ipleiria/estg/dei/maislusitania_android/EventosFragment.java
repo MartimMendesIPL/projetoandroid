@@ -129,7 +129,6 @@ public class EventosFragment extends Fragment implements EventoListener {
         // Atualizar a lista local e o adapter
         items.clear();
         items.addAll(listaEventos);
-
         if (eventoAdapter != null) {
             eventoAdapter.notifyDataSetChanged();
         }
@@ -137,7 +136,7 @@ public class EventosFragment extends Fragment implements EventoListener {
 
     @Override
     public void onEventoLoaded(Evento evento) {
-        // Método usado para carregar um único evento (não usado na lista)
+        // Metodo usado para carregar um único evento (não usado na lista)
     }
 
     @Override

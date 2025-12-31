@@ -30,6 +30,7 @@ import pt.ipleiria.estg.dei.maislusitania_android.utils.ReservasJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.EventosJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.LocalJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.MapaJsonParser;
+import pt.ipleiria.estg.dei.maislusitania_android.utils.MqttHelper;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.NoticiaJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.UserJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.UtilParser;
@@ -293,6 +294,8 @@ public class SingletonLusitania {
                 android.util.Log.i("FAVORITOS_OFFLINE", "Favorito carregado offline: " + fav.getLocalNome());
 
             }
+            // Reinscrever nos tópicos MQTT
+            resubscribeToFavoritos(favoritos);
             if (favoritoListener != null) favoritoListener.onFavoritosLoaded(favoritos);
             return;
         }
@@ -300,6 +303,8 @@ public class SingletonLusitania {
                 response -> {
                     try {
                         ArrayList<Favorito> favoritos = FavoritoJsonParser.parserJsonFavoritos(response);
+                        // Reinscrever nos tópicos MQTT
+                        resubscribeToFavoritos(favoritos);
                         if (favoritoListener != null) favoritoListener.onFavoritosLoaded(favoritos);
                     } catch (Exception e) {
                         if (favoritoListener != null) favoritoListener.onFavoritosError("Erro JSON Favoritos");
@@ -309,6 +314,16 @@ public class SingletonLusitania {
                     if (favoritoListener != null) favoritoListener.onFavoritosError(error.getMessage());
                 }
         );
+    }
+
+    private void resubscribeToFavoritos(ArrayList<Favorito> favoritos) {
+        if (favoritos == null || favoritos.isEmpty()) return;
+
+        MqttHelper mqttHelper = MqttHelper.getInstance();
+        for (Favorito fav : favoritos) {
+            mqttHelper.subscribe(fav.getLocalNome());
+            android.util.Log.i("MQTT_SUBSCRIBE", "Subscrito ao tópico: " + fav.getLocalNome());
+        }
     }
 
     public void toggleFavoritoAPI(final Context context, final Local local) { // para os locais
@@ -321,6 +336,8 @@ public class SingletonLusitania {
             method = Request.Method.DELETE;
             // Remover dos favoritos locais
             removeFavoritoBD(local.getId(), getUserId(context));
+            // Desinscreve do canal MQTT associado ao local
+            MqttHelper.getInstance().unsubscribe(local.getNome());
 
         } else {
             endpoint = mUrladdFavorito + "/" + local.getId();
@@ -328,6 +345,8 @@ public class SingletonLusitania {
             // Adicionar aos favoritos locais
             Favorito fav = MakeFavoritoFromLocal(local, getUserId(context));
             addFavoritoBD(fav);
+            // Inscreve no canal MQTT associado ao local
+            MqttHelper.getInstance().subscribe(local.getNome());
         }
 
         // Usa o helper (requiresAuth = true)
@@ -462,6 +481,19 @@ public class SingletonLusitania {
                 error -> {
                     if (noticiaListener != null) noticiaListener.onNoticiaError(error.getMessage());
                 }
+        );
+    }
+    public void searchNoticiaAPI(final Context context, final String query) {
+        makeJsonArrayRequest(context, Request.Method.GET, mUrlAPINoticias + "/search/" + query, true,
+                response -> {
+                    try {
+                        ArrayList<Noticia> noticias = NoticiaJsonParser.parserJsonNoticias(response);
+                        if (noticiaListener != null) noticiaListener.onNoticiasLoaded(noticias);
+                    } catch (Exception e) {
+                        Toast.makeText(context, "Erro JSON Pesquisa Noticias", Toast.LENGTH_SHORT).show();
+                    }
+                },
+                null
         );
     }
     //endregion
