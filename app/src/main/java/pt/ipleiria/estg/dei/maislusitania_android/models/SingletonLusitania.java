@@ -25,7 +25,8 @@ import pt.ipleiria.estg.dei.maislusitania_android.listeners.LoginListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.MapaListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.NoticiaListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.PerfilListener;
-import pt.ipleiria.estg.dei.maislusitania_android.utils.BilhetesJsonParser;
+import pt.ipleiria.estg.dei.maislusitania_android.listeners.ReservaListener;
+import pt.ipleiria.estg.dei.maislusitania_android.utils.ReservasJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.EventosJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.LocalJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.MapaJsonParser;
@@ -68,7 +69,8 @@ public class SingletonLusitania {
     private static final String mUrlAPIEvento = "/eventos";
     private static final String mUrlUser = "/user-profile";
 
-    private static final String mUrlAPIBilhete = "/reservas/bilhetes";
+    private static final String mUrlAPIReserva = "/reservas";
+    private static final String mUrlAPIBilhetes = "/reservas/bilhetes";
 
 
     // Listeners
@@ -79,7 +81,7 @@ public class SingletonLusitania {
     private EventoListener eventoListener;
     private PerfilListener perfilListener;
     private FavoritoListener favoritoListener;
-
+    private ReservaListener reservaListener;
     private BilheteListener bilheteListener;
 
     //region - Construtor e Instância
@@ -113,9 +115,8 @@ public class SingletonLusitania {
     public void setPerfilListener(PerfilListener perfilListener) { this.perfilListener = perfilListener; }
     public void setEventoListener(EventoListener eventoListener) { this.eventoListener = eventoListener; }
     public void setFavoritoListener(FavoritoListener favoritoListener) { this.favoritoListener = favoritoListener; }
-    public void setBilhetesListener(BilheteListener bilheteListener) {
-        this.bilheteListener = bilheteListener;
-    }
+    public void setReservaListener(ReservaListener reservaListener) { this.reservaListener = reservaListener; }
+    public void setBilheteListener(BilheteListener bilheteListener) { this.bilheteListener = bilheteListener; }
 
 
     //endregion
@@ -251,9 +252,22 @@ public class SingletonLusitania {
     }
     //Tratar dos erros
     private void handleDefaultError(Context context, VolleyError error) {
-        String msg = "Erro na comunicação com o servidor";
-        if (error.getMessage() != null) msg = error.getMessage();
-        android.util.Log.e("API_ERROR", msg);
+        String msg = "Erro na comunicação"; // Mensagem fallback
+
+        if (error.networkResponse != null && error.networkResponse.data != null) {
+            try {
+                // Tenta ler o JSON de erro do servidor
+                String body = new String(error.networkResponse.data, "UTF-8");
+                JSONObject json = new JSONObject(body);
+                // Tenta ler "error", se falhar tenta "message", se falhar usa a msg padrão
+                msg = json.optString("error", json.optString("message", "Erro servidor: " + error.networkResponse.statusCode));
+            } catch (Exception e) {
+                msg = "Erro inesperado (" + error.networkResponse.statusCode + ")";
+            }
+        } else if (error instanceof com.android.volley.NoConnectionError) {
+            msg = "Sem ligação à internet";
+        }
+
         Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
     }
 
@@ -285,7 +299,7 @@ public class SingletonLusitania {
             if (favoritoListener != null) favoritoListener.onFavoritosLoaded(favoritos);
             return;
         }
-        makeJsonArrayRequest(context, Request.Method.GET, "/favoritos", true,
+        makeJsonArrayRequest(context, Request.Method.GET, mUrlAPIFavoritos, true,
                 response -> {
                     try {
                         ArrayList<Favorito> favoritos = FavoritoJsonParser.parserJsonFavoritos(response);
@@ -570,19 +584,46 @@ public class SingletonLusitania {
     }
     //endregion
 
-    //region - Bilhetes API
-    public void getAllBilhetesAPI(final Context context) {
-        makeJsonArrayRequest(context, Request.Method.GET, mUrlAPIBilhete, true,
+    //region - Reservas/Bilhetes API
+    public void getAllReservasAPI(final Context context) {
+        makeJsonArrayRequest(context, Request.Method.GET, mUrlAPIReserva, true,
                 response -> {
                     try {
-                        ArrayList<Bilhete> bilhetes = BilhetesJsonParser.parserJsonBilhetes(response);
-                        if (bilheteListener != null) bilheteListener.onBilhetesLoaded(bilhetes);
+                        ArrayList<Reserva> reservas = ReservasJsonParser.parserJsonReservas(response);
+                        if (reservaListener != null) reservaListener.onReservasLoaded(reservas);
                     } catch (Exception e) {
                         Toast.makeText(context, "Erro JSON Bilhetes", Toast.LENGTH_SHORT).show();
                     }
                 },
                 null
         );
+    }
+
+    public void getAllBilhetesAPI(final Context context, int idReserva) {
+
+        String url = mUrlAPIReserva + "/" + idReserva;
+        makeJsonArrayRequest(context, Request.Method.GET, url, true,
+                response -> {
+                    try {
+                        ArrayList<Bilhete> bilhetes = ReservasJsonParser.parserJsonBilhetes(response);
+                        if (bilheteListener != null) bilheteListener.onBilhetesLoaded(bilhetes);
+
+                    } catch (Exception e) {
+                        Toast.makeText(context, "Erro JSON Bilhetes", Toast.LENGTH_SHORT).show();
+                    }
+                }, null);
+    }
+
+    public void searchReservaAPI(final Context context, String query){
+        makeJsonArrayRequest(context, Request.Method.GET, mUrlAPIReserva + "/search/" + query, true,
+                response -> {
+                    try{
+                        ArrayList<Reserva> reservas = ReservasJsonParser.parserJsonReservas(response);
+                        if (reservaListener != null) reservaListener.onReservasLoaded(reservas);
+                    } catch (Exception e) {
+                        Toast.makeText(context, "Erro JSON Reservas", Toast.LENGTH_SHORT).show();
+                    }
+                }, null);
     }
     //endregion
 }

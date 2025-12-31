@@ -16,6 +16,8 @@ import android.widget.Toast;
 import pt.ipleiria.estg.dei.maislusitania_android.models.SingletonLusitania;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.MqttHelper;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.NotificationHelper;
+import android.view.Window;
+import android.view.WindowManager;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -52,6 +54,12 @@ public class MainActivity extends AppCompatActivity {
         //Botao placeholder para criar espaço no menu
         bottomNavigationView.getMenu().findItem(R.id.navigation_placeholder).setEnabled(false);
 
+        // Desmarcar itens do bottom navigation
+        bottomNavigationView.getMenu().setGroupCheckable(0, true, false);
+        for (int i = 0; i < bottomNavigationView.getMenu().size(); i++) {
+            bottomNavigationView.getMenu().getItem(i).setChecked(false);
+        }
+        bottomNavigationView.getMenu().setGroupCheckable(0, true, true);
 
         // Carregar o fragmento Mapa por padrão (tela inicial)
         if (savedInstanceState == null) {
@@ -67,13 +75,6 @@ public class MainActivity extends AppCompatActivity {
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragment_container, new MapaFragment())
                         .commit();
-
-                // Desmarcar itens do bottom navigation
-                bottomNavigationView.getMenu().setGroupCheckable(0, true, false);
-                for (int i = 0; i < bottomNavigationView.getMenu().size(); i++) {
-                    bottomNavigationView.getMenu().getItem(i).setChecked(false);
-                }
-                bottomNavigationView.getMenu().setGroupCheckable(0, true, true);
             }
         });
 
@@ -88,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
                 Fragment selectedFragment = null;
 
                 if (item.getItemId() == R.id.navigation_bilhetes) {
-                    selectedFragment = new BilhetesFragment();
+                    selectedFragment = new ReservasFragment();
                 } else if (item.getItemId() == R.id.navigation_eventos) {
                     selectedFragment = new EventosFragment();
                 } else if (item.getItemId() == R.id.navigation_noticias) {

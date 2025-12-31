@@ -10,11 +10,29 @@
     <color name="teal_200">#03DAC6</color>
     <color name="teal_700">#018786</color>
 
+    <!-- Dark theme colors -->
+    <color name="dark_background">#121212</color>
+    <color name="dark_surface">#1E1E1E</color>
+
+
     <!-- Cores básicas -->
     <color name="black">#000000</color>
     <color name="white">#FFFFFF</color>
     <color name="error">#B00020</color>
 
+    <!-- Text field -->
     <color name="text_field_background">#2E5AAC</color>
+
+    <!-- Surface colors -->
+    <color name="surface">#FFFFFF</color>
+    <color name="on_surface">#000000</color>
+
+    <!-- On colors (text/icons on top of primary/secondary) -->
+    <color name="on_primary">#FFFFFF</color>
+    <color name="on_secondary">#000000</color>
+    <color name="on_error">#FFFFFF</color>
+
+    <!-- Background -->
+    <color name="background">#FFFFFF</color>
 
 </resources>
