@@ -20,14 +20,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.util.ArrayList;
 
 import pt.ipleiria.estg.dei.maislusitania_android.adapters.ReservaAdapter;
-import pt.ipleiria.estg.dei.maislusitania_android.databinding.FragmentBilhetesBinding;
+import pt.ipleiria.estg.dei.maislusitania_android.databinding.FragmentReservasBinding;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.ReservaListener;
 import pt.ipleiria.estg.dei.maislusitania_android.models.Reserva;
 import pt.ipleiria.estg.dei.maislusitania_android.models.SingletonLusitania;
 
 public class ReservasFragment extends Fragment implements ReservaListener {
 
-    private FragmentBilhetesBinding binding;
+    private FragmentReservasBinding binding;
     private ReservaAdapter reservaAdapter;
     private ArrayList<Reserva> reservas;
 
@@ -38,7 +38,7 @@ public class ReservasFragment extends Fragment implements ReservaListener {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = FragmentBilhetesBinding.inflate(inflater, container, false);
+        binding = FragmentReservasBinding.inflate(inflater, container, false);
         reservas = new ArrayList<>();
 
         // Listener para o ícone de perfil (Barra de pesquisa/topo)
