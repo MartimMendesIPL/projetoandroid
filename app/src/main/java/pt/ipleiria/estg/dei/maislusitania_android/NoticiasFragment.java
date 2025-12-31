@@ -2,6 +2,10 @@ package pt.ipleiria.estg.dei.maislusitania_android;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,14 +30,19 @@ public class NoticiasFragment extends Fragment implements NoticiaListener {
     private FragmentNoticiasBinding binding;
     private NoticiaAdapter adapter;
     private ArrayList<Noticia> items;
+    // Variáveis para a Pesquisa Dinâmica
+    private Handler searchHandler = new Handler(Looper.getMainLooper());
+    private Runnable searchRunnable;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         binding = FragmentNoticiasBinding.inflate(inflater, container, false);
-
         items = new ArrayList<>();
+
+        //Configurar Listeners
+        setupSearchListeners();
 
         binding.tilPesquisa.setEndIconOnClickListener(view -> {
             Intent intent = new Intent(getActivity(), PerfilActivity.class);
@@ -47,6 +56,39 @@ public class NoticiasFragment extends Fragment implements NoticiaListener {
         SingletonLusitania.getInstance(requireContext()).getNoticiasAPI(getContext());
 
         return binding.getRoot();
+    }
+
+    /**
+     * Configura a pesquisa dinâmica com delay para evitar chamadas excessivas à API.
+     */
+    private void setupSearchListeners() {
+        binding.tilPesquisa.getEditText().addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                // Se o utilizador continuar a escrever, removemos a pesquisa feita anteriormente
+                if (searchRunnable != null) {
+                    searchHandler.removeCallbacks(searchRunnable);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                searchRunnable = () -> {
+                    String query = s.toString().trim();
+
+                    if (query.isEmpty()) {
+                        SingletonLusitania.getInstance(requireContext()).getNoticiasAPI(getContext());
+                    } else {
+                        SingletonLusitania.getInstance(requireContext()).searchNoticiaAPI(getContext(), query);
+                    }
+                };
+                // Aguarda 500ms após a última tecla antes de pesquisar
+                searchHandler.postDelayed(searchRunnable, 500);
+            }
+        });
     }
 
     private void setupRecyclerView() {
@@ -80,6 +122,10 @@ public class NoticiasFragment extends Fragment implements NoticiaListener {
 
     @Override
     public void onDestroyView() {
+        // Limpar callbacks de pesquisa pendentes
+        if (searchHandler != null && searchRunnable != null) {
+            searchHandler.removeCallbacks(searchRunnable);
+        }
         super.onDestroyView();
         binding = null;
     }
@@ -91,9 +137,7 @@ public class NoticiasFragment extends Fragment implements NoticiaListener {
         // Atualizar a lista local e o adapter
         items.clear();
         items.addAll(listaNoticias);
-
         if (adapter != null) {
-            // Se tiver criado um metodo updateNoticias no adapter, use-o, senão notifyDataSetChanged
             adapter.notifyDataSetChanged();
         }
     }

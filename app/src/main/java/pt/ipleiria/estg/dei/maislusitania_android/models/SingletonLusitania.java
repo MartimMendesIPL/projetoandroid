@@ -483,6 +483,19 @@ public class SingletonLusitania {
                 }
         );
     }
+    public void searchNoticiaAPI(final Context context, final String query) {
+        makeJsonArrayRequest(context, Request.Method.GET, mUrlAPINoticias + "/search/" + query, true,
+                response -> {
+                    try {
+                        ArrayList<Noticia> noticias = NoticiaJsonParser.parserJsonNoticias(response);
+                        if (noticiaListener != null) noticiaListener.onNoticiasLoaded(noticias);
+                    } catch (Exception e) {
+                        Toast.makeText(context, "Erro JSON Pesquisa Noticias", Toast.LENGTH_SHORT).show();
+                    }
+                },
+                null
+        );
+    }
     //endregion
 
     //region - Mapas API
