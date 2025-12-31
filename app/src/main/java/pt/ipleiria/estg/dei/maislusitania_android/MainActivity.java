@@ -10,8 +10,6 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import android.view.MenuItem;
-import android.view.Window;
-import android.view.WindowManager;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -29,11 +27,7 @@ public class MainActivity extends AppCompatActivity {
         bottomNavigationView.getMenu().findItem(R.id.navigation_placeholder).setEnabled(false);
 
         // Desmarcar itens do bottom navigation
-        bottomNavigationView.getMenu().setGroupCheckable(0, true, false);
-        for (int i = 0; i < bottomNavigationView.getMenu().size(); i++) {
-            bottomNavigationView.getMenu().getItem(i).setChecked(false);
-        }
-        bottomNavigationView.getMenu().setGroupCheckable(0, true, true);
+        deselectNavMenu();
 
         // Carregar o fragmento Mapa por padrão (tela inicial)
         if (savedInstanceState == null) {
@@ -46,6 +40,8 @@ public class MainActivity extends AppCompatActivity {
         fabMapa.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                deselectNavMenu();
+
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragment_container, new MapaFragment())
                         .commit();
@@ -56,6 +52,11 @@ public class MainActivity extends AppCompatActivity {
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+
+                //Ligar menu
+                bottomNavigationView.getMenu().setGroupCheckable(0, true, true);
+
+                //Este item é preciso para que os botoes apareçam como deve ser
                 if (item.getItemId() == R.id.navigation_placeholder){
                     return false;
                 }
@@ -80,5 +81,9 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
+    }
+
+    public void deselectNavMenu() {
+        bottomNavigationView.getMenu().setGroupCheckable(0, false, true);
     }
 }
