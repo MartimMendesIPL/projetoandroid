@@ -7,481 +7,469 @@
     android:background="@color/blue_primary"
     android:fitsSystemWindows="true">
 
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true">
+    <!-- BOTÃO VOLTAR -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/btnVoltar"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="24dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
+        app:cardBackgroundColor="#26FFFFFF"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="0dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="Voltar"
+            android:padding="12dp"
+            android:src="@android:drawable/ic_menu_revert"
+            app:tint="#FFFFFF" />
+    </androidx.cardview.widget.CardView>
+
+    <!-- FOTO DE PERFIL -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cvProfilePhoto"
+        android:layout_width="160dp"
+        android:layout_height="160dp"
+        android:layout_marginTop="70dp"
+        app:cardCornerRadius="80dp"
+        app:cardElevation="12dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/ivProfilePhoto"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="Foto de perfil"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_perfil" />
+    </androidx.cardview.widget.CardView>
+
+    <!-- USERNAME -->
+    <TextView
+        android:id="@+id/tvUsername"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:fontFamily="@font/georgiab"
+        android:text="Username"
+        android:textColor="#FFFFFF"
+        android:textSize="32sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cvProfilePhoto" />
+
+    <!-- CONTENTOR DE INFORMAÇÕES E AÇÕES -->
+    <!-- Changed cardElevation to 0dp -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cvInfoContainer"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginTop="10dp"
+        app:cardBackgroundColor="#FFFFFF"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="0dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvUsername">
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingBottom="30dp">
+            android:orientation="vertical"
+            android:paddingVertical="0dp">
 
-            <!-- BOTÃO VOLTAR -->
-            <!-- Margem Top alterada de 60dp para 24dp para igualar o fragment_favorito -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/btnVoltar"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginStart="24dp"
-                android:layout_marginTop="24dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?attr/selectableItemBackground"
-                app:cardBackgroundColor="#26FFFFFF"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="0dp"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
+            <!-- SEÇÃO: NOME -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="24dp"
+                android:paddingVertical="16dp">
 
                 <ImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:contentDescription="Voltar"
-                    android:padding="12dp"
-                    android:src="@android:drawable/ic_menu_revert"
-                    app:tint="#FFFFFF" />
-            </androidx.cardview.widget.CardView>
-
-            <!-- FOTO DE PERFIL -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/cvProfilePhoto"
-                android:layout_width="160dp"
-                android:layout_height="160dp"
-                android:layout_marginTop="70dp"
-                app:cardCornerRadius="80dp"
-                app:cardElevation="12dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
-
-                <ImageView
-                    android:id="@+id/ivProfilePhoto"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:contentDescription="Foto de perfil"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/ic_perfil" />
-            </androidx.cardview.widget.CardView>
-
-            <!-- USERNAME -->
-            <TextView
-                android:id="@+id/tvUsername"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:fontFamily="@font/georgiab"
-                android:text="Username"
-                android:textColor="#FFFFFF"
-                android:textSize="32sp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/cvProfilePhoto" />
-
-            <!-- CONTENTOR DE INFORMAÇÕES E AÇÕES -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/cvInfoContainer"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="24dp"
-                android:layout_marginTop="10dp"
-                app:cardBackgroundColor="#FFFFFF"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="6dp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvUsername">
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="Nome"
+                    android:src="@drawable/ic_name"
+                    app:tint="@color/blue_primary" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:paddingVertical="0dp">
+                    android:layout_marginStart="20dp"
+                    android:orientation="vertical">
 
-                    <!-- SEÇÃO: NOME -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
+                    <TextView
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:paddingHorizontal="24dp"
-                        android:paddingVertical="16dp">
+                        android:text="Nome Completo"
+                        android:textColor="#9E9E9E"
+                        android:textSize="12sp" />
 
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:contentDescription="Nome"
-                            android:src="@drawable/ic_name"
-                            app:tint="@color/blue_primary" />
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="20dp"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Nome Completo"
-                                android:textColor="#9E9E9E"
-                                android:textSize="12sp" />
-
-                            <LinearLayout
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:orientation="horizontal">
-
-                                <TextView
-                                    android:id="@+id/tvFirstName"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:fontFamily="sans-serif-medium"
-                                    android:text="Admin"
-                                    android:textColor="#212121"
-                                    android:textSize="16sp" />
-
-                                <TextView
-                                    android:id="@+id/tvLastName"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginStart="5dp"
-                                    android:fontFamily="sans-serif-medium"
-                                    android:text="Lusitania"
-                                    android:textColor="#212121"
-                                    android:textSize="16sp" />
-                            </LinearLayout>
-                        </LinearLayout>
-                    </LinearLayout>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginHorizontal="24dp"
-                        android:background="#F0F0F0" />
-
-                    <!-- SEÇÃO: EMAIL -->
                     <LinearLayout
-                        android:id="@+id/layoutEmail"
-                        android:layout_width="match_parent"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:paddingHorizontal="24dp"
-                        android:paddingVertical="16dp">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:contentDescription="Email"
-                            android:src="@drawable/ic_mail"
-                            app:tint="@color/blue_primary" />
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="20dp"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Email"
-                                android:textColor="#9E9E9E"
-                                android:textSize="12sp" />
-
-                            <TextView
-                                android:id="@+id/tvEmail"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:fontFamily="sans-serif-medium"
-                                android:text="00000000@my.ipleiria.pt"
-                                android:textColor="#212121"
-                                android:textSize="16sp" />
-                        </LinearLayout>
-                    </LinearLayout>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginHorizontal="24dp"
-                        android:background="#F0F0F0" />
-
-                    <!-- SEÇÃO: MEMBRO DESDE -->
-                    <LinearLayout
-                        android:id="@+id/layoutMembroDesde"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:paddingHorizontal="24dp"
-                        android:paddingVertical="16dp">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:contentDescription="Membro desde"
-                            android:src="@drawable/ic_calender"
-                            app:tint="@color/blue_primary" />
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="20dp"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Membro desde"
-                                android:textColor="#9E9E9E"
-                                android:textSize="12sp" />
-
-                            <TextView
-                                android:id="@+id/tvMemberSince"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:fontFamily="sans-serif-medium"
-                                android:text="Janeiro 2024"
-                                android:textColor="#212121"
-                                android:textSize="16sp" />
-                        </LinearLayout>
-                    </LinearLayout>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginHorizontal="24dp"
-                        android:background="#F0F0F0" />
-
-                    <!-- SEÇÃO: FAVORITOS -->
-                    <LinearLayout
-                        android:id="@+id/layoutFavoritos"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="?attr/selectableItemBackground"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:paddingHorizontal="24dp"
-                        android:paddingVertical="20dp">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:contentDescription="Favoritos"
-                            android:src="@drawable/ic_fav_on"
-                            app:tint="@color/blue_primary" />
+                        android:layout_marginTop="2dp"
+                        android:orientation="horizontal">
 
                         <TextView
-                            android:layout_width="0dp"
+                            android:id="@+id/tvFirstName"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="20dp"
-                            android:layout_weight="1"
                             android:fontFamily="sans-serif-medium"
-                            android:text="Meus Favoritos"
+                            android:text="Admin"
                             android:textColor="#212121"
                             android:textSize="16sp" />
 
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:contentDescription="Ver mais"
-                            android:rotation="270"
-                            android:src="@android:drawable/ic_menu_more"
-                            app:tint="#BDBDBD" />
-                    </LinearLayout>
-
-                    <!-- DIVISOR -->
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginHorizontal="24dp"
-                        android:background="#F0F0F0" />
-
-                    <!-- EDITAR PERFIL -->
-                    <LinearLayout
-                        android:id="@+id/layoutEditarPerfil"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="?attr/selectableItemBackground"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:paddingHorizontal="24dp"
-                        android:paddingVertical="20dp">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:contentDescription="Editar Perfil"
-                            android:src="@android:drawable/ic_menu_edit"
-                            app:tint="@color/blue_primary" />
-
                         <TextView
-                            android:layout_width="0dp"
+                            android:id="@+id/tvLastName"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="20dp"
-                            android:layout_weight="1"
+                            android:layout_marginStart="5dp"
                             android:fontFamily="sans-serif-medium"
-                            android:text="Editar Perfil"
+                            android:text="Lusitania"
                             android:textColor="#212121"
                             android:textSize="16sp" />
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:contentDescription="Ver mais"
-                            android:rotation="270"
-                            android:src="@android:drawable/ic_menu_more"
-                            app:tint="#BDBDBD" />
                     </LinearLayout>
-
-                    <!-- DIVISOR -->
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginHorizontal="24dp"
-                        android:background="#F0F0F0" />
-
-                    <!-- MUDAR PASSWORD -->
-                    <LinearLayout
-                        android:id="@+id/layoutMudarPassword"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="?attr/selectableItemBackground"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:paddingHorizontal="24dp"
-                        android:paddingVertical="20dp">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:contentDescription="Mudar Password"
-                            android:src="@android:drawable/ic_lock_idle_lock"
-                            app:tint="@color/blue_primary" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="20dp"
-                            android:layout_weight="1"
-                            android:fontFamily="sans-serif-medium"
-                            android:text="Mudar Password"
-                            android:textColor="#212121"
-                            android:textSize="16sp" />
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:contentDescription="Ver mais"
-                            android:rotation="270"
-                            android:src="@android:drawable/ic_menu_more"
-                            app:tint="#BDBDBD" />
-                    </LinearLayout>
-
-                    <!-- DIVISOR -->
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginHorizontal="24dp"
-                        android:background="#F0F0F0" />
-
-                    <!-- LOGOUT -->
-                    <LinearLayout
-                        android:id="@+id/layoutLogout"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="?attr/selectableItemBackground"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:paddingHorizontal="24dp"
-                        android:paddingVertical="20dp">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:contentDescription="Logout"
-                            android:src="@drawable/ic_logout"
-                            app:tint="@color/blue_primary" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="20dp"
-                            android:layout_weight="1"
-                            android:fontFamily="sans-serif-medium"
-                            android:text="Terminar Sessão"
-                            android:textColor="#212121"
-                            android:textSize="16sp" />
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:contentDescription="Ver mais"
-                            android:rotation="270"
-                            android:src="@android:drawable/ic_menu_more"
-                            app:tint="#BDBDBD" />
-                    </LinearLayout>
-
-                    <!-- DIVISOR -->
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginHorizontal="24dp"
-                        android:background="#F0F0F0" />
-
-                    <!-- APAGAR CONTA -->
-                    <LinearLayout
-                        android:id="@+id/layoutApagarConta"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:background="?attr/selectableItemBackground"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:paddingHorizontal="24dp"
-                        android:paddingVertical="20dp">
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:contentDescription="Apagar Conta"
-                            android:src="@android:drawable/ic_menu_delete"
-                            app:tint="#D32F2F" />
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="20dp"
-                            android:layout_weight="1"
-                            android:fontFamily="sans-serif-medium"
-                            android:text="Apagar Conta"
-                            android:textColor="#D32F2F"
-                            android:textSize="16sp" />
-
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:contentDescription="Ver mais"
-                            android:rotation="270"
-                            android:src="@android:drawable/ic_menu_more"
-                            app:tint="#BDBDBD" />
-                    </LinearLayout>
-
                 </LinearLayout>
-            </androidx.cardview.widget.CardView>
-        </androidx.constraintlayout.widget.ConstraintLayout>
-    </ScrollView>
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginHorizontal="24dp"
+                android:background="#F0F0F0" />
+
+            <!-- SEÇÃO: EMAIL -->
+            <LinearLayout
+                android:id="@+id/layoutEmail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="24dp"
+                android:paddingVertical="16dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="Email"
+                    android:src="@drawable/ic_mail"
+                    app:tint="@color/blue_primary" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Email"
+                        android:textColor="#9E9E9E"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/tvEmail"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:fontFamily="sans-serif-medium"
+                        android:text="00000000@my.ipleiria.pt"
+                        android:textColor="#212121"
+                        android:textSize="16sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginHorizontal="24dp"
+                android:background="#F0F0F0" />
+
+            <!-- SEÇÃO: MEMBRO DESDE -->
+            <LinearLayout
+                android:id="@+id/layoutMembroDesde"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="24dp"
+                android:paddingVertical="16dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="Membro desde"
+                    android:src="@drawable/ic_calender"
+                    app:tint="@color/blue_primary" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Membro desde"
+                        android:textColor="#9E9E9E"
+                        android:textSize="12sp" />
+
+                    <TextView
+                        android:id="@+id/tvMemberSince"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:fontFamily="sans-serif-medium"
+                        android:text="Janeiro 2024"
+                        android:textColor="#212121"
+                        android:textSize="16sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginHorizontal="24dp"
+                android:background="#F0F0F0" />
+
+            <!-- SEÇÃO: FAVORITOS -->
+            <LinearLayout
+                android:id="@+id/layoutFavoritos"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="24dp"
+                android:paddingVertical="20dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="Favoritos"
+                    android:src="@drawable/ic_fav_on"
+                    app:tint="@color/blue_primary" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_weight="1"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="Meus Favoritos"
+                    android:textColor="#212121"
+                    android:textSize="16sp" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="Ver mais"
+                    android:rotation="270"
+                    android:src="@android:drawable/ic_menu_more"
+                    app:tint="#BDBDBD" />
+            </LinearLayout>
+
+            <!-- DIVISOR -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginHorizontal="24dp"
+                android:background="#F0F0F0" />
+
+            <!-- EDITAR PERFIL -->
+            <LinearLayout
+                android:id="@+id/layoutEditarPerfil"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="24dp"
+                android:paddingVertical="20dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="Editar Perfil"
+                    android:src="@android:drawable/ic_menu_edit"
+                    app:tint="@color/blue_primary" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_weight="1"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="Editar Perfil"
+                    android:textColor="#212121"
+                    android:textSize="16sp" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="Ver mais"
+                    android:rotation="270"
+                    android:src="@android:drawable/ic_menu_more"
+                    app:tint="#BDBDBD" />
+            </LinearLayout>
+
+            <!-- DIVISOR -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginHorizontal="24dp"
+                android:background="#F0F0F0" />
+
+            <!-- MUDAR PASSWORD -->
+            <LinearLayout
+                android:id="@+id/layoutMudarPassword"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="24dp"
+                android:paddingVertical="20dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="Mudar Password"
+                    android:src="@android:drawable/ic_lock_idle_lock"
+                    app:tint="@color/blue_primary" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_weight="1"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="Mudar Password"
+                    android:textColor="#212121"
+                    android:textSize="16sp" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="Ver mais"
+                    android:rotation="270"
+                    android:src="@android:drawable/ic_menu_more"
+                    app:tint="#BDBDBD" />
+            </LinearLayout>
+
+            <!-- DIVISOR -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginHorizontal="24dp"
+                android:background="#F0F0F0" />
+
+            <!-- LOGOUT -->
+            <LinearLayout
+                android:id="@+id/layoutLogout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="24dp"
+                android:paddingVertical="20dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="Logout"
+                    android:src="@drawable/ic_logout"
+                    app:tint="@color/blue_primary" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_weight="1"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="Terminar Sessão"
+                    android:textColor="#212121"
+                    android:textSize="16sp" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="Ver mais"
+                    android:rotation="270"
+                    android:src="@android:drawable/ic_menu_more"
+                    app:tint="#BDBDBD" />
+            </LinearLayout>
+
+            <!-- DIVISOR -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginHorizontal="24dp"
+                android:background="#F0F0F0" />
+
+            <!-- APAGAR CONTA -->
+            <LinearLayout
+                android:id="@+id/layoutApagarConta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="24dp"
+                android:paddingVertical="20dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="Apagar Conta"
+                    android:src="@android:drawable/ic_menu_delete"
+                    app:tint="#D32F2F" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_weight="1"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="Apagar Conta"
+                    android:textColor="#D32F2F"
+                    android:textSize="16sp" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="Ver mais"
+                    android:rotation="270"
+                    android:src="@android:drawable/ic_menu_more"
+                    app:tint="#BDBDBD" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
 </androidx.constraintlayout.widget.ConstraintLayout>
