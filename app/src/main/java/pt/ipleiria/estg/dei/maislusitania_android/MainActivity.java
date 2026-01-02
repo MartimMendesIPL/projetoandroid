@@ -1,5 +1,7 @@
 package pt.ipleiria.estg.dei.maislusitania_android;
 
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import androidx.annotation.NonNull;
@@ -9,6 +11,13 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import android.view.MenuItem;
+import android.widget.Toast;
+
+import pt.ipleiria.estg.dei.maislusitania_android.models.SingletonLusitania;
+import pt.ipleiria.estg.dei.maislusitania_android.utils.MqttHelper;
+import pt.ipleiria.estg.dei.maislusitania_android.utils.NotificationHelper;
+import android.view.Window;
+import android.view.WindowManager;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -19,12 +28,34 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        NotificationHelper.createNotificationChannel(this);
+
+        MqttHelper mqttHelper = MqttHelper.getInstance();
+
+        // Definir listener para restaurar subscrições após conexão
+        mqttHelper.setConnectionListener(new MqttHelper.MqttConnectionListener() {
+            @Override
+            public void onConnected() {
+                // Restaurar subscrições apenas após conexão estabelecida
+                SingletonLusitania.getInstance(MainActivity.this).getallFavoritosAPI(MainActivity.this);
+            }
+
+            @Override
+            public void onConnectionFailed(String error) {
+                android.util.Log.e("MainActivity", "Falha na conexão MQTT: " + error);
+            }
+        });
+        // Conectar MQTT
+        mqttHelper.connect(this);
+
         bottomNavigationView = findViewById(R.id.bottom_navigation);
         FloatingActionButton fabMapa = findViewById(R.id.fab_mapa);
 
         //Botao placeholder para criar espaço no menu
         bottomNavigationView.getMenu().findItem(R.id.navigation_placeholder).setEnabled(false);
 
+        // Desmarcar itens do bottom navigation
+        deselectNavMenu();
 
         // Carregar o fragmento Mapa por padrão (tela inicial)
         if (savedInstanceState == null) {
@@ -37,16 +68,11 @@ public class MainActivity extends AppCompatActivity {
         fabMapa.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                deselectNavMenu();
+
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragment_container, new MapaFragment())
                         .commit();
-
-                // Desmarcar itens do bottom navigation
-                bottomNavigationView.getMenu().setGroupCheckable(0, true, false);
-                for (int i = 0; i < bottomNavigationView.getMenu().size(); i++) {
-                    bottomNavigationView.getMenu().getItem(i).setChecked(false);
-                }
-                bottomNavigationView.getMenu().setGroupCheckable(0, true, true);
             }
         });
 
@@ -54,6 +80,11 @@ public class MainActivity extends AppCompatActivity {
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+
+                //Ligar menu
+                bottomNavigationView.getMenu().setGroupCheckable(0, true, true);
+
+                //Este item é preciso para que os botoes apareçam como deve ser
                 if (item.getItemId() == R.id.navigation_placeholder){
                     return false;
                 }
@@ -61,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
                 Fragment selectedFragment = null;
 
                 if (item.getItemId() == R.id.navigation_bilhetes) {
-                    selectedFragment = new BilhetesFragment();
+                    selectedFragment = new ReservasFragment();
                 } else if (item.getItemId() == R.id.navigation_eventos) {
                     selectedFragment = new EventosFragment();
                 } else if (item.getItemId() == R.id.navigation_noticias) {
@@ -78,5 +109,9 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
+    }
+
+    public void deselectNavMenu() {
+        bottomNavigationView.getMenu().setGroupCheckable(0, false, true);
     }
 }

@@ -10,7 +10,6 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 import pt.ipleiria.estg.dei.maislusitania_android.databinding.ActivityPerfilBinding;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.PerfilListener;
-import pt.ipleiria.estg.dei.maislusitania_android.models.Favorito;
 import pt.ipleiria.estg.dei.maislusitania_android.models.SingletonLusitania;
 import pt.ipleiria.estg.dei.maislusitania_android.models.User;
 
@@ -23,7 +22,6 @@ public class PerfilActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityPerfilBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
         configurarListeners();
         carregarDadosUtilizador();
     }
@@ -42,7 +40,7 @@ public class PerfilActivity extends AppCompatActivity {
         });
 
         // Botão Logout
-        binding.btnLogout.setOnClickListener(v -> {
+        binding.layoutLogout.setOnClickListener(v -> {
             SingletonLusitania.getInstance(this).logout(this);
             Intent intent = new Intent(this, LoginActivity.class);
             startActivity(intent);
@@ -61,7 +59,6 @@ public class PerfilActivity extends AppCompatActivity {
                 binding.tvEmail.setText(user.getEmail());
                 binding.tvMemberSince.setText(String.valueOf(user.getData_adesao()));
 
-                // ✅ Para imagem de perfil (URL)
                 if (user.getImagem_perfil() != null && !user.getImagem_perfil().isEmpty()) {
 
                     Glide.with(PerfilActivity.this)
