@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white_blue"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Imagem de Cabeçalho -->
+        <ImageView
+            android:id="@+id/ivImagem"
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_launcher_background"
+            tools:ignore="ContentDescription" />
+
+        <!-- Card de Conteúdo (Sobreposto à imagem) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_marginTop="-50dp"
+            android:background="@drawable/card_background"
+            android:elevation="8dp"
+            android:orientation="vertical"
+            android:paddingStart="24dp"
+            android:paddingTop="32dp"
+            android:paddingEnd="24dp"
+            android:paddingBottom="48dp">
+
+            <!-- Título Centralizado -->
+            <TextView
+                android:id="@+id/tvNome"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:textColor="#1A1A1A"
+                android:textSize="26sp"
+                android:textStyle="bold"
+                tools:text="Palácio da Pena" />
+
+            <!-- Localização (Morada/Distrito) -->
+            <TextView
+                android:id="@+id/tvLocalizacao"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:gravity="center"
+                android:textColor="#757575"
+                android:textSize="14sp"
+                tools:text="Sintra, Lisboa" />
+
+            <!-- Avaliação (Estrelas) -->
+            <RatingBar
+                android:id="@+id/ratingBar"
+                style="@style/Widget.AppCompat.RatingBar.Small"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="24dp"
+                android:isIndicator="true"
+                android:numStars="5"
+                android:stepSize="0.5"
+                android:progressTint="@color/blue_primary"
+                android:secondaryProgressTint="@color/blue_primary"
+                android:progressBackgroundTint="@android:color/darker_gray"
+                tools:rating="4" />
+
+
+
+            <!-- Divisor -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginBottom="24dp"
+                android:alpha="0.2"
+                android:background="@android:color/darker_gray" />
+
+            <!-- Título da Secção Descrição -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="Sobre o Local"
+                android:textColor="#1A1A1A"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <!-- Texto da Descrição -->
+            <TextView
+                android:id="@+id/tvDescricao"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                android:justificationMode="inter_word"
+                android:lineSpacingExtra="6dp"
+                android:textColor="#424242"
+                android:textSize="15sp"
+                tools:text="O Palácio Nacional da Pena é um dos expoentes máximos do Romantismo do século XIX em Portugal..." />
+
+            <!-- Divisor -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginBottom="24dp"
+                android:alpha="0.2"
+                android:background="@android:color/darker_gray" />
+
+            <!-- SECÇÃO: Horário de Funcionamento -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="24dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="12dp">
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@android:drawable/ic_menu_recent_history"
+                        app:tint="@color/blue_primary"
+                        tools:ignore="ContentDescription" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="Horário"
+                        android:textColor="#1A1A1A"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- TextView para o Horário Completo (Dinâmico) -->
+                <TextView
+                    android:id="@+id/tvHorario"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="#424242"
+                    android:lineSpacingExtra="4dp"
+                    tools:text="Segunda: 10:00 - 18:00\nTerça: 10:00 - 18:00\nQuarta: Encerrado" />
+            </LinearLayout>
+
+            <!-- SECÇÃO: Informações Úteis -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="24dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="12dp">
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@android:drawable/ic_menu_info_details"
+                        app:tint="@color/blue_primary"
+                        tools:ignore="ContentDescription" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="Contactos"
+                        android:textColor="#1A1A1A"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- Morada -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Morada"
+                    android:textStyle="bold"
+                    android:textColor="#1A1A1A"/>
+                <TextView
+                    android:id="@+id/tvInfoMorada"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    tools:text="Av. de Berna 45A, 1067-001 Lisboa"
+                    android:textColor="#424242"/>
+
+                <!-- Telefone -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Telefone"
+                    android:textStyle="bold"
+                    android:textColor="#1A1A1A"/>
+                <TextView
+                    android:id="@+id/tvTelefone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    tools:text="+351 21 798 2000"
+                    android:textColor="#424242"/>
+
+                <!-- Email -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Email"
+                    android:textStyle="bold"
+                    android:textColor="#1A1A1A"/>
+                <TextView
+                    android:id="@+id/tvEmail"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    tools:text="geral@gulbenkian.pt"
+                    android:textColor="#424242"/>
+
+            </LinearLayout>
+
+            <!-- Divisor -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginBottom="24dp"
+                android:alpha="0.2"
+                android:background="@android:color/darker_gray" />
+
+            <!-- SECÇÃO: Bilhetes (Dinâmica) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="24dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="12dp">
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@android:drawable/ic_menu_my_calendar"
+                        app:tint="@color/blue_primary"
+                        tools:ignore="ContentDescription" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="Bilhetes"
+                        android:textColor="#1A1A1A"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- RecyclerView para listar os tipos de bilhetes (Adulto, Criança, etc.) -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvBilhetes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    tools:itemCount="2"
+                    tools:listitem="@android:layout/simple_list_item_2" />
+
+                <!-- Botão Comprar -->
+                <Button
+                    android:id="@+id/btnComprar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Comprar Bilhetes"
+                    android:backgroundTint="@color/blue_primary"
+                    android:textColor="@android:color/white"/>
+
+            </LinearLayout>
+
+            <!-- Divisor -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginBottom="24dp"
+                android:alpha="0.2"
+                android:background="@android:color/darker_gray" />
+
+            <!-- SECÇÃO: Avaliações (Dinâmica) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="12dp">
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@android:drawable/star_on"
+                        app:tint="@color/blue_primary"
+                        tools:ignore="ContentDescription" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="Avaliações"
+                        android:textColor="#1A1A1A"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- RecyclerView para listar Avaliações -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvAvaliacoes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    tools:itemCount="2"
+                    tools:listitem="@android:layout/simple_list_item_2" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>
