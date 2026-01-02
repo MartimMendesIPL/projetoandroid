@@ -105,13 +105,34 @@ public class SingletonLusitania {
     }
 
     // Setters Listeners
-    public void setMapaListener(MapaListener mapaListener) { this.mapaListener = mapaListener; }
-    public void setLoginListener(LoginListener loginListener) { this.loginListener = loginListener; }
-    public void setLocaisListener(LocaisListener locaisListener) { this.locaisListener = locaisListener; }
-    public void setNoticiaListener(NoticiaListener noticiaListener) { this.noticiaListener = noticiaListener; }
-    public void setPerfilListener(PerfilListener perfilListener) { this.perfilListener = perfilListener; }
-    public void setEventoListener(EventoListener eventoListener) { this.eventoListener = eventoListener; }
-    public void setFavoritoListener(FavoritoListener favoritoListener) { this.favoritoListener = favoritoListener; }
+    public void setMapaListener(MapaListener mapaListener) {
+        this.mapaListener = mapaListener;
+    }
+
+    public void setLoginListener(LoginListener loginListener) {
+        this.loginListener = loginListener;
+    }
+
+    public void setLocaisListener(LocaisListener locaisListener) {
+        this.locaisListener = locaisListener;
+    }
+
+    public void setNoticiaListener(NoticiaListener noticiaListener) {
+        this.noticiaListener = noticiaListener;
+    }
+
+    public void setPerfilListener(PerfilListener perfilListener) {
+        this.perfilListener = perfilListener;
+    }
+
+    public void setEventoListener(EventoListener eventoListener) {
+        this.eventoListener = eventoListener;
+    }
+
+    public void setFavoritoListener(FavoritoListener favoritoListener) {
+        this.favoritoListener = favoritoListener;
+    }
+
     public void setBilhetesListener(BilheteListener bilheteListener) {
         this.bilheteListener = bilheteListener;
     }
@@ -155,6 +176,7 @@ public class SingletonLusitania {
         SharedPreferences sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         return sharedPreferences.getString(KEY_TOKEN, null);
     }
+
     private int getUserId(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         String userIdStr = prefs.getString(KEY_USER_ID, "-1");
@@ -248,6 +270,7 @@ public class SingletonLusitania {
                 });
         volleyQueue.add(req);
     }
+
     //Tratar dos erros
     private void handleDefaultError(Context context, VolleyError error) {
         String msg = "Erro na comunicação com o servidor";
@@ -268,11 +291,11 @@ public class SingletonLusitania {
     }
 
     public void removeFavoritoBD(int id, int utilizadorid) {
-        dbHelper.removerFavorito(id , utilizadorid);
+        dbHelper.removerFavorito(id, utilizadorid);
     }
 
     public void getallFavoritosAPI(final Context context) {
-        if (!UtilParser.isConnectionInternet(context)){
+        if (!UtilParser.isConnectionInternet(context)) {
             favoritos = getFavoritosBD();
             // log no logcat
             for (Favorito fav : favoritos) {
@@ -288,11 +311,13 @@ public class SingletonLusitania {
                         ArrayList<Favorito> favoritos = FavoritoJsonParser.parserJsonFavoritos(response);
                         if (favoritoListener != null) favoritoListener.onFavoritosLoaded(favoritos);
                     } catch (Exception e) {
-                        if (favoritoListener != null) favoritoListener.onFavoritosError("Erro JSON Favoritos");
+                        if (favoritoListener != null)
+                            favoritoListener.onFavoritosError("Erro JSON Favoritos");
                     }
                 },
                 error -> {
-                    if (favoritoListener != null) favoritoListener.onFavoritosError(error.getMessage());
+                    if (favoritoListener != null)
+                        favoritoListener.onFavoritosError(error.getMessage());
                 }
         );
     }
@@ -330,6 +355,7 @@ public class SingletonLusitania {
                 error -> Toast.makeText(context, "Erro ao alterar favorito", Toast.LENGTH_SHORT).show()
         );
     }
+
     public void toggleFavoritoAPI(final Context context, final Favorito favorito) { // para os favoritos (quando fiz esse codigo só eu e deus sabiamos, agora só deus sabe)
         // Define Endpoint e Metodo baseado no estado atual
         String endpoint;
@@ -381,7 +407,8 @@ public class SingletonLusitania {
                         String user = response.getString("username");
                         String user_id = response.getString("user_id");
                         guardarUtilizador(context, user, token, user_id);
-                        if (loginListener != null) loginListener.onValidateLogin(token, user, user_id);
+                        if (loginListener != null)
+                            loginListener.onValidateLogin(token, user, user_id);
                     } catch (Exception e) {
                         Toast.makeText(context, "Erro no Login: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
@@ -394,7 +421,8 @@ public class SingletonLusitania {
                             String body = new String(error.networkResponse.data, "UTF-8");
                             JSONObject jsonError = new JSONObject(body);
                             if (jsonError.has("message")) mensagem = jsonError.getString("message");
-                        } catch (Exception ignored) {}
+                        } catch (Exception ignored) {
+                        }
                     }
                     Toast.makeText(context, mensagem, Toast.LENGTH_SHORT).show();
                 }
@@ -418,6 +446,26 @@ public class SingletonLusitania {
                 }
         );
     }
+
+    //Retorna um local em especifico
+    public void getLocalAPI(final int localId, final Context context) {
+        makeJsonObjectRequest(context, Request.Method.GET, mUrlAPILocais + "/" + localId, true, null,
+                response -> {
+                    try {
+                        // Adicionado .toString() porque o parser espera String e o response é JSONObject
+                        Local local = LocalJsonParser.parserJsonLocalDetalhes(response.toString());
+                        if (locaisListener != null) locaisListener.onLocalLoaded(local);
+                    } catch (Exception e) {
+                        if (locaisListener != null) locaisListener.onLocalError(e.getMessage());
+                    }
+                },
+                error -> {
+                    if (locaisListener != null) locaisListener.onLocalError(error.getMessage());
+                }
+        );
+    }
+
+
     //endregion
 
     //region - Noticias API
