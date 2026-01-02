@@ -136,10 +136,13 @@ public class SingletonLusitania {
         this.favoritoListener = favoritoListener;
     }
 
-    public void setBilhetesListener(BilheteListener bilheteListener) {
+    public void setBilheteListener(BilheteListener bilheteListener) {
         this.bilheteListener = bilheteListener;
     }
 
+    public void setReservaListener(ReservaListener reservaListener) {
+        this.reservaListener = reservaListener;
+    }
 
     //endregion
 
