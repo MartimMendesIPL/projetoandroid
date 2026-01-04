@@ -114,6 +114,10 @@ public class ReservasFragment extends Fragment implements ReservaListener {
 
     @Override
     public void onDestroyView() {
+        if (searchHandler != null && searchRunnable != null) {
+            searchHandler.removeCallbacks(searchRunnable);
+        }
+
         super.onDestroyView();
         binding = null;
     }
