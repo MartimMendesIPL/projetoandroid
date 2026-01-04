@@ -15,6 +15,7 @@ import com.android.volley.toolbox.Volley;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.BilheteListener;
@@ -601,6 +602,67 @@ public class SingletonLusitania {
                 }
         );
     }
+
+    public void editUserProfileAPI(final Context context, final String primeiro_nome,
+                                   final String ultimo_mome, final String username) {
+
+        JSONObject jsonBody = new JSONObject();
+        try {
+            jsonBody.put("primeiro_nome", primeiro_nome);
+            jsonBody.put("ultimo_nome", ultimo_mome);
+            jsonBody.put("username", username);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        makeJsonObjectRequest(context, Request.Method.PUT, mUrlUser + "/update-profile", true, jsonBody,
+                response -> {
+                    try {
+                        getUserProfileAPI(context);
+
+                        Toast.makeText(context, "Perfil editado com sucesso", Toast.LENGTH_SHORT).show();
+                    } catch (Exception e) {
+                        if (perfilListener != null)
+                            perfilListener.onPerfilError("Erro: " + e.getMessage());
+                    }
+                },
+                error -> {
+                    if (perfilListener != null) perfilListener.onPerfilError(error.getMessage());
+                }
+        );
+    }
+
+    public void changePasswordAPI(final Context context, final String password_atual, final String password) {
+        JSONObject jsonBody = new JSONObject();
+        try {
+            jsonBody.put("current_password", password_atual);
+            jsonBody.put("new_password", password);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        makeJsonObjectRequest(context, Request.Method.PUT, mUrlUser + "/change-password", true, jsonBody,
+                response -> {
+                    if (perfilListener != null) perfilListener.onPasswordChanged();
+                },
+                error -> {
+                    if (perfilListener != null) perfilListener.onPerfilError(error.getMessage());
+                }
+        );
+    }
+
+    public void deleteUserAPI(final Context context) {
+        makeJsonObjectRequest(context, Request.Method.DELETE, mUrlUser + "/delete-account", true, null,
+                response -> {
+                    if (perfilListener != null) perfilListener.onPerfilLogout();
+                },
+                error -> {
+                    if (perfilListener != null)
+                        perfilListener.onPerfilLogoutError(error.getMessage());
+                }
+        );
+    }
+
     //endregion
 
     //region - Eventos API
