@@ -17,10 +17,10 @@ import java.util.ArrayList;
 
 import pt.ipleiria.estg.dei.maislusitania_android.adapters.LocalAdapter;
 import pt.ipleiria.estg.dei.maislusitania_android.databinding.FragmentLocaisBinding;
+import pt.ipleiria.estg.dei.maislusitania_android.fragments.DetalhesLocalFragment;
 import pt.ipleiria.estg.dei.maislusitania_android.models.Local;
 import pt.ipleiria.estg.dei.maislusitania_android.models.SingletonLusitania;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.LocaisListener;
-import pt.ipleiria.estg.dei.maislusitania_android.models.LocaisFavDBHelper;
 
 public class LocaisFragment extends Fragment implements LocaisListener {
 
@@ -43,6 +43,7 @@ public class LocaisFragment extends Fragment implements LocaisListener {
 
         setupRecyclerView();
 
+        // Define este fragmento como o listener atual e carrega os locais
         SingletonLusitania.getInstance(requireContext()).setLocaisListener(this);
         SingletonLusitania.getInstance(requireContext()).getAllLocaisAPI(getContext());
 
@@ -56,14 +57,19 @@ public class LocaisFragment extends Fragment implements LocaisListener {
         adapter = new LocalAdapter(items, new LocalAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(Local item) {
-                Toast.makeText(getContext(), "Clicou em: " + item.getNome(), Toast.LENGTH_SHORT).show();
+                // Passamos o ID e a Avaliação Média (que sabemos que está correta na lista)
+                Fragment fragment = DetalhesLocalFragment.newInstance(item.getId(), item.getAvaliacaoMedia());
+
+                getParentFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, fragment)
+                        .addToBackStack(null)
+                        .commit();
             }
+
 
             @Override
             public void onFavoriteClick(Local item, int position) {
-                // ✅ Chama a API de toggle via Singleton
                 SingletonLusitania.getInstance(requireContext()).toggleFavoritoAPI(requireContext(), item);
-
             }
         });
 
@@ -71,23 +77,34 @@ public class LocaisFragment extends Fragment implements LocaisListener {
     }
 
     @Override
-    public void onLocaisLoaded(ArrayList<Local> listaLocais) {
-        items.clear();
-        items.addAll(listaLocais);
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
+    }
 
-        if (adapter != null) {
+    @Override
+    public void onLocaisLoaded(ArrayList<Local> listaLocais) {
+        if (listaLocais != null) {
+            items.clear();
+            items.addAll(listaLocais);
             adapter.notifyDataSetChanged();
         }
     }
 
     @Override
     public void onLocaisError(String message) {
-        Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+        if (getContext() != null) {
+            Toast.makeText(getContext(), "Erro ao carregar locais: " + message, Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        binding = null;
+    public void onLocalLoaded(Local local) {
+        // Não utilizado aqui
+    }
+
+    @Override
+    public void onLocalError(String message) {
+        // Não utilizado aqui
     }
 }
