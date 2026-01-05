@@ -20,8 +20,10 @@ public class MqttHelper {
     private MqttMessageListener messageListener;
     private Context appContext;
 
-    private static final String BROKER_URL = "tcp://10.0.2.2:1883";
+    private static final String BROKER_URL = "tcp://172.22.21.218:8080";
     private static final String CLIENT_ID = "MaisLusitaniaAndroid_";
+    private static final String MQTT_USERNAME = "lusitania";
+    private static final String MQTT_PASSWORD = "12345678";
 
     public interface MqttMessageListener {
         void onMessageReceived(String topic, String message);
@@ -51,7 +53,6 @@ public class MqttHelper {
         this.connectionListener = listener;
     }
 
-
     public void connect(Context context) {
         this.appContext = context.getApplicationContext();
 
@@ -61,6 +62,8 @@ public class MqttHelper {
                 mqttClient = new MqttClient(BROKER_URL, clientId, new MemoryPersistence());
 
                 MqttConnectOptions options = new MqttConnectOptions();
+                options.setUserName(MQTT_USERNAME);
+                options.setPassword(MQTT_PASSWORD.toCharArray());
                 options.setCleanSession(true);
                 options.setAutomaticReconnect(true);
                 options.setConnectionTimeout(10);
@@ -104,9 +107,8 @@ public class MqttHelper {
                 });
 
                 mqttClient.connect(options);
-                Log.i(TAG, "Conectado ao broker MQTT");
+                Log.i(TAG, "Conectado ao broker MQTT com autenticação");
 
-                // Notificar que está conectado
                 if (connectionListener != null) {
                     new android.os.Handler(android.os.Looper.getMainLooper()).post(() ->
                             connectionListener.onConnected()
@@ -160,7 +162,4 @@ public class MqttHelper {
             Log.e(TAG, "Erro ao desconectar: " + e.getMessage());
         }
     }
-
-
-
 }
