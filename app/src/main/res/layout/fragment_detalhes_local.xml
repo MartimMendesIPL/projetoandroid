@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white_blue"
-    android:fillViewport="true">
+    android:fillViewport="true"
+    android:fitsSystemWindows="true">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -98,13 +99,11 @@
                 android:layout_marginBottom="24dp"
                 android:isIndicator="true"
                 android:numStars="5"
-                android:stepSize="0.5"
+                android:progressBackgroundTint="@android:color/darker_gray"
                 android:progressTint="@color/blue_primary"
                 android:secondaryProgressTint="@color/blue_primary"
-                android:progressBackgroundTint="@android:color/darker_gray"
+                android:stepSize="0.5"
                 tools:rating="4" />
-
-
 
             <!-- Divisor -->
             <View
@@ -136,33 +135,27 @@
                 android:textSize="15sp"
                 tools:text="O Palácio Nacional da Pena é um dos expoentes máximos do Romantismo do século XIX em Portugal..." />
 
-            <!-- Divisor -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginBottom="24dp"
-                android:alpha="0.2"
-                android:background="@android:color/darker_gray" />
-
             <!-- SECÇÃO: Horário de Funcionamento -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginBottom="24dp">
+                android:layout_marginBottom="24dp"
+                android:orientation="vertical">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
+                    android:layout_marginBottom="12dp"
                     android:gravity="center_vertical"
-                    android:layout_marginBottom="12dp">
+                    android:orientation="horizontal">
+
                     <ImageView
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:src="@android:drawable/ic_menu_recent_history"
                         app:tint="@color/blue_primary"
                         tools:ignore="ContentDescription" />
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -173,13 +166,12 @@
                         android:textStyle="bold" />
                 </LinearLayout>
 
-                <!-- TextView para o Horário Completo (Dinâmico) -->
                 <TextView
                     android:id="@+id/tvHorario"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="#424242"
                     android:lineSpacingExtra="4dp"
+                    android:textColor="#424242"
                     tools:text="Segunda: 10:00 - 18:00\nTerça: 10:00 - 18:00\nQuarta: Encerrado" />
             </LinearLayout>
 
@@ -187,21 +179,23 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginBottom="24dp">
+                android:layout_marginBottom="24dp"
+                android:orientation="vertical">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
+                    android:layout_marginBottom="12dp"
                     android:gravity="center_vertical"
-                    android:layout_marginBottom="12dp">
+                    android:orientation="horizontal">
+
                     <ImageView
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:src="@android:drawable/ic_menu_info_details"
                         app:tint="@color/blue_primary"
                         tools:ignore="ContentDescription" />
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -212,50 +206,29 @@
                         android:textStyle="bold" />
                 </LinearLayout>
 
-                <!-- Morada -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Morada"
-                    android:textStyle="bold"
-                    android:textColor="#1A1A1A"/>
                 <TextView
                     android:id="@+id/tvInfoMorada"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
-                    tools:text="Av. de Berna 45A, 1067-001 Lisboa"
-                    android:textColor="#424242"/>
+                    android:textColor="#424242"
+                    tools:text="Av. de Berna 45A, 1067-001 Lisboa" />
 
-                <!-- Telefone -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Telefone"
-                    android:textStyle="bold"
-                    android:textColor="#1A1A1A"/>
                 <TextView
                     android:id="@+id/tvTelefone"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
-                    tools:text="+351 21 798 2000"
-                    android:textColor="#424242"/>
+                    android:textColor="#424242"
+                    tools:text="+351 21 798 2000" />
 
-                <!-- Email -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Email"
-                    android:textStyle="bold"
-                    android:textColor="#1A1A1A"/>
                 <TextView
                     android:id="@+id/tvEmail"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
-                    tools:text="geral@gulbenkian.pt"
-                    android:textColor="#424242"/>
+                    android:textColor="#424242"
+                    tools:text="geral@gulbenkian.pt" />
 
             </LinearLayout>
 
@@ -271,21 +244,23 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginBottom="24dp">
+                android:layout_marginBottom="24dp"
+                android:orientation="vertical">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
+                    android:layout_marginBottom="12dp"
                     android:gravity="center_vertical"
-                    android:layout_marginBottom="12dp">
+                    android:orientation="horizontal">
+
                     <ImageView
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:src="@android:drawable/ic_menu_my_calendar"
                         app:tint="@color/blue_primary"
                         tools:ignore="ContentDescription" />
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -296,7 +271,6 @@
                         android:textStyle="bold" />
                 </LinearLayout>
 
-                <!-- RecyclerView para listar os tipos de bilhetes (Adulto, Criança, etc.) -->
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rvBilhetes"
                     android:layout_width="match_parent"
@@ -305,15 +279,14 @@
                     tools:itemCount="2"
                     tools:listitem="@android:layout/simple_list_item_2" />
 
-                <!-- Botão Comprar -->
                 <Button
                     android:id="@+id/btnComprar"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:text="Comprar Bilhetes"
                     android:backgroundTint="@color/blue_primary"
-                    android:textColor="@android:color/white"/>
+                    android:text="Comprar Bilhetes"
+                    android:textColor="@android:color/white" />
 
             </LinearLayout>
 
@@ -334,15 +307,17 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
+                    android:layout_marginBottom="12dp"
                     android:gravity="center_vertical"
-                    android:layout_marginBottom="12dp">
+                    android:orientation="horizontal">
+
                     <ImageView
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:src="@android:drawable/star_on"
                         app:tint="@color/blue_primary"
                         tools:ignore="ContentDescription" />
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -353,6 +328,97 @@
                         android:textStyle="bold" />
                 </LinearLayout>
 
+                <!-- ~~~~~~~~~~~~~~ INÍCIO: Adicionar/Editar Avaliação ~~~~~~~~~~~~~~ -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardAddAvaliacao"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="#DADADA"
+                    app:strokeWidth="1dp">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="16dp">
+
+                        <!-- Botão para APAGAR (ícone) -->
+                        <ImageButton
+                            android:id="@+id/btnApagarAvaliacao"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="Apagar Avaliação"
+                            android:padding="8dp"
+                            android:src="@android:drawable/ic_menu_delete"
+                            android:visibility="gone"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:tint="@android:color/holo_red_dark"
+                            tools:visibility="visible" />
+
+                        <TextView
+                            android:id="@+id/tvAddAvaliacaoTitle"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="8dp"
+                            android:text="Deixe a sua avaliação"
+                            android:textColor="#1A1A1A"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            app:layout_constraintBottom_toBottomOf="@id/btnApagarAvaliacao"
+                            app:layout_constraintEnd_toStartOf="@id/btnApagarAvaliacao"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="@id/btnApagarAvaliacao" />
+
+                        <RatingBar
+                            android:id="@+id/rbAddAvaliacao"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:isIndicator="false"
+                            android:numStars="5"
+                            android:stepSize="1"
+                            android:theme="@style/RatingBar"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/tvAddAvaliacaoTitle" />
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/tilComentario"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/rbAddAvaliacao">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etComentario"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="top"
+                                android:hint="Escreva o seu comentário (opcional)"
+                                android:minLines="3" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <!-- Botão universal para Submeter / Guardar Alterações -->
+                        <Button
+                            android:id="@+id/btnSubmitAvaliacao"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:text="Submeter"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/tilComentario" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </com.google.android.material.card.MaterialCardView>
+                <!-- ~~~~~~~~~~~~~~ FIM: Adicionar/Editar Avaliação ~~~~~~~~~~~~~~ -->
+
+
                 <!-- RecyclerView para listar Avaliações -->
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rvAvaliacoes"
@@ -360,7 +426,7 @@
                     android:layout_height="wrap_content"
                     android:nestedScrollingEnabled="false"
                     tools:itemCount="2"
-                    tools:listitem="@android:layout/simple_list_item_2" />
+                    tools:listitem="@layout/item_list_avaliacao" />
 
             </LinearLayout>
 

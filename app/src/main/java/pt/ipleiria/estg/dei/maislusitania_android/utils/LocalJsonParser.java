@@ -18,7 +18,6 @@ import pt.ipleiria.estg.dei.maislusitania_android.models.TipoBilhete;
 
 public class LocalJsonParser {
 
-    // 1. Metodo para converter um Objeto JSON num Objeto Java (Local)
     public static Local parserJsonLocal(String response) {
         Local auxlocal = null;
         try
@@ -43,7 +42,6 @@ public class LocalJsonParser {
         return auxlocal;
     }
 
-    // 2. Metodo para converter uma LISTA de JSONs numa LISTA de Locais
         @NonNull
         public static ArrayList<Local> parserJsonLocais(JSONArray response) {
             ArrayList<Local> locais = new ArrayList<>();
@@ -73,14 +71,12 @@ public class LocalJsonParser {
             return locais;
         }
 
-
-    // 3. Metodo para converter o JSON detalhado de um Local (com horarios, bilhetes, etc)
     public static Local parserJsonLocalDetalhes(String response) {
         Local local = null;
         try {
             JSONObject jsonObject = new JSONObject(response);
 
-            // 1. Dados Básicos (Reaproveita o construtor existente)
+            // Informaões do local
             int id = jsonObject.getInt("id");
             String nome = jsonObject.getString("nome");
             String morada = jsonObject.getString("morada");
@@ -94,12 +90,12 @@ public class LocalJsonParser {
 
             local = new Local(id, nome, morada, distrito, descricao, imagem, avaliacaoMedia, favorito_id);
 
-            // 2. Dados de Contacto (Adicionar setters na classe Local)
+            // Dados
             local.setTelefone(jsonObject.optString("contacto_telefone"));
             local.setEmail(jsonObject.optString("contacto_email"));
             local.setWebsite(jsonObject.optString("website"));
 
-            // 3. Horário (Objeto JSON dentro do JSON principal)
+            // Horario
             JSONObject horarioJson = jsonObject.optJSONObject("horario");
             if (horarioJson != null) {
                 // Podes guardar num HashMap<String, String> ou num objeto Horario
@@ -113,7 +109,7 @@ public class LocalJsonParser {
                 local.addHorario("domingo", horarioJson.optString("domingo"));
             }
 
-            // 4. Avaliações (Array JSON)
+            // Avaliacoes
             JSONArray avaliacoesArray = jsonObject.optJSONArray("avaliacoes");
             if (avaliacoesArray != null) {
                 ArrayList<Avaliacao> listaAvaliacoes = new ArrayList<>();
@@ -121,6 +117,8 @@ public class LocalJsonParser {
                     JSONObject avJson = avaliacoesArray.getJSONObject(i);
                     Avaliacao av = new Avaliacao(
                             avJson.getInt("id"),
+                            avJson.getInt("local_id"),
+                            avJson.getInt("utilizador_id"),
                             avJson.getString("utilizador"),
                             (float) avJson.getDouble("classificacao"),
                             avJson.getString("comentario"),
@@ -131,7 +129,7 @@ public class LocalJsonParser {
                 local.setAvaliacoes(listaAvaliacoes);
             }
 
-            // 5. Tipos de Bilhete (Array JSON "tipos-bilhete")
+            // Bilhetes
             JSONArray bilhetesArray = jsonObject.optJSONArray("tipos-bilhete");
             if (bilhetesArray != null) {
                 ArrayList<TipoBilhete> listaBilhetes = new ArrayList<>();
@@ -153,8 +151,6 @@ public class LocalJsonParser {
         }
         return local;
     }
-
-    // 4. Metodo para verificar a Internet
     public static boolean isConnectionInternet(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = cm.getActiveNetworkInfo();
