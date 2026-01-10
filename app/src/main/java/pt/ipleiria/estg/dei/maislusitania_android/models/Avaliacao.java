@@ -6,9 +6,14 @@ public class Avaliacao {
     private float classificacao;
     private String comentario;
     private String dataAvaliacao;
+    private int localId;
+private int utilizadorId;
 
-    public Avaliacao(int id, String utilizador, float classificacao, String comentario, String dataAvaliacao) {
+
+    public Avaliacao(int id, int localId, int utilizadorId, String utilizador, float classificacao, String comentario, String dataAvaliacao) {
         this.id = id;
+        this.localId = localId;
+        this.utilizadorId = utilizadorId;
         this.utilizador = utilizador;
         this.classificacao = classificacao;
         this.comentario = comentario;
@@ -33,5 +38,11 @@ public class Avaliacao {
 
     public String getDataAvaliacao() {
         return dataAvaliacao;
+    }
+    public int getLocalId() {
+        return localId;
+    }
+    public int getUtilizadorId() {
+        return utilizadorId;
     }
 }

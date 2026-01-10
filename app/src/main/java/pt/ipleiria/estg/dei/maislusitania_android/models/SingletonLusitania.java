@@ -13,11 +13,14 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
+import pt.ipleiria.estg.dei.maislusitania_android.listeners.AvaliacaoListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.BilheteListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.EventoListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.FavoritoListener;
@@ -53,7 +56,6 @@ public class SingletonLusitania {
     private static final String PREF_NAME = "MaisLusitaniaPrefs";
     private static final String KEY_USERNAME = "username";
     private static final String KEY_MAIN_URL = "main_url";
-
     private static final String KEY_USER_ID = "user_id";
 
     // Default URL
@@ -69,9 +71,11 @@ public class SingletonLusitania {
     private static final String mUrlAPIMapa = "/mapas";
     private static final String mUrlAPIEvento = "/eventos";
     private static final String mUrlUser = "/user-profile";
-
     private static final String mUrlAPIReserva = "/reservas";
     private static final String mUrlAPIBilhetes = "/reservas/bilhetes";
+    private static final String mUrlAPIAvaliacao = "/avaliacaos";
+
+
 
 
     // Listeners
@@ -84,6 +88,8 @@ public class SingletonLusitania {
     private FavoritoListener favoritoListener;
     private ReservaListener reservaListener;
     private BilheteListener bilheteListener;
+    private AvaliacaoListener avaliacaoListener;
+
 
     //region - Construtor e Instância
     private SingletonLusitania(Context context) {
@@ -145,6 +151,10 @@ public class SingletonLusitania {
         this.reservaListener = reservaListener;
     }
 
+    public void setAvaliacaoListener(AvaliacaoListener avaliacaoListener){
+        this.avaliacaoListener = avaliacaoListener;
+    }
+
     //endregion
 
     // region Gestão da URL e Sessão
@@ -184,7 +194,7 @@ public class SingletonLusitania {
         return sharedPreferences.getString(KEY_TOKEN, null);
     }
 
-    private int getUserId(Context context) {
+    public int getUserId(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         String userIdStr = prefs.getString(KEY_USER_ID, "-1");
         try {
@@ -247,8 +257,6 @@ public class SingletonLusitania {
     /**
      * Helper para fazer pedidos que esperam um JSONObject.
      */
-
-    //TODO: Fazer a API retornar sempre um JSONArray para usar apenas um helper e simplificar o Singleton!!!!
     private void makeJsonObjectRequest(Context context, int method, String endpoint, boolean requiresAuth,
                                        JSONObject jsonBody,
                                        final Response.Listener<JSONObject> onSuccess,
@@ -285,7 +293,7 @@ public class SingletonLusitania {
         if (error.networkResponse != null && error.networkResponse.data != null) {
             try {
                 // Tenta ler o JSON de erro do servidor
-                String body = new String(error.networkResponse.data, "UTF-8");
+                String body = new String(error.networkResponse.data, StandardCharsets.UTF_8);
                 JSONObject json = new JSONObject(body);
                 // Tenta ler "error", se falhar tenta "message", se falhar usa a msg padrão
                 msg = json.optString("error", json.optString("message", "Erro servidor: " + error.networkResponse.statusCode));
@@ -456,7 +464,7 @@ public class SingletonLusitania {
                     // Tenta extrair mensagem especifica do erro
                     if (error.networkResponse != null && error.networkResponse.data != null) {
                         try {
-                            String body = new String(error.networkResponse.data, "UTF-8");
+                            String body = new String(error.networkResponse.data, StandardCharsets.UTF_8);
                             JSONObject jsonError = new JSONObject(body);
                             if (jsonError.has("message")) mensagem = jsonError.getString("message");
                         } catch (Exception ignored) {
@@ -753,4 +761,78 @@ public class SingletonLusitania {
                 }, null);
     }
     //endregion
+
+//region - Avaliacoes
+
+    public void addAvaliacao(final Context context, final int localId, final float rating, final String comentario) {
+        String url = mUrlAPIAvaliacao + "/add/" + localId;
+
+        JSONObject jsonBody = new JSONObject();
+        try {
+            jsonBody.put("classificacao", rating);
+            jsonBody.put("comentario", comentario);
+        } catch (JSONException e) {
+            Toast.makeText(context, "Erro ao criar o pedido de avaliação", Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+            return;
+        }
+
+        makeJsonObjectRequest(context, Request.Method.POST, url, true, jsonBody,
+                response -> {
+                    Toast.makeText(context, "Avaliação adicionada com sucesso!", Toast.LENGTH_SHORT).show();
+                    // <-- ADICIONE ESTA LINHA para recarregar os dados do local
+                    getLocalAPI(localId, context);
+                },
+                error -> {
+                    String mensagemErro = "Erro ao adicionar avaliação";
+                    // Lógica de tratamento de erro...
+                    Toast.makeText(context, mensagemErro, Toast.LENGTH_SHORT).show();
+                }
+        );
+    }
+
+    public void editAvaliacao(final Context context, final int localId, final int avaliacaoId, final float rating, final String comentario) {
+        String url = mUrlAPIAvaliacao + "/edit/" + avaliacaoId;
+
+        JSONObject jsonBody = new JSONObject();
+        try {
+            jsonBody.put("classificacao", rating);
+            jsonBody.put("comentario", comentario);
+        } catch (JSONException e) {
+            Toast.makeText(context, "Erro ao criar o pedido de edição da avaliação", Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+            return;
+        }
+
+        makeJsonObjectRequest(context, Request.Method.PUT, url, true, jsonBody,
+                response -> {
+                    Toast.makeText(context, "Avaliação editada com sucesso!", Toast.LENGTH_SHORT).show();
+                    // <-- ADICIONE ESTA LINHA para recarregar os dados do local
+                    getLocalAPI(localId, context);
+                },
+                error -> {
+                    String mensagemErro = "Erro ao editar avaliação";
+                    // Lógica de tratamento de erro...
+                    Toast.makeText(context, mensagemErro, Toast.LENGTH_SHORT).show();
+                }
+        );
+    }
+
+    public void deleteAvaliacao(final Context context, final int localId, final int avaliacaoId) {
+        String url = mUrlAPIAvaliacao + "/remove/" + avaliacaoId;
+
+        makeJsonObjectRequest(context, Request.Method.DELETE, url, true, null,
+                response -> {
+                    Toast.makeText(context, "Avaliação removida com sucesso!", Toast.LENGTH_SHORT).show();
+                    // <-- ADICIONE ESTA LINHA para recarregar os dados do local
+                    getLocalAPI(localId, context);
+                },
+                error -> {
+                    String mensagemErro = "Erro ao remover avaliação";
+                    // Lógica de tratamento de erro...
+                    Toast.makeText(context, mensagemErro, Toast.LENGTH_SHORT).show();
+                }
+        );
+    }
+//endregion
 }
