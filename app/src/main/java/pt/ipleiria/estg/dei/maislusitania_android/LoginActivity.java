@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
+import android.app.AlertDialog;
+import android.view.LayoutInflater;
 
 import androidx.appcompat.app.AppCompatActivity;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.LoginListener;
@@ -91,13 +93,12 @@ public class LoginActivity extends AppCompatActivity implements LoginListener {
 
     //Popup Alterar API e guardar na shareprefence
     public void AlterarAPI(View view) {
-        android.app.AlertDialog.Builder builder =
-                new android.app.AlertDialog.Builder(LoginActivity.this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this);
 
         // Inflate custom view
-        android.view.LayoutInflater inflater = getLayoutInflater();
-        android.view.View dialogView = inflater.inflate(R.layout.dialog_change_url, null);
-        android.widget.EditText etMainUrl = dialogView.findViewById(R.id.etMainUrl);
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.dialog_change_url, null);
+        EditText etMainUrl = dialogView.findViewById(R.id.etMainUrl);
 
         // Pre-fill current value
         etMainUrl.setText(SingletonLusitania.getInstance(getApplicationContext()).buildUrl(""));
@@ -105,7 +106,7 @@ public class LoginActivity extends AppCompatActivity implements LoginListener {
         builder.setView(dialogView)
                 .setTitle("Configurar URL")
                 .setPositiveButton("Guardar", (dialog, which) -> {
-                    String url = etMainUrl.getText().toString().trim(); //guarda a url
+                    String url = etMainUrl.getText().toString().trim();
                     if (!url.isEmpty()) {
                         SingletonLusitania.getInstance(getApplicationContext()).setMainUrl(url);
                         Toast.makeText(LoginActivity.this, "URL guardada", Toast.LENGTH_SHORT).show();
