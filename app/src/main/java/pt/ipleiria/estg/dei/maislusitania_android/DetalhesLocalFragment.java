@@ -13,30 +13,35 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.Glide;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 import pt.ipleiria.estg.dei.maislusitania_android.R;
+import pt.ipleiria.estg.dei.maislusitania_android.adapters.AvaliacaoAdapter;
 import pt.ipleiria.estg.dei.maislusitania_android.databinding.FragmentDetalhesLocalBinding;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.LocaisListener;
+import pt.ipleiria.estg.dei.maislusitania_android.models.Avaliacao;
 import pt.ipleiria.estg.dei.maislusitania_android.models.Local;
 import pt.ipleiria.estg.dei.maislusitania_android.models.SingletonLusitania;
 
 public class DetalhesLocalFragment extends Fragment implements LocaisListener {
 
     private static final String ARG_LOCAL_ID = "local_id";
-    private static final String ARG_RATING = "local_rating"; // Novo argumento
+    private static final String ARG_RATING = "local_rating";
 
     private int localId;
-    private float initialRating; // Guarda o rating vindo da lista
+    private float initialRating;
     private Local local;
 
+    private AvaliacaoAdapter avaliacaoAdapter;
+
+    private int avaliacaoId;
+    private Avaliacao avaliacaoUser;
     private FragmentDetalhesLocalBinding binding;
 
     public DetalhesLocalFragment() {
-        // Required empty public constructor
     }
 
-    // Recebe ID e Rating
     public static DetalhesLocalFragment newInstance(int localId, float rating) {
         DetalhesLocalFragment fragment = new DetalhesLocalFragment();
         Bundle args = new Bundle();
@@ -66,24 +71,60 @@ public class DetalhesLocalFragment extends Fragment implements LocaisListener {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        binding.rvBilhetes.setLayoutManager(new LinearLayoutManager(getContext()));
-        binding.rvAvaliacoes.setLayoutManager(new LinearLayoutManager(getContext()));
+        // Setup RecyclerViews and Adapters here
+        setupRecyclerViews();
 
-        // 1. Define o rating IMEDIATAMENTE com o valor seguro da lista
         binding.ratingBar.setRating(initialRating);
 
+        // Set listener and fetch data
         SingletonLusitania.getInstance(getContext()).setLocaisListener(this);
         SingletonLusitania.getInstance(getContext()).getLocalAPI(localId, getContext());
 
         binding.btnComprar.setOnClickListener(v -> {
             Toast.makeText(getContext(), "Funcionalidade de compra em breve", Toast.LENGTH_SHORT).show();
         });
+
+        binding.btnVoltar.setOnClickListener(v -> {
+            getActivity().onBackPressed();
+        });
+
+        binding.btnSubmitAvaliacao.setOnClickListener(v -> {
+            String comentario = binding.etComentario.getText().toString();
+            float novaAvaliacao = binding.rbAddAvaliacao.getRating();
+
+            if (comentario.isEmpty() && novaAvaliacao == 0) {
+                Toast.makeText(getContext(), "Preencha ao menos um dos campos", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (avaliacaoUser != null) {
+                // Lógica de Edição: O utilizador já tem uma avaliação
+                SingletonLusitania.getInstance(getContext()).editAvaliacao(getContext(),localId, avaliacaoId, novaAvaliacao, comentario);
+                Toast.makeText(getContext(), "A editar a sua avaliação...", Toast.LENGTH_SHORT).show();
+
+            } else {
+                // Lógica de Adição: O utilizador está a criar uma nova avaliação
+                SingletonLusitania.getInstance(getContext()).addAvaliacao(getContext(), localId, novaAvaliacao, comentario);
+                Toast.makeText(getContext(), "A submeter a sua avaliação...", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+
+        binding.btnApagarAvaliacao.setOnClickListener(v -> {
+            if (avaliacaoId != -1) {
+                SingletonLusitania.getInstance(getContext()).deleteAvaliacao(getContext(), localId, avaliacaoId);
+                Toast.makeText(getContext(), "Apagado com sucesso!", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getContext(), "Nenhuma avaliação para apagar.", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        binding = null;
+    private void setupRecyclerViews() {
+        binding.rvAvaliacoes.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        avaliacaoAdapter = new AvaliacaoAdapter(getContext(), new ArrayList<>());
+        binding.rvAvaliacoes.setAdapter(avaliacaoAdapter);
     }
 
     @Override
@@ -91,6 +132,24 @@ public class DetalhesLocalFragment extends Fragment implements LocaisListener {
         this.local = local;
         if (getContext() == null || binding == null) return;
 
+        int userId = SingletonLusitania.getInstance(getContext()).getUserId(getContext());
+
+        this.avaliacaoUser = null;
+        this.avaliacaoId = -1;
+
+        //Procurar a avaliação do utilizador
+        if(local.getAvaliacoes() != null && userId != -1) {
+            for (Avaliacao avaliacao : local.getAvaliacoes()) {
+                if (avaliacao.getUtilizadorId() == userId) {
+                    this.avaliacaoUser = avaliacao;
+                    this.avaliacaoId = avaliacao.getId();
+                    break;
+                }
+            }
+        }
+
+        preencherAvaliacaoExistente();
+        // Update all UI components with the loaded data
         binding.tvNome.setText(local.getNome());
 
         String localizacao = local.getMorada();
@@ -99,8 +158,6 @@ public class DetalhesLocalFragment extends Fragment implements LocaisListener {
         }
         binding.tvLocalizacao.setText(localizacao);
 
-        // 2. Só atualiza o rating se a API trouxer um valor válido (> 0).
-        // Se a API trouxer 0 (bug), mantemos o valor correto que veio da lista.
         if (local.getAvaliacaoMedia() > 0) {
             binding.ratingBar.setRating(local.getAvaliacaoMedia());
         }
@@ -112,7 +169,6 @@ public class DetalhesLocalFragment extends Fragment implements LocaisListener {
 
         binding.tvDescricao.setText(local.getDescricao());
         binding.tvInfoMorada.setText(local.getMorada());
-
         binding.tvTelefone.setText((local.getTelefone() != null && !local.getTelefone().isEmpty()) ? local.getTelefone() : "N/A");
         binding.tvEmail.setText((local.getEmail() != null && !local.getEmail().isEmpty()) ? local.getEmail() : "N/A");
 
@@ -131,6 +187,31 @@ public class DetalhesLocalFragment extends Fragment implements LocaisListener {
         } else {
             binding.tvHorario.setText("Horário não disponível");
         }
+
+        // Update Avaliacoes RecyclerView
+        if (local.getAvaliacoes() != null) {
+            avaliacaoAdapter.updateAvaliacoes(local.getAvaliacoes());
+        }
+    }
+
+    private void preencherAvaliacaoExistente() {
+        if (avaliacaoUser != null) {
+            binding.etComentario.setText(avaliacaoUser.getComentario());
+            binding.rbAddAvaliacao.setRating(avaliacaoUser.getClassificacao());
+
+            binding.btnApagarAvaliacao.setVisibility(View.VISIBLE);
+            binding.btnSubmitAvaliacao.setText("Editar");
+        }
+        else{
+            binding.btnApagarAvaliacao.setVisibility(View.INVISIBLE);
+            binding.btnSubmitAvaliacao.setText("Submeter");
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
     }
 
     @Override
