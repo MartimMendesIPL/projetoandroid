@@ -30,6 +30,7 @@ import pt.ipleiria.estg.dei.maislusitania_android.listeners.MapaListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.NoticiaListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.PerfilListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.ReservaListener;
+import pt.ipleiria.estg.dei.maislusitania_android.listeners.SignupListener;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.ReservasJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.EventosJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.LocalJsonParser;
@@ -89,6 +90,7 @@ public class SingletonLusitania {
     private ReservaListener reservaListener;
     private BilheteListener bilheteListener;
     private AvaliacaoListener avaliacaoListener;
+    private SignupListener signupListener;
 
 
     //region - Construtor e Instância
@@ -121,6 +123,10 @@ public class SingletonLusitania {
 
     public void setLoginListener(LoginListener loginListener) {
         this.loginListener = loginListener;
+    }
+
+    public void setSignupListener(SignupListener signupListener) {
+        this.signupListener = signupListener;
     }
 
     public void setLocaisListener(LocaisListener locaisListener) {
@@ -434,7 +440,7 @@ public class SingletonLusitania {
     }
     //endregion
 
-    //region - Login API
+    //region - Login API e Signup API
     public void loginAPI(final String username, final String password, final Context context) {
         JSONObject jsonBody = new JSONObject();
         try {
@@ -461,6 +467,43 @@ public class SingletonLusitania {
                 },
                 error -> {
                     String mensagem = "Erro no Login";
+                    // Tenta extrair mensagem especifica do erro
+                    if (error.networkResponse != null && error.networkResponse.data != null) {
+                        try {
+                            String body = new String(error.networkResponse.data, StandardCharsets.UTF_8);
+                            JSONObject jsonError = new JSONObject(body);
+                            if (jsonError.has("message")) mensagem = jsonError.getString("message");
+                        } catch (Exception ignored) {
+                        }
+                    }
+                    Toast.makeText(context, mensagem, Toast.LENGTH_SHORT).show();
+                }
+        );
+    }
+
+    public void signupAPI(final String username, final String email, final String password, final String primeiro_nome, final String ultimo_nome, final Context context) {
+        JSONObject jsonBody = new JSONObject();
+        try {
+            jsonBody.put("username", username);
+            jsonBody.put("email", email);
+            jsonBody.put("password", password);
+            jsonBody.put("primeiro_nome", primeiro_nome);
+            jsonBody.put("ultimo_nome", ultimo_nome);
+
+        } catch (Exception e) {
+            Toast.makeText(context, "Erro ao criar pedido", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Signup não requer Auth Token na URL (requiresAuth = false)
+        makeJsonObjectRequest(context, Request.Method.POST, "/signup-form", false, jsonBody,
+                response -> {
+                    Toast.makeText(context, "Registo efetuado com sucesso! Faça login.", Toast.LENGTH_SHORT).show();
+                    if (signupListener != null)
+                        signupListener.onSignupSuccess();
+                },
+                error -> {
+                    String mensagem = "Erro no Registo";
                     // Tenta extrair mensagem especifica do erro
                     if (error.networkResponse != null && error.networkResponse.data != null) {
                         try {
