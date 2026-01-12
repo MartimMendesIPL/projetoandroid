@@ -24,7 +24,7 @@
             android:layout_height="140dp"
             android:scaleType="centerCrop"
             android:background="#E8EFF9"
-            android:contentDescription="Imagem da notícia" />
+            android:contentDescription="@string/imagem_exemplo" />
 
         <!-- Informações da Notícia -->
         <LinearLayout
@@ -42,7 +42,7 @@
                 android:id="@+id/tvNome"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Título da Notícia"
+                android:text="@string/titulo_exemplo"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:textColor="#204080"
@@ -55,7 +55,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="0dp"
                 android:layout_weight="1"
-                android:text="Breve resumo da notícia para dar contexto ao usuário..."
+                android:text="@string/conteudo_exemplo"
                 android:textSize="13sp"
                 android:textColor="#606060"
                 android:layout_marginTop="4dp"
@@ -67,7 +67,7 @@
                 android:id="@+id/tvDataPublicacao"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="12/10/2023"
+                android:text="@string/data_exemplo"
                 android:textSize="12sp"
                 android:textColor="#808080"
                 android:layout_marginTop="8dp"

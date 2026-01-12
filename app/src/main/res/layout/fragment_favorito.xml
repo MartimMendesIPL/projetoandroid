@@ -25,12 +25,12 @@
             android:layout_marginBottom="16dp"
             android:src="@drawable/ic_fav_on"
             app:tint="@color/blue_primary"
-            android:contentDescription="Ícone de coração" />
+            android:contentDescription="@string/imagem_favorito" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Não há favoritos"
+            android:text="@string/nenhum_favorito"
             android:textSize="18sp"
             android:textColor="@color/blue_primary"
             android:gravity="center"
@@ -58,7 +58,7 @@
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:contentDescription="Voltar"
+            android:contentDescription="@string/botao_voltar"
             android:padding="12dp"
             android:src="@android:drawable/ic_menu_revert"
             app:tint="#FFFFFF" />
@@ -69,7 +69,7 @@
         android:id="@+id/tvMeusFavoritos"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Meus Favoritos"
+        android:text="@string/meus_favoritos"
         android:textSize="24sp"
         android:textStyle="bold"
         android:textColor="@color/blue_primary"
