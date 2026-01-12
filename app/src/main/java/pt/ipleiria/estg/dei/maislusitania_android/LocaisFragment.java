@@ -69,7 +69,7 @@ public class LocaisFragment extends Fragment implements LocaisListener {
 
             @Override
             public void onFavoriteClick(Local item, int position) {
-                SingletonLusitania.getInstance(requireContext()).toggleFavoritoAPI(requireContext(), item);
+                SingletonLusitania.getInstance(requireContext()).toggleLocalFavoritoAPI(requireContext(), item);
             }
         });
 

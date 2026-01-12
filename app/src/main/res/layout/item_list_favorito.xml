@@ -24,7 +24,7 @@
             android:layout_height="match_parent"
             android:scaleType="centerCrop"
             android:background="#E8EFF9"
-            android:contentDescription="Imagem do local" />
+            android:contentDescription="@string/imagem_favorito" />
 
 
         <!-- Informações do Item -->
@@ -43,7 +43,7 @@
                 android:id="@+id/tvItemTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="List item"
+                android:text="@string/titulo_favorito_exemplo"
                 android:textSize="18sp"
                 android:fontFamily="@font/georgiab"
                 android:textColor="#204080"
@@ -76,7 +76,7 @@
                 android:id="@+id/tvItemCategory"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Category • $$ • 1-2 miles away"
+                android:text="@string/categoria_favorito_exemplo"
                 android:textSize="13sp"
                 android:textColor="#808080"
                 android:layout_marginTop="10dp" />
@@ -92,7 +92,7 @@
             app:tint="@color/blue_primary"
             android:layout_gravity="center_vertical"
             android:layout_marginEnd="16dp"
-            android:contentDescription="Favorito" />
+            android:contentDescription="@string/imagem_icone_favorito" />
 
     </LinearLayout>
 </androidx.cardview.widget.CardView>

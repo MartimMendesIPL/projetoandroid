@@ -11,10 +11,33 @@
     <string name="continuar_como_convidado">Continuar como convidado</string>
     <string name="ou">ou</string>
     <string name="registar_se">Registar-se</string>
-    <string name="criar_conta">Criar Conta</string>
     <string name="email">Email</string>
     <string name="confirmar_password">Confirmar Password</string>
     <string name="registar">Registar</string>
     <string name="possui_conta">Já possui conta?</string>
+
+    // activity_register.xml
+    <string name="criar_conta">Criar Conta</string>
+    <string name="hint_primeiro_nome">Primeiro Nome</string>
+    <string name="hint_ultimo_nome">Último Nome</string>
+    // fragment_detalhes_noticia.xml
+    <string name="data_exemplo">20 Out 2023</string>
+    <string name="titulo_exemplo">Título da Notícia em Destaque</string>
+    <string name="conteudo_exemplo">Este é o conteúdo completo da notícia. Aqui você pode ler todos os detalhes sobre o assunto abordado na notícia. Aproveite a leitura!</string>
+    <string name="hint_pesquisa_noticias">Pesquisar Notícias</string>
+    // item_list_noticia.xml
+    <string name="imagem_exemplo">Imagem da Notícia</string>
+    // fragment_favorito.xml
+    <string name="imagem_favorito">Imagem de Favorito</string>
+    <string name="nenhum_favorito">Nenhum favorito adicionado ainda.</string>
+    <string name="botao_voltar">Botão Voltar</string>
+    <string name="meus_favoritos">Meus Favoritos</string>
+    // item_list_favorito.xml
+    <string name="titulo_favorito_exemplo">Local Favorito</string>
+    <string name="categoria_favorito_exemplo">Categoria Exemplo</string>
+    <string name="imagem_icone_favorito">Ícone de Favorito</string>
+
+
+
 
 </resources>

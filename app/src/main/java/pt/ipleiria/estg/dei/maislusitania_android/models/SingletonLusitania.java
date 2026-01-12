@@ -191,8 +191,11 @@ public class SingletonLusitania {
     }
 
     public void logout(Context context) {
+        int userid = getUserId(context);
         SharedPreferences sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         sharedPreferences.edit().clear().apply();
+        // Apagar dados do utilizador armazenados localmente, se existirem
+        dbHelper.deleteAllFavoritosByUser(userid);
     }
 
     private String getAuthToken(Context context) {
@@ -370,7 +373,7 @@ public class SingletonLusitania {
         }
     }
 
-    public void toggleFavoritoAPI(final Context context, final Local local) { // para os locais
+    public void toggleLocalFavoritoAPI(final Context context, final Local local) { // para os locais
         // Define Endpoint e Metodo baseado no estado atual
         String endpoint;
         int method;
@@ -409,6 +412,11 @@ public class SingletonLusitania {
     }
 
     public void toggleFavoritoAPI(final Context context, final Favorito favorito) { // para os favoritos (quando fiz esse codigo só eu e deus sabiamos, agora só deus sabe)
+        // nao deixa continuar se estiver offline
+        if (!UtilParser.isConnectionInternet(context)) {
+            Toast.makeText(context, "Sem ligação à internet", Toast.LENGTH_SHORT).show();
+            return;
+        }
         // Define Endpoint e Metodo baseado no estado atual
         String endpoint;
         int method;
@@ -423,7 +431,7 @@ public class SingletonLusitania {
             endpoint = mUrladdFavorito + "/" + favorito.getLocalId();
             method = Request.Method.POST;
             // Adicionar aos favoritos locais
-            addFavoritoBD(favorito);
+            //addFavoritoBD(favorito);
         }
 
         // Usa o helper (requiresAuth = true)
