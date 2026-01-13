@@ -36,11 +36,8 @@ public class PerfilActivity extends AppCompatActivity {
 
         // Ver Favoritos
         binding.layoutFavoritos.setOnClickListener(v -> {
-            FavoritoFragment fragment = new FavoritoFragment();
-            getSupportFragmentManager().beginTransaction()
-                    .replace(android.R.id.content, fragment)
-                    .addToBackStack(null)
-                    .commit();
+            Intent intent = new Intent(this, FavoritoActivity.class);
+            startActivity(intent);
         });
 
         binding.layoutEditarPerfil.setOnClickListener(v -> {
