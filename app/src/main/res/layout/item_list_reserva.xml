@@ -25,7 +25,7 @@
             android:layout_height="match_parent"
             android:scaleType="centerCrop"
             android:background="#E8EFF9"
-            android:contentDescription="Imagem do local"
+            android:contentDescription="@string/imagem_do_local"
             tools:srcCompat="@tools:sample/backgrounds/scenic" />
 
         <!-- Informações da Reserva -->
@@ -42,7 +42,7 @@
                 android:id="@+id/tvReservaLocal"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                tools:text="Museu Nacional de Arte Antiga"
+                tools:text="@string/reserva_local_exemplo"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:textColor="#204080"
@@ -54,7 +54,7 @@
                 android:id="@+id/tvReservaData"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                tools:text="25 de Novembro, 2025"
+                tools:text="@string/reserva_data_exemplo"
                 android:textSize="14sp"
                 android:textColor="#5A5A5A"
                 android:layout_marginTop="6dp" />
@@ -64,7 +64,7 @@
                 android:id="@+id/tvReservaPreco"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                tools:text="Total: 15.50€"
+                tools:text="@string/reserva_preco_exemplo"
                 android:textSize="14sp"
                 android:textColor="#5A5A5A"
                 android:layout_marginTop="4dp" />
@@ -74,7 +74,7 @@
                 android:id="@+id/tvReservaEstado"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                tools:text="Confirmada"
+                tools:text="@string/reserva_estado_exemplo"
                 android:textSize="14sp"
                 android:textColor="#28A745"
                 android:layout_marginTop="8dp"

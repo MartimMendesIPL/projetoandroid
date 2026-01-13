@@ -20,19 +20,16 @@ public class UserJsonParser {
             }
 
             JSONObject user = response.getJSONObject(0);
+            int id = user.optInt("user_id", -1);
 
-            int id = user.optInt("id", -1);
             String primeiroNome = user.optString("primeiro_nome", "Sem Nome");
             String ultimoNome = user.optString("ultimo_nome", "");
             String imagemPerfil = user.optString("imagem_perfil", "");
-
-            int userId = user.optInt("user_id", -1);
             String username = user.optString("username", "");
             String email = user.optString("email", "");
             String dataAdesao = user.optString("data_adesao", "");
 
-            auxuser = new User(id, primeiroNome, ultimoNome, imagemPerfil, userId, username, email, dataAdesao);
-
+            auxuser = new User(id, username, email, primeiroNome, ultimoNome, dataAdesao, imagemPerfil);
         } catch (JSONException e) {
             e.printStackTrace();
         }

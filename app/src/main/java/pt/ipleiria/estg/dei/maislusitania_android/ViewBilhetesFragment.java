@@ -20,7 +20,6 @@ import pt.ipleiria.estg.dei.maislusitania_android.listeners.BilheteListener;
 import pt.ipleiria.estg.dei.maislusitania_android.models.Bilhete;
 import pt.ipleiria.estg.dei.maislusitania_android.models.SingletonLusitania;
 
-// FIX: Implement BilhetesListener, not ReservaListener
 public class ViewBilhetesFragment extends Fragment implements BilheteListener {
 
     private FragmentViewBilhetesBinding binding;
@@ -60,13 +59,7 @@ public class ViewBilhetesFragment extends Fragment implements BilheteListener {
         bilheteAdapter = new BilheteAdapter(listaBilhetes, new BilheteAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(Bilhete bilhete) {
-                // Action: Show QR Code or details
                 Toast.makeText(getContext(), "Código: " + bilhete.getCodigo(), Toast.LENGTH_SHORT).show();
-
-                // Exemplo para abrir Activity do QR Code:
-                // Intent intent = new Intent(getContext(), QrCodeActivity.class);
-                // intent.putExtra("CODIGO", bilhete.getCodigo());
-                // startActivity(intent);
             }
         });
 
@@ -78,8 +71,6 @@ public class ViewBilhetesFragment extends Fragment implements BilheteListener {
         super.onDestroyView();
         binding = null;
     }
-
-    // --- Listener Methods (from BilhetesListener) ---
 
     @Override
     public void onBilhetesLoaded(ArrayList<Bilhete> bilhetesAPI) {

@@ -1,7 +1,6 @@
 package pt.ipleiria.estg.dei.maislusitania_android;
 
-import android.content.Intent;
-import android.os.Bundle;
+import android.content.Intent;import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.Editable;
@@ -24,6 +23,7 @@ import pt.ipleiria.estg.dei.maislusitania_android.databinding.FragmentNoticiasBi
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.NoticiaListener;
 import pt.ipleiria.estg.dei.maislusitania_android.models.Noticia;
 import pt.ipleiria.estg.dei.maislusitania_android.models.SingletonLusitania;
+import pt.ipleiria.estg.dei.maislusitania_android.utils.UtilParser; // Import UtilParser
 
 public class NoticiasFragment extends Fragment implements NoticiaListener {
 
@@ -31,7 +31,7 @@ public class NoticiasFragment extends Fragment implements NoticiaListener {
     private NoticiaAdapter adapter;
     private ArrayList<Noticia> items;
     // Variáveis para a Pesquisa Dinâmica
-    private Handler searchHandler = new Handler(Looper.getMainLooper());
+    private final Handler searchHandler = new Handler(Looper.getMainLooper());
     private Runnable searchRunnable;
 
     @Nullable
@@ -51,11 +51,26 @@ public class NoticiasFragment extends Fragment implements NoticiaListener {
 
         setupRecyclerView();
 
-        // Configurar o listener e pedir os dados à API
+        // Configurar o listener
         SingletonLusitania.getInstance(requireContext()).setNoticiaListener(this);
-        SingletonLusitania.getInstance(requireContext()).getNoticiasAPI(getContext());
+        loadNoticias(); // Chamar o método que verifica a internet
 
         return binding.getRoot();
+    }
+
+    private void loadNoticias() {
+        if (getContext() == null) return;
+        if (!UtilParser.isConnectionInternet(getContext())) {
+            showNoInternetWarning(true);
+        } else {
+            showNoInternetWarning(false);
+            String query = binding.etPesquisa.getText().toString().trim();
+            if (query.isEmpty()) {
+                SingletonLusitania.getInstance(requireContext()).getNoticiasAPI(getContext());
+            } else {
+                SingletonLusitania.getInstance(requireContext()).searchNoticiaAPI(getContext(), query);
+            }
+        }
     }
 
     /**
@@ -68,7 +83,6 @@ public class NoticiasFragment extends Fragment implements NoticiaListener {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // Se o utilizador continuar a escrever, removemos a pesquisa feita anteriormente
                 if (searchRunnable != null) {
                     searchHandler.removeCallbacks(searchRunnable);
                 }
@@ -77,15 +91,10 @@ public class NoticiasFragment extends Fragment implements NoticiaListener {
             @Override
             public void afterTextChanged(Editable s) {
                 searchRunnable = () -> {
-                    String query = s.toString().trim();
-
-                    if (query.isEmpty()) {
-                        SingletonLusitania.getInstance(requireContext()).getNoticiasAPI(getContext());
-                    } else {
-                        SingletonLusitania.getInstance(requireContext()).searchNoticiaAPI(getContext(), query);
+                    if (isAdded()) {
+                        loadNoticias();
                     }
                 };
-                // Aguarda 500ms após a última tecla antes de pesquisar
                 searchHandler.postDelayed(searchRunnable, 500);
             }
         });
@@ -95,34 +104,25 @@ public class NoticiasFragment extends Fragment implements NoticiaListener {
         RecyclerView recyclerView = binding.recyclerViewNoticias;
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        adapter = new NoticiaAdapter(getContext(), items, new NoticiaAdapter.OnNoticiaListener() {
-            @Override
-            public void onNoticiaClick(int position) {
-                Noticia item = items.get(position);
-                DetalhesNoticiaFragment fragment = new DetalhesNoticiaFragment();
+        adapter = new NoticiaAdapter(getContext(), items, position -> {
+            Noticia item = items.get(position);
+            DetalhesNoticiaFragment fragment = new DetalhesNoticiaFragment();
 
-                Bundle args = new Bundle();
-                args.putInt("noticia_id", item.getId());
-                fragment.setArguments(args);
+            Bundle args = new Bundle();
+            args.putInt("noticia_id", item.getId());
+            fragment.setArguments(args);
 
-                // Navegar para o fragmento
-                requireActivity().getSupportFragmentManager()
-                        .beginTransaction()
-                        .replace(R.id.fragment_container, fragment)
-                        .addToBackStack(null)
-                        .commit();
-                //Intent intent = new Intent(getContext(), DetalhesNoticiaFragment.class);
-                //intent.putExtra("noticia_id", item.getId());
-                //startActivity(intent);
-            }
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, fragment)
+                    .addToBackStack(null)
+                    .commit();
         });
-
         recyclerView.setAdapter(adapter);
     }
 
     @Override
     public void onDestroyView() {
-        // Limpar callbacks de pesquisa pendentes
         if (searchHandler != null && searchRunnable != null) {
             searchHandler.removeCallbacks(searchRunnable);
         }
@@ -130,11 +130,10 @@ public class NoticiasFragment extends Fragment implements NoticiaListener {
         binding = null;
     }
 
-    // --- Implementação correta da interface NoticiaListener ---
-
     @Override
     public void onNoticiasLoaded(ArrayList<Noticia> listaNoticias) {
-        // Atualizar a lista local e o adapter
+        if (binding == null) return;
+        showNoInternetWarning(false);
         items.clear();
         items.addAll(listaNoticias);
         if (adapter != null) {
@@ -149,7 +148,17 @@ public class NoticiasFragment extends Fragment implements NoticiaListener {
 
     @Override
     public void onNoticiaError(String message) {
-        // Corrigido o nome do metodo (era onErrorNoticias)
+        if (binding == null) return;
+        if (getContext() != null && !UtilParser.isConnectionInternet(getContext())) {
+            showNoInternetWarning(true);
+        }
         Toast.makeText(getContext(), "Erro: " + message, Toast.LENGTH_SHORT).show();
+    }
+
+    private void showNoInternetWarning(boolean show) {
+        if (binding != null) {
+            binding.recyclerViewNoticias.setVisibility(show ? View.GONE : View.VISIBLE);
+            binding.includeNoInternet.getRoot().setVisibility(show ? View.VISIBLE : View.GONE);
+        }
     }
 }

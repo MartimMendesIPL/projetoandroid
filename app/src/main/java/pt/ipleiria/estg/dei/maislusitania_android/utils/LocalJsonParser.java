@@ -81,15 +81,14 @@ public class LocalJsonParser {
 
             // Informaões do local
             int id = jsonObject.getInt("id");
+            float avaliacaoMedia = (float) jsonObject.getDouble("avaliacao_media");
             String nome = jsonObject.getString("nome");
             String morada = jsonObject.getString("morada");
             String distrito = jsonObject.getString("distrito");
             String descricao = jsonObject.getString("descricao");
             String imagem = jsonObject.getString("imagem");
-            // Nota: O JSON de detalhes não tem "favorito_id" no exemplo, usa-se -1 ou verifica-se se existe
+
             int favorito_id = jsonObject.optInt("favorito_id", -1);
-            float avaliacaoMedia = 0; // O JSON de detalhes não trazia a média explicita no root, mas se trouxer:
-            // float avaliacaoMedia = (float) jsonObject.optDouble("avaliacao_media", 0.0);
 
             local = new Local(id, nome, morada, distrito, descricao, imagem, avaliacaoMedia, favorito_id);
 

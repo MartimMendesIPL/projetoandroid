@@ -11,10 +11,78 @@
     <string name="continuar_como_convidado">Continuar como convidado</string>
     <string name="ou">ou</string>
     <string name="registar_se">Registar-se</string>
-    <string name="criar_conta">Criar Conta</string>
     <string name="email">Email</string>
     <string name="confirmar_password">Confirmar Password</string>
     <string name="registar">Registar</string>
     <string name="possui_conta">Já possui conta?</string>
+
+    // activity_register.xml
+    <string name="criar_conta">Criar Conta</string>
+    <string name="hint_primeiro_nome">Primeiro Nome</string>
+    <string name="hint_ultimo_nome">Último Nome</string>
+    // fragment_detalhes_noticia.xml
+    <string name="data_exemplo">20 Out 2023</string>
+    <string name="titulo_exemplo">Título da Notícia em Destaque</string>
+    <string name="conteudo_exemplo">Este é o conteúdo completo da notícia. Aqui você pode ler todos os detalhes sobre o assunto abordado na notícia. Aproveite a leitura!</string>
+    <string name="hint_pesquisa_noticias">Pesquisar Notícias</string>
+    // item_list_noticia.xml
+    <string name="imagem_exemplo">Imagem da Notícia</string>
+    // fragment_favorito.xml
+    <string name="imagem_favorito">Imagem de Favorito</string>
+    <string name="nenhum_favorito">Nenhum favorito adicionado ainda.</string>
+    <string name="botao_voltar">Botão Voltar</string>
+    <string name="meus_favoritos">Meus Favoritos</string>
+    // item_list_favorito.xml
+    <string name="titulo_favorito_exemplo">Local Favorito</string>
+    <string name="categoria_favorito_exemplo">Categoria Exemplo</string>
+    <string name="imagem_icone_favorito">Ícone de Favorito</string>
+
+    // item_list_reserva.xml
+    <string name="imagem_do_local">Imagem do local</string>
+    <string name="reserva_local_exemplo">Título do Local</string>
+    <string name="reserva_data_exemplo">99 de Janeiro, 9999</string>
+    <string name="reserva_preco_exemplo">Total: ???€</string>
+    <string name="reserva_estado_exemplo">Estado da Reserva</string>
+
+    // item_list_evento.xml
+    <string name="imagem_do_evento">Imagem do Evento</string>
+    <string name="titulo_do_evento">Título do Evento</string>
+    <string name="resumo_do_evento">Breve resumo do evento para dar contexto. Agora com mais espaço para texto graças à organização das datas.</string>
+    <string name="data_inicio_exemplo">12/10/2023</string>
+    <string name="data_fim_exemplo">15/10/2023</string>
+    <string name="date_separator"> - </string>
+
+    // item_list_bilhete.xml
+    <string name="bilhete_estado_confirmada">Confirmada</string>
+    <string name="bilhete_local_exemplo">Titulo do Local</string>
+    <string name="bilhete_tipo_adulto">Tipo</string>
+    <string name="bilhete_label_data_visita">Data de Visita</string>
+    <string name="bilhete_data_exemplo">99/99/9999</string>
+    <string name="bilhete_label_codigo">Código</string>
+    <string name="bilhete_codigo_exemplo">#999999-9</string>
+    <string name="bilhete_label_tipo_bilhete">Tipo de Bilhete</string>
+    <string name="bilhete_label_preco">Preço</string>
+    <string name="bilhete_preco_exemplo">99,99€</string>
+    <string name="bilhete_qr_code_description">Código QR do Bilhete</string>
+    <string name="bilhete_euro_symbol">€</string>
+
+    // item_list_avaliacao.xml
+    <string name="avaliacao_username_exemplo">Username</string>
+    <string name="avaliacao_data_exemplo">2024-05-21</string>
+    <string name="avaliacao_comentario_exemplo">Se estás a ver esta review algo correu mal!!!.</string>
+
+    // fragment_view_bilhetes.xml
+    <string name="voltar">Voltar</string>
+    <string name="meus_bilhetes">Meus Bilhetes</string>
+
+    // fragment_reservas.xml
+    <string name="perfil_icon_description">Ícone de Perfil</string>
+
+    // fragment_detalhes_evento.xml
+    <string name="detalhes_evento_imagem_description">Imagem do Evento</string>
+    <string name="detalhes_evento_data_exemplo">20 Out 2023</string>
+    <string name="detalhes_evento_titulo_exemplo">Titulo exemplo</string>
+    <string name="detalhes_evento_conteudo_exemplo">Estaria aqui o contéudo do evento.</string>
+
 
 </resources>

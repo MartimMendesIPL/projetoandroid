@@ -48,6 +48,7 @@ public class ReservasFragment extends Fragment implements ReservaListener {
         setupRecyclerView();
         setupSearchListeners();
 
+        // Configurar o Singleton e pedir os dados à API
         SingletonLusitania.getInstance(requireContext()).setReservaListener(this);
         SingletonLusitania.getInstance(requireContext()).getAllReservasAPI(requireContext());
 

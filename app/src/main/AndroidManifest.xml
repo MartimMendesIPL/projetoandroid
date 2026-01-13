@@ -24,6 +24,10 @@
 
 
         <activity
+            android:name=".FavoritoActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustPan"/>
+        <activity
             android:name=".PerfilActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustPan"/>

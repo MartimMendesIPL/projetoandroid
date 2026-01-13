@@ -1,4 +1,4 @@
-package pt.ipleiria.estg.dei.maislusitania_android.fragments;
+package pt.ipleiria.estg.dei.maislusitania_android;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -16,8 +16,6 @@ import com.bumptech.glide.Glide;
 import java.util.ArrayList;
 import java.util.Map;
 
-import pt.ipleiria.estg.dei.maislusitania_android.R;
-import pt.ipleiria.estg.dei.maislusitania_android.ReservaFragment;
 import pt.ipleiria.estg.dei.maislusitania_android.adapters.AvaliacaoAdapter;
 import pt.ipleiria.estg.dei.maislusitania_android.databinding.FragmentDetalhesLocalBinding;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.LocaisListener;
@@ -27,43 +25,30 @@ import pt.ipleiria.estg.dei.maislusitania_android.models.SingletonLusitania;
 
 public class DetalhesLocalFragment extends Fragment implements LocaisListener {
 
-    private static final String ARG_LOCAL_ID = "local_id";
-    private static final String ARG_RATING = "local_rating";
-
-    private int localId;
-    private float initialRating;
-    private Local local;
-
-    private AvaliacaoAdapter avaliacaoAdapter;
-
-    private int avaliacaoId;
-    private Avaliacao avaliacaoUser;
+    private static final String ARG_LOCAL_ID = "localId";
     private FragmentDetalhesLocalBinding binding;
+    private AvaliacaoAdapter avaliacaoAdapter;
+    private int localId = -1;
+    private Avaliacao avaliacaoUser;
 
-    public DetalhesLocalFragment() {
-    }
-
-    public static DetalhesLocalFragment newInstance(int localId, float rating) {
+    public static DetalhesLocalFragment newInstance(int localId) {
         DetalhesLocalFragment fragment = new DetalhesLocalFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_LOCAL_ID, localId);
-        args.putFloat(ARG_RATING, rating);
         fragment.setArguments(args);
         return fragment;
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            localId = getArguments().getInt(ARG_LOCAL_ID);
-            initialRating = getArguments().getFloat(ARG_RATING, 0.0f);
+            localId = getArguments().getInt(ARG_LOCAL_ID, -1);
         }
     }
 
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentDetalhesLocalBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
@@ -97,95 +82,87 @@ public class DetalhesLocalFragment extends Fragment implements LocaisListener {
             getActivity().onBackPressed();
         });
 
-        binding.btnSubmitAvaliacao.setOnClickListener(v -> {
-            String comentario = binding.etComentario.getText().toString();
-            float novaAvaliacao = binding.rbAddAvaliacao.getRating();
-
-            if (comentario.isEmpty() && novaAvaliacao == 0) {
-                Toast.makeText(getContext(), "Preencha ao menos um dos campos", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            if (avaliacaoUser != null) {
-                // Lógica de Edição: O utilizador já tem uma avaliação
-                SingletonLusitania.getInstance(getContext()).editAvaliacao(getContext(),localId, avaliacaoId, novaAvaliacao, comentario);
-                Toast.makeText(getContext(), "A editar a sua avaliação...", Toast.LENGTH_SHORT).show();
-
-            } else {
-                // Lógica de Adição: O utilizador está a criar uma nova avaliação
-                SingletonLusitania.getInstance(getContext()).addAvaliacao(getContext(), localId, novaAvaliacao, comentario);
-                Toast.makeText(getContext(), "A submeter a sua avaliação...", Toast.LENGTH_SHORT).show();
-            }
-        });
-
-
-        binding.btnApagarAvaliacao.setOnClickListener(v -> {
-            if (avaliacaoId != -1) {
-                SingletonLusitania.getInstance(getContext()).deleteAvaliacao(getContext(), localId, avaliacaoId);
-                Toast.makeText(getContext(), "Apagado com sucesso!", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(getContext(), "Nenhuma avaliação para apagar.", Toast.LENGTH_SHORT).show();
-            }
-        });
+        if (localId != -1) {
+            SingletonLusitania.getInstance(requireContext()).setLocaisListener(this);
+            SingletonLusitania.getInstance(requireContext()).getLocalAPI(localId, requireContext());
+        } else {
+            Toast.makeText(getContext(), "Erro: ID do local não encontrado.", Toast.LENGTH_LONG).show();
+            requireActivity().onBackPressed();
+        }
     }
 
-    private void setupRecyclerViews() {
-        binding.rvAvaliacoes.setLayoutManager(new LinearLayoutManager(getContext()));
-
+    private void setupRecyclerView() {
         avaliacaoAdapter = new AvaliacaoAdapter(getContext(), new ArrayList<>());
+        binding.rvAvaliacoes.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.rvAvaliacoes.setAdapter(avaliacaoAdapter);
+    }
+
+    private void setupClickListeners() {
+        binding.btnComprar.setOnClickListener(v -> Toast.makeText(getContext(), "Funcionalidade de compra em breve", Toast.LENGTH_SHORT).show());
+        binding.btnSubmitAvaliacao.setOnClickListener(v -> submitAvaliacao());
+        binding.btnApagarAvaliacao.setOnClickListener(v -> deleteAvaliacao());
+    }
+
+    private void submitAvaliacao() {
+        String comentario = binding.etComentario.getText().toString().trim();
+        float classificacao = binding.rbAddAvaliacao.getRating();
+
+        if (comentario.isEmpty() && classificacao == 0) {
+            Toast.makeText(getContext(), "É necessário um comentário ou uma classificação.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        SingletonLusitania singleton = SingletonLusitania.getInstance(requireContext());
+        if (avaliacaoUser != null) {
+            // Edit existing evaluation
+            singleton.editAvaliacao(requireContext(), localId, avaliacaoUser.getId(), classificacao, comentario);
+            Toast.makeText(getContext(), "A editar a sua avaliação...", Toast.LENGTH_SHORT).show();
+        } else {
+            // Add new evaluation
+            singleton.addAvaliacao(requireContext(), localId, classificacao, comentario);
+            Toast.makeText(getContext(), "A submeter a sua avaliação...", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void deleteAvaliacao() {
+        if (avaliacaoUser != null) {
+            SingletonLusitania.getInstance(requireContext()).deleteAvaliacao(requireContext(), localId, avaliacaoUser.getId());
+            Toast.makeText(getContext(), "A apagar a sua avaliação...", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(getContext(), "Nenhuma avaliação para apagar.", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @Override
     public void onLocalLoaded(Local local) {
-        this.local = local;
-        if (getContext() == null || binding == null) return;
+        if (!isAdded() || binding == null) return;
 
-        int userId = SingletonLusitania.getInstance(getContext()).getUserId(getContext());
+        updateLocalInfo(local);
+        updateAvaliacoes(local);
+        updateUserAvaliacao(local);
+    }
 
-        this.avaliacaoUser = null;
-        this.avaliacaoId = -1;
-
-        //Procurar a avaliação do utilizador
-        if(local.getAvaliacoes() != null && userId != -1) {
-            for (Avaliacao avaliacao : local.getAvaliacoes()) {
-                if (avaliacao.getUtilizadorId() == userId) {
-                    this.avaliacaoUser = avaliacao;
-                    this.avaliacaoId = avaliacao.getId();
-                    break;
-                }
-            }
-        }
-
-        preencherAvaliacaoExistente();
-        // Update all UI components with the loaded data
+    private void updateLocalInfo(Local local) {
         binding.tvNome.setText(local.getNome());
+        binding.tvLocalizacao.setText(local.getMorada() + ", " + local.getDistrito());
+        binding.ratingBar.setRating(local.getAvaliacaoMedia());
+        binding.tvDescricao.setText(local.getDescricao());
+        binding.tvInfoMorada.setText(local.getMorada());
+        binding.tvTelefone.setText(local.getTelefone() != null && !local.getTelefone().isEmpty() ? local.getTelefone() : "N/A");
+        binding.tvEmail.setText(local.getEmail() != null && !local.getEmail().isEmpty() ? local.getEmail() : "N/A");
 
-        String localizacao = local.getMorada();
-        if (local.getDistrito() != null && !local.getDistrito().isEmpty()) {
-            localizacao += ", " + local.getDistrito();
-        }
-        binding.tvLocalizacao.setText(localizacao);
-
-        if (local.getAvaliacaoMedia() > 0) {
-            binding.ratingBar.setRating(local.getAvaliacaoMedia());
-        }
-
-        Glide.with(getContext())
+        Glide.with(requireContext())
                 .load(local.getImagem())
                 .placeholder(R.drawable.ic_launcher_background)
                 .into(binding.ivImagem);
 
-        binding.tvDescricao.setText(local.getDescricao());
-        binding.tvInfoMorada.setText(local.getMorada());
-        binding.tvTelefone.setText((local.getTelefone() != null && !local.getTelefone().isEmpty()) ? local.getTelefone() : "N/A");
-        binding.tvEmail.setText((local.getEmail() != null && !local.getEmail().isEmpty()) ? local.getEmail() : "N/A");
+        updateHorario(local.getHorario());
+    }
 
-        if (local.getHorario() != null && !local.getHorario().isEmpty()) {
+    private void updateHorario(Map<String, String> horarioMap) {
+        if (horarioMap != null && !horarioMap.isEmpty()) {
             StringBuilder horarioTexto = new StringBuilder();
-            Map<String, String> horarioMap = local.getHorario();
             String[] diasSemana = {"segunda", "terca", "quarta", "quinta", "sexta", "sabado", "domingo"};
-
             for (String dia : diasSemana) {
                 if (horarioMap.containsKey(dia)) {
                     String diaFormatado = dia.substring(0, 1).toUpperCase() + dia.substring(1);
@@ -196,42 +173,66 @@ public class DetalhesLocalFragment extends Fragment implements LocaisListener {
         } else {
             binding.tvHorario.setText("Horário não disponível");
         }
+    }
 
-        // Update Avaliacoes RecyclerView
+    private void updateAvaliacoes(Local local) {
         if (local.getAvaliacoes() != null) {
             avaliacaoAdapter.updateAvaliacoes(local.getAvaliacoes());
         }
     }
 
-    private void preencherAvaliacaoExistente() {
+    private void updateUserAvaliacao(Local local) {
+        int userId = SingletonLusitania.getInstance(requireContext()).getUserId(requireContext());
+        this.avaliacaoUser = null;
+
+        if (local.getAvaliacoes() != null && userId != -1) {
+            for (Avaliacao avaliacao : local.getAvaliacoes()) {
+                if (avaliacao.getUtilizadorId() == userId) {
+                    this.avaliacaoUser = avaliacao;
+                    break;
+                }
+            }
+        }
+
+        preencherFormularioAvaliacao();
+    }
+
+    private void preencherFormularioAvaliacao() {
         if (avaliacaoUser != null) {
             binding.etComentario.setText(avaliacaoUser.getComentario());
             binding.rbAddAvaliacao.setRating(avaliacaoUser.getClassificacao());
-
             binding.btnApagarAvaliacao.setVisibility(View.VISIBLE);
             binding.btnSubmitAvaliacao.setText("Editar");
-        }
-        else{
+        } else {
+            binding.etComentario.setText("");
+            binding.rbAddAvaliacao.setRating(0);
             binding.btnApagarAvaliacao.setVisibility(View.INVISIBLE);
             binding.btnSubmitAvaliacao.setText("Submeter");
         }
     }
 
     @Override
+    public void onLocalError(String message) {
+        if (isAdded()) {
+            Toast.makeText(getContext(), "Erro ao carregar detalhes: " + message, Toast.LENGTH_SHORT).show();
+            requireActivity().onBackPressed();
+        }
+    }
+
+    @Override
+    public void onLocaisLoaded(ArrayList<Local> listaLocais) {
+        // Not used in this fragment
+    }
+
+    @Override
+    public void onLocaisError(String message) {
+        // Not used in this fragment
+    }
+
+    @Override
     public void onDestroyView() {
         super.onDestroyView();
+        SingletonLusitania.getInstance(requireContext()).setLocaisListener(null);
         binding = null;
     }
-
-    @Override
-    public void onLocalError(String message) {
-        if (getContext() != null)
-            Toast.makeText(getContext(), "Erro ao carregar detalhes: " + message, Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void onLocaisLoaded(java.util.ArrayList<Local> listaLocais) {}
-
-    @Override
-    public void onLocaisError(String message) {}
 }

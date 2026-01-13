@@ -24,6 +24,7 @@ import pt.ipleiria.estg.dei.maislusitania_android.databinding.FragmentEventosBin
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.EventoListener;
 import pt.ipleiria.estg.dei.maislusitania_android.models.Evento;
 import pt.ipleiria.estg.dei.maislusitania_android.models.SingletonLusitania;
+import pt.ipleiria.estg.dei.maislusitania_android.utils.UtilParser; // Import UtilParser
 
 public class EventosFragment extends Fragment implements EventoListener {
 
@@ -32,7 +33,7 @@ public class EventosFragment extends Fragment implements EventoListener {
     private ArrayList<Evento> items;
 
     // Variáveis para a Pesquisa Dinâmica
-    private Handler searchHandler = new Handler(Looper.getMainLooper());
+    private final Handler searchHandler = new Handler(Looper.getMainLooper());
     private Runnable searchRunnable;
 
     @Nullable
@@ -54,9 +55,19 @@ public class EventosFragment extends Fragment implements EventoListener {
 
         // Iniciar os dados
         SingletonLusitania.getInstance(requireContext()).setEventoListener(this);
-        SingletonLusitania.getInstance(requireContext()).getAllEventosAPI(getContext());
+        loadEventos();
 
         return binding.getRoot();
+    }
+
+    private void loadEventos() {
+        if (!UtilParser.isConnectionInternet(getContext())) {
+            showNoInternetWarning();
+        } else {
+            binding.recyclerViewEventos.setVisibility(View.VISIBLE);
+            binding.includeNoInternet.getRoot().setVisibility(View.GONE);
+            SingletonLusitania.getInstance(requireContext()).getAllEventosAPI(getContext());
+        }
     }
 
     /**
@@ -69,7 +80,6 @@ public class EventosFragment extends Fragment implements EventoListener {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // Se o utilizador continuar a escrever, removemos a pesquisa feita anteriormente
                 if (searchRunnable != null) {
                     searchHandler.removeCallbacks(searchRunnable);
                 }
@@ -78,15 +88,21 @@ public class EventosFragment extends Fragment implements EventoListener {
             @Override
             public void afterTextChanged(Editable s) {
                 searchRunnable = () -> {
-                    String query = s.toString().trim();
+                    if (!UtilParser.isConnectionInternet(getContext())) {
+                        showNoInternetWarning();
+                        return;
+                    }
 
+                    binding.recyclerViewEventos.setVisibility(View.VISIBLE);
+                    binding.includeNoInternet.getRoot().setVisibility(View.GONE);
+
+                    String query = s.toString().trim();
                     if (query.isEmpty()) {
                         SingletonLusitania.getInstance(requireContext()).getAllEventosAPI(getContext());
                     } else {
                         SingletonLusitania.getInstance(requireContext()).searchEventoAPI(getContext(), query);
                     }
                 };
-                // Aguarda 500ms após a última tecla antes de pesquisar
                 searchHandler.postDelayed(searchRunnable, 500);
             }
         });
@@ -116,7 +132,6 @@ public class EventosFragment extends Fragment implements EventoListener {
 
     @Override
     public void onDestroyView() {
-        // Limpar callbacks de pesquisa pendentes
         if (searchHandler != null && searchRunnable != null) {
             searchHandler.removeCallbacks(searchRunnable);
         }
@@ -126,12 +141,15 @@ public class EventosFragment extends Fragment implements EventoListener {
 
     @Override
     public void onEventosLoaded(ArrayList<Evento> listaEventos) {
-        // Atualizar a lista local e o adapter
+        if (binding == null) return; // Avoid crash if view is destroyed
         items.clear();
         items.addAll(listaEventos);
         if (eventoAdapter != null) {
             eventoAdapter.notifyDataSetChanged();
         }
+        // Garante que o layout correto está visível após o carregamento
+        binding.recyclerViewEventos.setVisibility(View.VISIBLE);
+        binding.includeNoInternet.getRoot().setVisibility(View.GONE);
     }
 
     @Override
@@ -141,6 +159,18 @@ public class EventosFragment extends Fragment implements EventoListener {
 
     @Override
     public void onEventoError(String message) {
+        if (binding == null) return;
+        // Se ocorrer um erro, verificamos se é por falta de internet
+        if (!UtilParser.isConnectionInternet(getContext())) {
+            showNoInternetWarning();
+        }
+        // Mostra o erro da API (que pode ser "Sem ligação à internet" ou outro erro do Volley)
         Toast.makeText(getContext(), "Erro: " + message, Toast.LENGTH_SHORT).show();
+    }
+
+    private void showNoInternetWarning() {
+        if (binding == null) return;
+        binding.recyclerViewEventos.setVisibility(View.GONE);
+        binding.includeNoInternet.getRoot().setVisibility(View.VISIBLE);
     }
 }

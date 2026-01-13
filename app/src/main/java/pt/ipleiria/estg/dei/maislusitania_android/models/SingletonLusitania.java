@@ -29,6 +29,7 @@ import pt.ipleiria.estg.dei.maislusitania_android.listeners.MapaListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.NoticiaListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.PerfilListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.ReservaListener;
+import pt.ipleiria.estg.dei.maislusitania_android.listeners.SignupListener;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.ReservasJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.EventosJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.LocalJsonParser;
@@ -40,7 +41,6 @@ import pt.ipleiria.estg.dei.maislusitania_android.utils.UtilParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.FavoritoJsonParser;
 
 public class SingletonLusitania {
-
     private static volatile SingletonLusitania instance;
     private ArrayList<Local> locais;
     private ArrayList<Favorito> favoritos;
@@ -49,6 +49,11 @@ public class SingletonLusitania {
 
     private Context context;
     private String mainUrl;
+
+    //Helper do perfil, sharedpreferences
+    private ProfileManager profileManager;
+
+
 
     // Keys
     private static final String KEY_TOKEN = "auth_key";
@@ -88,6 +93,7 @@ public class SingletonLusitania {
     private ReservaListener reservaListener;
     private BilheteListener bilheteListener;
     private AvaliacaoListener avaliacaoListener;
+    private SignupListener signupListener;
 
 
 
@@ -96,7 +102,7 @@ public class SingletonLusitania {
 
         //FIx em um memory leak que o IDE estava a avisar!!!
         this.context = context.getApplicationContext();
-
+        profileManager = new ProfileManager(context);
 
         locais = new ArrayList<>();
         dbHelper = new LocaisFavDBHelper(context);
@@ -121,6 +127,10 @@ public class SingletonLusitania {
 
     public void setLoginListener(LoginListener loginListener) {
         this.loginListener = loginListener;
+    }
+
+    public void setSignupListener(SignupListener signupListener) {
+        this.signupListener = signupListener;
     }
 
     public void setLocaisListener(LocaisListener locaisListener) {
@@ -172,6 +182,9 @@ public class SingletonLusitania {
         return base + endpoint;
     }
 
+    public User getCachedUser(){
+        return profileManager.getUser();
+    }
     public void guardarUtilizador(Context context, String username, String token, String user_id) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -186,8 +199,12 @@ public class SingletonLusitania {
     }
 
     public void logout(Context context) {
+        int userid = getUserId(context);
         SharedPreferences sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         sharedPreferences.edit().clear().apply();
+        // Apagar dados do utilizador armazenados localmente, se existirem
+        dbHelper.deleteAllFavoritosByUser(userid);
+        profileManager.clearUserProfile();
     }
 
     private String getAuthToken(Context context) {
@@ -332,7 +349,7 @@ public class SingletonLusitania {
 
             }
             // Reinscrever nos tópicos MQTT
-            resubscribeToFavoritos(favoritos);
+            //resubscribeToFavoritos(favoritos);
             if (favoritoListener != null) favoritoListener.onFavoritosLoaded(favoritos);
             return;
         }
@@ -365,7 +382,7 @@ public class SingletonLusitania {
         }
     }
 
-    public void toggleFavoritoAPI(final Context context, final Local local) { // para os locais
+    public void toggleLocalFavoritoAPI(final Context context, final Local local) { // para os locais
         // Define Endpoint e Metodo baseado no estado atual
         String endpoint;
         int method;
@@ -404,6 +421,11 @@ public class SingletonLusitania {
     }
 
     public void toggleFavoritoAPI(final Context context, final Favorito favorito) { // para os favoritos (quando fiz esse codigo só eu e deus sabiamos, agora só deus sabe)
+        // nao deixa continuar se estiver offline
+        if (!UtilParser.isConnectionInternet(context)) {
+            Toast.makeText(context, "Sem ligação à internet", Toast.LENGTH_SHORT).show();
+            return;
+        }
         // Define Endpoint e Metodo baseado no estado atual
         String endpoint;
         int method;
@@ -418,7 +440,7 @@ public class SingletonLusitania {
             endpoint = mUrladdFavorito + "/" + favorito.getLocalId();
             method = Request.Method.POST;
             // Adicionar aos favoritos locais
-            addFavoritoBD(favorito);
+            //addFavoritoBD(favorito);
         }
 
         // Usa o helper (requiresAuth = true)
@@ -435,7 +457,7 @@ public class SingletonLusitania {
     }
     //endregion
 
-    //region - Login API
+    //region - Login API e Signup API
     public void loginAPI(final String username, final String password, final Context context) {
         JSONObject jsonBody = new JSONObject();
         try {
@@ -462,6 +484,43 @@ public class SingletonLusitania {
                 },
                 error -> {
                     String mensagem = "Erro no Login";
+                    // Tenta extrair mensagem especifica do erro
+                    if (error.networkResponse != null && error.networkResponse.data != null) {
+                        try {
+                            String body = new String(error.networkResponse.data, StandardCharsets.UTF_8);
+                            JSONObject jsonError = new JSONObject(body);
+                            if (jsonError.has("message")) mensagem = jsonError.getString("message");
+                        } catch (Exception ignored) {
+                        }
+                    }
+                    Toast.makeText(context, mensagem, Toast.LENGTH_SHORT).show();
+                }
+        );
+    }
+
+    public void signupAPI(final String username, final String email, final String password, final String primeiro_nome, final String ultimo_nome, final Context context) {
+        JSONObject jsonBody = new JSONObject();
+        try {
+            jsonBody.put("username", username);
+            jsonBody.put("email", email);
+            jsonBody.put("password", password);
+            jsonBody.put("primeiro_nome", primeiro_nome);
+            jsonBody.put("ultimo_nome", ultimo_nome);
+
+        } catch (Exception e) {
+            Toast.makeText(context, "Erro ao criar pedido", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Signup não requer Auth Token na URL (requiresAuth = false)
+        makeJsonObjectRequest(context, Request.Method.POST, "/signup-form", false, jsonBody,
+                response -> {
+                    Toast.makeText(context, "Registo efetuado com sucesso! Faça login.", Toast.LENGTH_SHORT).show();
+                    if (signupListener != null)
+                        signupListener.onSignupSuccess();
+                },
+                error -> {
+                    String mensagem = "Erro no Registo";
                     // Tenta extrair mensagem especifica do erro
                     if (error.networkResponse != null && error.networkResponse.data != null) {
                         try {
@@ -511,6 +570,30 @@ public class SingletonLusitania {
                 }
         );
     }
+
+    public void searchLocalAPI(final Context context, final String query) {
+        makeJsonArrayRequest(context, Request.Method.GET, mUrlAPILocais + "/search/" + query, true,
+                response -> {
+                    try {
+                        // The same parser can be used for search results
+                        locais = LocalJsonParser.parserJsonLocais(response);
+                        if (locaisListener != null) {
+                            locaisListener.onLocaisLoaded(locais);
+                        }
+                    } catch (Exception e) {
+                        if (locaisListener != null) {
+                            locaisListener.onLocaisError("Erro JSON na pesquisa");
+                        }
+                    }
+                },
+                error -> {
+                    if (locaisListener != null) {
+                        locaisListener.onLocaisError(error.getMessage());
+                    }
+                }
+        );
+    }
+
 
 
     //endregion
@@ -600,6 +683,7 @@ public class SingletonLusitania {
         makeJsonArrayRequest(context, Request.Method.GET, mUrlUser + "/me", true,
                 response -> {
                     User user = UserJsonParser.parserJsonUser(response);
+                    profileManager.saveUser(user);
                     if (user != null && perfilListener != null) {
                         perfilListener.onPerfilLoaded(user);
                     } else if (perfilListener != null) {
@@ -628,6 +712,16 @@ public class SingletonLusitania {
                 response -> {
                     try {
                         getUserProfileAPI(context);
+
+                        User updatedUser = getCachedUser();
+                        updatedUser.setPrimeiro_nome(primeiro_nome);
+                        updatedUser.setUltimo_nome(ultimo_mome);
+                        updatedUser.setUsername(username);
+
+                        profileManager.saveUser(updatedUser);
+                        if(perfilListener != null){
+                            perfilListener.onPerfilLoaded(updatedUser);
+                        }
 
                         Toast.makeText(context, "Perfil editado com sucesso", Toast.LENGTH_SHORT).show();
                     } catch (Exception e) {
