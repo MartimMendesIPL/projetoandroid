@@ -73,12 +73,19 @@ public class ReservaFragment extends Fragment implements LocaisListener, Reserva
         setupRecyclerView();
         setupButton();
 
-        SingletonLusitania singleton = SingletonLusitania.getInstance(requireContext());
-        singleton.setLocaisListener(this);
-        singleton.setReservaListener(this);
+        // Faz o pedido à API
+        Log.d("ReservaFragment", "A pedir dados do local ID: " + localId);
+        SingletonLusitania.getInstance(requireContext()).getLocalAPI(localId, requireContext());
+    }
 
-        // Carrega os dados do local (incluindo os tipos de bilhete)
-        singleton.getLocalAPI(localId, requireContext());
+    @Override
+    public void onResume() {
+        super.onResume();
+        // --- CORREÇÃO FUNDAMENTAL ---
+        // Força a ligação do listener sempre que o fragmento fica visível.
+        // Isto impede que o 'onDestroyView' do fragmento anterior corte a comunicação.
+        SingletonLusitania.getInstance(requireContext()).setLocaisListener(this);
+        SingletonLusitania.getInstance(requireContext()).setReservaListener(this);
     }
 
     private void setupDatePicker() {
@@ -99,7 +106,7 @@ public class ReservaFragment extends Fragment implements LocaisListener, Reserva
     }
 
     private void setupButton() {
-        binding.btnContinue.setEnabled(false); // Desativado até haver valor > 0
+        binding.btnContinue.setEnabled(false);
         binding.btnContinue.setOnClickListener(v -> fazerReserva());
     }
 
@@ -129,8 +136,6 @@ public class ReservaFragment extends Fragment implements LocaisListener, Reserva
     private void atualizarTotal() {
         double total = adapter.calcularTotal();
         binding.tvTotalPrice.setText(String.format(Locale.getDefault(), "%.2f €", total));
-
-        // Ativa o botão apenas se o total for maior que 0
         binding.btnContinue.setEnabled(total > 0);
     }
 
@@ -150,7 +155,6 @@ public class ReservaFragment extends Fragment implements LocaisListener, Reserva
         SimpleDateFormat apiDateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         String dataVisitaFormatada = apiDateFormat.format(selectedDate.getTime());
 
-        // Feedback visual
         binding.btnContinue.setEnabled(false);
         Toast.makeText(requireContext(), "A processar reserva...", Toast.LENGTH_SHORT).show();
 
@@ -164,16 +168,27 @@ public class ReservaFragment extends Fragment implements LocaisListener, Reserva
 
     @Override
     public void onLocalLoaded(Local local) {
-        if (local != null && local.getTiposBilhete() != null) {
-            adapter.updateTiposBilhete(local.getTiposBilhete());
-            atualizarTotal(); // Recalcula (será 0 inicialmente)
+        Log.d("ReservaFragment", "onLocalLoaded chamado!");
+
+        if (local != null) {
+            ArrayList<TipoBilhete> bilhetes = local.getTiposBilhete();
+
+            if (bilhetes != null && !bilhetes.isEmpty()) {
+                Log.d("ReservaFragment", "Bilhetes carregados: " + bilhetes.size());
+                adapter.updateTiposBilhete(bilhetes);
+                atualizarTotal();
+            } else {
+                Log.e("ReservaFragment", "Local carregado mas SEM bilhetes.");
+                Toast.makeText(requireContext(), "Não há bilhetes disponíveis para este local.", Toast.LENGTH_LONG).show();
+            }
         }
     }
 
     @Override
     public void onLocalError(String error) {
+        Log.e("ReservaFragment", "Erro ao carregar local: " + error);
         if (getContext() != null) {
-            Toast.makeText(getContext(), "Erro ao carregar local: " + error, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Erro: " + error, Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -184,7 +199,6 @@ public class ReservaFragment extends Fragment implements LocaisListener, Reserva
             adapter.limparSelecoes();
             atualizarTotal();
 
-            // Volta para a tela anterior
             if (getParentFragmentManager().getBackStackEntryCount() > 0) {
                 getParentFragmentManager().popBackStack();
             }
@@ -195,11 +209,10 @@ public class ReservaFragment extends Fragment implements LocaisListener, Reserva
     public void onReservaError(String message) {
         if (getContext() != null) {
             Toast.makeText(getContext(), "Erro na reserva: " + message, Toast.LENGTH_LONG).show();
-            binding.btnContinue.setEnabled(true); // Reativa o botão para tentar de novo
+            binding.btnContinue.setEnabled(true);
         }
     }
 
-    // Métodos não utilizados mas obrigatórios pela interface
     @Override
     public void onLocaisLoaded(ArrayList<Local> locais) {}
     @Override
@@ -209,7 +222,7 @@ public class ReservaFragment extends Fragment implements LocaisListener, Reserva
     @Override
     public void onReservaLoaded(Reserva reserva) {}
     @Override
-    public void onReservasError(String message) {} // Este método pode entrar em conflito se usar sobrecargas incorretas
+    public void onReservasError(String message) {}
 
     @Override
     public void onDestroyView() {
