@@ -46,5 +46,13 @@
         <item name="boxBackgroundColor">@color/text_field_background</item>
     </style>
 
+    <style name="DatePickerTheme" parent="ThemeOverlay.MaterialComponents.MaterialCalendar">
+        <item name="colorPrimary">@color/blue_primary</item>
+        <item name="colorOnPrimary">@android:color/white</item>
+        <item name="colorSurface">@android:color/white</item>
+        <item name="colorOnSurface">@android:color/black</item>
+    </style>
+
+
     <style name="Theme.Maislusitania_android" parent="Base.Theme.Maislusitania_android" />
 </resources>

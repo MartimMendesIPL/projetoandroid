@@ -57,8 +57,30 @@ public class DetalhesLocalFragment extends Fragment implements LocaisListener {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        setupRecyclerView();
-        setupClickListeners();
+        // Setup RecyclerViews and Adapters here
+        setupRecyclerViews();
+
+        binding.ratingBar.setRating(initialRating);
+
+        // Set listener and fetch data
+        SingletonLusitania.getInstance(getContext()).setLocaisListener(this);
+        SingletonLusitania.getInstance(getContext()).getLocalAPI(localId, getContext());
+
+        binding.btnComprar.setOnClickListener(v -> {
+            // Criar instância do ReservaFragment com o ID do local
+            ReservaFragment reservaFragment = ReservaFragment.newInstance(localId);
+
+            // Fazer a transação do fragment
+            getParentFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, reservaFragment) // Ajusta se necessário
+                    .addToBackStack(null)
+                    .commit();
+        });
+
+        binding.btnVoltar.setOnClickListener(v -> {
+            getActivity().onBackPressed();
+        });
 
         if (localId != -1) {
             SingletonLusitania.getInstance(requireContext()).setLocaisListener(this);
