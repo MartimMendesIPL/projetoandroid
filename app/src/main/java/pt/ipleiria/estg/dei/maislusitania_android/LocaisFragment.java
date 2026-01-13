@@ -2,6 +2,10 @@ package pt.ipleiria.estg.dei.maislusitania_android;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,11 +23,16 @@ import pt.ipleiria.estg.dei.maislusitania_android.databinding.FragmentLocaisBind
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.LocaisListener;
 import pt.ipleiria.estg.dei.maislusitania_android.models.Local;
 import pt.ipleiria.estg.dei.maislusitania_android.models.SingletonLusitania;
+import pt.ipleiria.estg.dei.maislusitania_android.utils.UtilParser;
 
 public class LocaisFragment extends Fragment implements LocaisListener, LocalAdapter.OnItemClickListener {
 
     private FragmentLocaisBinding binding;
     private LocalAdapter adapter;
+
+    // Handler for delayed search
+    private final Handler searchHandler = new Handler(Looper.getMainLooper());
+    private Runnable searchRunnable;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -34,27 +43,40 @@ public class LocaisFragment extends Fragment implements LocaisListener, LocalAda
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        // A configuração inicial da UI e do RecyclerView permanece aqui.
         setupRecyclerView();
         setupClickListeners();
+        setupSearchListener();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        // A chamada para carregar os dados é movida para onResume.
-        // Isto garante que os dados são atualizados sempre que o fragmento se torna ativo.
         SingletonLusitania.getInstance(requireContext()).setLocaisListener(this);
-        SingletonLusitania.getInstance(requireContext()).getAllLocaisAPI(requireContext());
+        loadLocais();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        // É uma boa prática remover o listener em onPause para evitar memory leaks
-        // ou atualizações de UI quando o fragmento não está visível.
+        if (searchHandler != null && searchRunnable != null) {
+            searchHandler.removeCallbacks(searchRunnable);
+        }
         SingletonLusitania.getInstance(requireContext()).setLocaisListener(null);
+    }
+
+    private void loadLocais() {
+        if (getContext() == null) return;
+        if (!UtilParser.isConnectionInternet(requireContext())) {
+            showNoInternetWarning(true);
+        } else {
+            showNoInternetWarning(false);
+            String query = binding.etPesquisa.getText().toString().trim();
+            if (query.isEmpty()) {
+                SingletonLusitania.getInstance(requireContext()).getAllLocaisAPI(requireContext());
+            } else {
+                SingletonLusitania.getInstance(requireContext()).searchLocalAPI(requireContext(), query);
+            }
+        }
     }
 
     private void setupRecyclerView() {
@@ -70,23 +92,57 @@ public class LocaisFragment extends Fragment implements LocaisListener, LocalAda
         });
     }
 
+    private void setupSearchListener() {
+        binding.etPesquisa.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (searchRunnable != null) {
+                    searchHandler.removeCallbacks(searchRunnable);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                searchRunnable = () -> {
+                    if (isAdded()) {
+                        loadLocais();
+                    }
+                };
+                searchHandler.postDelayed(searchRunnable, 500);
+            }
+        });
+    }
+
+
     @Override
     public void onItemClick(Local item) {
-        Fragment fragment = DetalhesLocalFragment.newInstance(item.getId());
-        getParentFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, fragment)
-                .addToBackStack(null)
-                .commit();
+        if (isAdded()) {
+            Fragment fragment = DetalhesLocalFragment.newInstance(item.getId());
+            getParentFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, fragment)
+                    .addToBackStack(null)
+                    .commit();
+        }
     }
 
     @Override
     public void onFavoriteClick(Local item, int position) {
-        SingletonLusitania.getInstance(requireContext()).toggleLocalFavoritoAPI(requireContext(), item);
+        if (isAdded() && !UtilParser.isConnectionInternet(requireContext())) {
+            Toast.makeText(getContext(), "Sem ligação à internet. Não é possível alterar favoritos.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (isAdded()) {
+            SingletonLusitania.getInstance(requireContext()).toggleLocalFavoritoAPI(requireContext(), item);
+        }
     }
 
     @Override
     public void onLocaisLoaded(ArrayList<Local> listaLocais) {
-        if (adapter != null && isAdded()) { // isAdded() verifica se o fragmento ainda está ligado à sua atividade
+        if (adapter != null && isAdded()) {
+            showNoInternetWarning(false);
             adapter.updateList(listaLocais);
         }
     }
@@ -94,7 +150,17 @@ public class LocaisFragment extends Fragment implements LocaisListener, LocalAda
     @Override
     public void onLocaisError(String message) {
         if (isAdded()) {
+            if (!UtilParser.isConnectionInternet(requireContext())) {
+                showNoInternetWarning(true);
+            }
             Toast.makeText(getContext(), "Erro ao carregar locais: " + message, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void showNoInternetWarning(boolean show) {
+        if (binding != null && isAdded()) {
+            binding.recyclerViewLocais.setVisibility(show ? View.GONE : View.VISIBLE);
+            binding.includeNoInternet.getRoot().setVisibility(show ? View.VISIBLE : View.GONE);
         }
     }
 
@@ -111,7 +177,10 @@ public class LocaisFragment extends Fragment implements LocaisListener, LocalAda
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        // A limpeza do binding continua aqui.
+        // Clean up handler on view destruction
+        if (searchHandler != null && searchRunnable != null) {
+            searchHandler.removeCallbacks(searchRunnable);
+        }
         binding = null;
     }
 }

@@ -570,6 +570,30 @@ public class SingletonLusitania {
         );
     }
 
+    public void searchLocalAPI(final Context context, final String query) {
+        makeJsonArrayRequest(context, Request.Method.GET, mUrlAPILocais + "/search/" + query, true,
+                response -> {
+                    try {
+                        // The same parser can be used for search results
+                        locais = LocalJsonParser.parserJsonLocais(response);
+                        if (locaisListener != null) {
+                            locaisListener.onLocaisLoaded(locais);
+                        }
+                    } catch (Exception e) {
+                        if (locaisListener != null) {
+                            locaisListener.onLocaisError("Erro JSON na pesquisa");
+                        }
+                    }
+                },
+                error -> {
+                    if (locaisListener != null) {
+                        locaisListener.onLocaisError(error.getMessage());
+                    }
+                }
+        );
+    }
+
+
 
     //endregion
 
