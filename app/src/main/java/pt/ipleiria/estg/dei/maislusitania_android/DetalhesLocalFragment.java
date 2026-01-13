@@ -1,4 +1,4 @@
-package pt.ipleiria.estg.dei.maislusitania_android.fragments;
+package pt.ipleiria.estg.dei.maislusitania_android;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -16,7 +16,6 @@ import com.bumptech.glide.Glide;
 import java.util.ArrayList;
 import java.util.Map;
 
-import pt.ipleiria.estg.dei.maislusitania_android.R;
 import pt.ipleiria.estg.dei.maislusitania_android.adapters.AvaliacaoAdapter;
 import pt.ipleiria.estg.dei.maislusitania_android.databinding.FragmentDetalhesLocalBinding;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.LocaisListener;
@@ -26,27 +25,22 @@ import pt.ipleiria.estg.dei.maislusitania_android.models.SingletonLusitania;
 
 public class DetalhesLocalFragment extends Fragment implements LocaisListener {
 
-    private static final String ARG_LOCAL_ID = "local_id";
-    private static final String ARG_RATING = "local_rating";
-
     private int localId;
-    private float initialRating;
     private Local local;
-
     private AvaliacaoAdapter avaliacaoAdapter;
-
     private int avaliacaoId;
     private Avaliacao avaliacaoUser;
     private FragmentDetalhesLocalBinding binding;
 
     public DetalhesLocalFragment() {
+        // Required empty public constructor
     }
 
-    public static DetalhesLocalFragment newInstance(int localId, float rating) {
+    // This method is now unused, but we can keep it.
+    public static DetalhesLocalFragment newInstance(int localId) {
         DetalhesLocalFragment fragment = new DetalhesLocalFragment();
         Bundle args = new Bundle();
-        args.putInt(ARG_LOCAL_ID, localId);
-        args.putFloat(ARG_RATING, rating);
+        args.putInt("localId", localId);
         fragment.setArguments(args);
         return fragment;
     }
@@ -54,10 +48,7 @@ public class DetalhesLocalFragment extends Fragment implements LocaisListener {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            localId = getArguments().getInt(ARG_LOCAL_ID);
-            initialRating = getArguments().getFloat(ARG_RATING, 0.0f);
-        }
+        // DO NOT access arguments here. It's too early and can be unreliable.
     }
 
     @Override
@@ -70,22 +61,31 @@ public class DetalhesLocalFragment extends Fragment implements LocaisListener {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        // Setup RecyclerViews and Adapters here
+        
+        if (getArguments() != null) {
+            this.localId = getArguments().getInt("localId", -1); // Default to -1 if not found
+        }
         setupRecyclerViews();
 
-        binding.ratingBar.setRating(initialRating);
+        if (localId != -1) {
+            SingletonLusitania.getInstance(getContext()).setLocaisListener(this);
+            SingletonLusitania.getInstance(getContext()).getLocalAPI(localId, getContext());
+        } else {
+            Toast.makeText(getContext(), "Erro: ID do local não encontrado.", Toast.LENGTH_LONG).show();
+            if (getActivity() != null) {
+                getActivity().onBackPressed();
+            }
+        }
 
-        // Set listener and fetch data
-        SingletonLusitania.getInstance(getContext()).setLocaisListener(this);
-        SingletonLusitania.getInstance(getContext()).getLocalAPI(localId, getContext());
 
         binding.btnComprar.setOnClickListener(v -> {
             Toast.makeText(getContext(), "Funcionalidade de compra em breve", Toast.LENGTH_SHORT).show();
         });
 
         binding.btnVoltar.setOnClickListener(v -> {
-            getActivity().onBackPressed();
+            if (getActivity() != null) {
+                getActivity().onBackPressed();
+            }
         });
 
         binding.btnSubmitAvaliacao.setOnClickListener(v -> {
@@ -98,12 +98,12 @@ public class DetalhesLocalFragment extends Fragment implements LocaisListener {
             }
 
             if (avaliacaoUser != null) {
-                // Lógica de Edição: O utilizador já tem uma avaliação
-                SingletonLusitania.getInstance(getContext()).editAvaliacao(getContext(),localId, avaliacaoId, novaAvaliacao, comentario);
+                // Lógica de Edição
+                SingletonLusitania.getInstance(getContext()).editAvaliacao(getContext(), localId, avaliacaoId, novaAvaliacao, comentario);
                 Toast.makeText(getContext(), "A editar a sua avaliação...", Toast.LENGTH_SHORT).show();
 
             } else {
-                // Lógica de Adição: O utilizador está a criar uma nova avaliação
+                // Lógica de Adição
                 SingletonLusitania.getInstance(getContext()).addAvaliacao(getContext(), localId, novaAvaliacao, comentario);
                 Toast.makeText(getContext(), "A submeter a sua avaliação...", Toast.LENGTH_SHORT).show();
             }
@@ -122,7 +122,6 @@ public class DetalhesLocalFragment extends Fragment implements LocaisListener {
 
     private void setupRecyclerViews() {
         binding.rvAvaliacoes.setLayoutManager(new LinearLayoutManager(getContext()));
-
         avaliacaoAdapter = new AvaliacaoAdapter(getContext(), new ArrayList<>());
         binding.rvAvaliacoes.setAdapter(avaliacaoAdapter);
     }
@@ -138,7 +137,7 @@ public class DetalhesLocalFragment extends Fragment implements LocaisListener {
         this.avaliacaoId = -1;
 
         //Procurar a avaliação do utilizador
-        if(local.getAvaliacoes() != null && userId != -1) {
+        if (local.getAvaliacoes() != null && userId != -1) {
             for (Avaliacao avaliacao : local.getAvaliacoes()) {
                 if (avaliacao.getUtilizadorId() == userId) {
                     this.avaliacaoUser = avaliacao;
@@ -201,8 +200,7 @@ public class DetalhesLocalFragment extends Fragment implements LocaisListener {
 
             binding.btnApagarAvaliacao.setVisibility(View.VISIBLE);
             binding.btnSubmitAvaliacao.setText("Editar");
-        }
-        else{
+        } else {
             binding.btnApagarAvaliacao.setVisibility(View.INVISIBLE);
             binding.btnSubmitAvaliacao.setText("Submeter");
         }
@@ -226,3 +224,4 @@ public class DetalhesLocalFragment extends Fragment implements LocaisListener {
     @Override
     public void onLocaisError(String message) {}
 }
+

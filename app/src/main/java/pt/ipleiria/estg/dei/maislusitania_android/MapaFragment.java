@@ -1,5 +1,6 @@
 package pt.ipleiria.estg.dei.maislusitania_android;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -10,6 +11,7 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -111,6 +113,9 @@ public class MapaFragment extends Fragment implements MapaListener {
         // As imagens estao em http então é preciso isto
         ws.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
 
+        // Adiciona a interface JavaScript
+        webView.addJavascriptInterface(new WebAppInterface(), "Android");
+
         webView.setWebChromeClient(new WebChromeClient());
         webView.setWebViewClient(new WebViewClient() {
             @Override
@@ -129,6 +134,33 @@ public class MapaFragment extends Fragment implements MapaListener {
         webView.loadUrl("file:///android_asset/leaflet_map.html");
     }
 
+    public class WebAppInterface {
+        @JavascriptInterface
+        public void openDetails(String localId) {
+            new Handler(Looper.getMainLooper()).post(() -> {
+                if (getView() == null || getParentFragmentManager() == null) {
+                    return;
+                }
+
+                try {
+                    int id = Integer.parseInt(localId);
+
+                    Fragment destinationFragment = DetalhesLocalFragment.newInstance(id);
+
+                    getParentFragmentManager().beginTransaction()
+                            .replace(R.id.fragment_container, destinationFragment)
+                            .addToBackStack(null)
+                            .commit();
+
+                } catch (NumberFormatException e) {
+                    if (getContext() != null) {
+                        Toast.makeText(getContext(), "ID do local inválido.", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        }
+    }
+
     @Override
     public void onDestroyView() {
         // Limpar callbacks de pesquisa pendentes para evitar memory leaks ou crashes
@@ -139,6 +171,8 @@ public class MapaFragment extends Fragment implements MapaListener {
         // Limpeza padrão da WebView
         if (binding != null && binding.webViewMap != null) {
             WebView w = binding.webViewMap;
+            // remover a interface para evitar leaks
+            w.removeJavascriptInterface("Android");
             w.loadUrl("about:blank");
             w.stopLoading();
             w.setWebChromeClient(null);

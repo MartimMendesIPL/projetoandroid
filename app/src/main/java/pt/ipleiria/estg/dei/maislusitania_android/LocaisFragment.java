@@ -17,7 +17,6 @@ import java.util.ArrayList;
 
 import pt.ipleiria.estg.dei.maislusitania_android.adapters.LocalAdapter;
 import pt.ipleiria.estg.dei.maislusitania_android.databinding.FragmentLocaisBinding;
-import pt.ipleiria.estg.dei.maislusitania_android.fragments.DetalhesLocalFragment;
 import pt.ipleiria.estg.dei.maislusitania_android.models.Local;
 import pt.ipleiria.estg.dei.maislusitania_android.models.SingletonLusitania;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.LocaisListener;
@@ -57,16 +56,14 @@ public class LocaisFragment extends Fragment implements LocaisListener {
         adapter = new LocalAdapter(items, new LocalAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(Local item) {
-                // Passamos o ID e a Avaliação Média (que sabemos que está correta na lista)
-                Fragment fragment = DetalhesLocalFragment.newInstance(item.getId(), item.getAvaliacaoMedia());
+                // Passamos o ID e a Avaliação Média
+                Fragment fragment = DetalhesLocalFragment.newInstance(item.getId());
 
                 getParentFragmentManager().beginTransaction()
                         .replace(R.id.fragment_container, fragment)
                         .addToBackStack(null)
                         .commit();
             }
-
-
             @Override
             public void onFavoriteClick(Local item, int position) {
                 SingletonLusitania.getInstance(requireContext()).toggleLocalFavoritoAPI(requireContext(), item);
