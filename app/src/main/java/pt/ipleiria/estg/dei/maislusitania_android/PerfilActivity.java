@@ -2,12 +2,12 @@ package pt.ipleiria.estg.dei.maislusitania_android;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Toast;
-import androidx.appcompat.app.AppCompatActivity;
-import android.view.View;
-import android.widget.EditText;
-import android.app.AlertDialog;
 import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.EditText;import android.widget.Toast;
+import android.app.AlertDialog;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -119,7 +119,6 @@ public class PerfilActivity extends AppCompatActivity {
                     .setMessage("Tem a certeza que pretende remover a sua conta? Esta ação é irreversível.")
                     .setPositiveButton("Sim", (dialog, which) -> {
                         SingletonLusitania.getInstance(this).deleteUserAPI(this);
-                        //Sair da conta
                         binding.layoutLogout.performClick();
                         Toast.makeText(this, "Conta removida com sucesso", Toast.LENGTH_SHORT).show();
                     })
@@ -132,6 +131,7 @@ public class PerfilActivity extends AppCompatActivity {
         binding.layoutLogout.setOnClickListener(v -> {
             SingletonLusitania.getInstance(this).logout(this);
             Intent intent = new Intent(this, LoginActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
             finish();
             Toast.makeText(this, "Logout efetuado com sucesso", Toast.LENGTH_SHORT).show();
@@ -139,31 +139,22 @@ public class PerfilActivity extends AppCompatActivity {
     }
 
     private void carregarDadosUtilizador() {
+        User cachedUser = SingletonLusitania.getInstance(this).getCachedUser();
+        if (cachedUser != null) {
+            atualizarUI(cachedUser);
+        }
+
         SingletonLusitania.getInstance(this).setPerfilListener(new PerfilListener() {
             @Override
             public void onPerfilLoaded(User user) {
-                binding.tvUsername.setText(user.getUsername());
-                binding.tvFirstName.setText(user.getPrimeiro_nome());
-                binding.tvLastName.setText(user.getUltimo_nome());
-                binding.tvEmail.setText(user.getEmail());
-                binding.tvMemberSince.setText(String.valueOf(user.getData_adesao()));
-
-                if (user.getImagem_perfil() != null && !user.getImagem_perfil().isEmpty()) {
-
-                    Glide.with(PerfilActivity.this)
-                            .load(user.getImagem_perfil())
-                            .placeholder(R.drawable.ic_perfil)
-                            .diskCacheStrategy(DiskCacheStrategy.ALL)
-                            .into(binding.ivProfilePhoto);
-
-                } else {
-                    binding.ivProfilePhoto.setImageResource(R.drawable.ic_perfil);
-                }
+                atualizarUI(user);
             }
 
             @Override
             public void onPerfilError(String error) {
-                Toast.makeText(PerfilActivity.this, "Erro: " + error, Toast.LENGTH_SHORT).show();
+                if (cachedUser == null) {
+                    Toast.makeText(PerfilActivity.this, "Erro de rede: " + error, Toast.LENGTH_SHORT).show();
+                }
             }
 
             @Override
@@ -177,6 +168,27 @@ public class PerfilActivity extends AppCompatActivity {
         });
 
         SingletonLusitania.getInstance(this).getUserProfileAPI(this);
+    }
+
+    private void atualizarUI(User user) {
+        if (user != null && binding != null) {
+            binding.tvUsername.setText(user.getUsername());
+            binding.tvFirstName.setText(user.getPrimeiro_nome());
+            binding.tvLastName.setText(user.getUltimo_nome());
+            binding.tvEmail.setText(user.getEmail());
+            binding.tvMemberSince.setText(user.getData_adesao());
+
+            if (user.getImagem_perfil() != null && !user.getImagem_perfil().isEmpty()) {
+                Glide.with(this)
+                        .load(user.getImagem_perfil())
+                        .placeholder(R.drawable.ic_perfil)
+                        .diskCacheStrategy(DiskCacheStrategy.ALL)
+                        .error(R.drawable.ic_perfil) // Show placeholder on error
+                        .into(binding.ivProfilePhoto);
+            } else {
+                binding.ivProfilePhoto.setImageResource(R.drawable.ic_perfil);
+            }
+        }
     }
 
     @Override

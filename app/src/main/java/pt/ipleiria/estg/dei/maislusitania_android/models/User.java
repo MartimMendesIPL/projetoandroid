@@ -11,15 +11,14 @@ public class User {
     private String data_adesao;
 
     //Criar contrutor
-    public User(int id, String primeiro_nome, String ultimo_nome, String imagem_perfil, int user_id, String username, String email, String data_adesao) {
+    public User(int id, String username, String email, String primeiro_nome, String ultimo_nome, String data_adesao, String imagem_perfil) {
         this.id = id;
-        this.primeiro_nome = primeiro_nome;
-        this.ultimo_nome = ultimo_nome;
-        this.imagem_perfil = imagem_perfil;
-        this.user_id = user_id;
         this.username = username;
         this.email = email;
+        this.primeiro_nome = primeiro_nome;
+        this.ultimo_nome = ultimo_nome;
         this.data_adesao = data_adesao;
+        this.imagem_perfil = imagem_perfil;
     }
 
     //Getters

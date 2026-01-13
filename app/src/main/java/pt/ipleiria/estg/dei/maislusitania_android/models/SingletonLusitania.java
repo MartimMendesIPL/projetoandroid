@@ -42,7 +42,6 @@ import pt.ipleiria.estg.dei.maislusitania_android.utils.UtilParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.FavoritoJsonParser;
 
 public class SingletonLusitania {
-
     private static volatile SingletonLusitania instance;
     private ArrayList<Local> locais;
     private ArrayList<Favorito> favoritos;
@@ -51,6 +50,11 @@ public class SingletonLusitania {
 
     private Context context;
     private String mainUrl;
+
+    //Helper do perfil, sharedpreferences
+    private ProfileManager profileManager;
+
+
 
     // Keys
     private static final String KEY_TOKEN = "auth_key";
@@ -98,7 +102,7 @@ public class SingletonLusitania {
 
         //FIx em um memory leak que o IDE estava a avisar!!!
         this.context = context.getApplicationContext();
-
+        profileManager = new ProfileManager(context);
 
         locais = new ArrayList<>();
         dbHelper = new LocaisFavDBHelper(context);
@@ -177,6 +181,9 @@ public class SingletonLusitania {
         return base + endpoint;
     }
 
+    public User getCachedUser(){
+        return profileManager.getUser();
+    }
     public void guardarUtilizador(Context context, String username, String token, String user_id) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -196,6 +203,7 @@ public class SingletonLusitania {
         sharedPreferences.edit().clear().apply();
         // Apagar dados do utilizador armazenados localmente, se existirem
         dbHelper.deleteAllFavoritosByUser(userid);
+        profileManager.clearUserProfile();
     }
 
     private String getAuthToken(Context context) {
@@ -650,6 +658,7 @@ public class SingletonLusitania {
         makeJsonArrayRequest(context, Request.Method.GET, mUrlUser + "/me", true,
                 response -> {
                     User user = UserJsonParser.parserJsonUser(response);
+                    profileManager.saveUser(user);
                     if (user != null && perfilListener != null) {
                         perfilListener.onPerfilLoaded(user);
                     } else if (perfilListener != null) {
@@ -678,6 +687,16 @@ public class SingletonLusitania {
                 response -> {
                     try {
                         getUserProfileAPI(context);
+
+                        User updatedUser = getCachedUser();
+                        updatedUser.setPrimeiro_nome(primeiro_nome);
+                        updatedUser.setUltimo_nome(ultimo_mome);
+                        updatedUser.setUsername(username);
+
+                        profileManager.saveUser(updatedUser);
+                        if(perfilListener != null){
+                            perfilListener.onPerfilLoaded(updatedUser);
+                        }
 
                         Toast.makeText(context, "Perfil editado com sucesso", Toast.LENGTH_SHORT).show();
                     } catch (Exception e) {
