@@ -23,6 +23,7 @@
         app:startIconTint="@color/blue_primary"
         app:endIconMode="custom"
         app:endIconDrawable="@drawable/ic_perfil"
+        app:endIconContentDescription="@string/perfil_icon_description"
         app:endIconTint="@color/blue_primary"
         app:hintEnabled="false"
         app:layout_constraintTop_toTopOf="parent"
