@@ -31,7 +31,6 @@ public class ReservasFragment extends Fragment implements ReservaListener {
     private ReservaAdapter reservaAdapter;
     private ArrayList<Reserva> reservas;
 
-    // Variáveis para a Pesquisa Dinâmica
     private Handler searchHandler = new Handler(Looper.getMainLooper());
     private Runnable searchRunnable;
 
@@ -41,19 +40,14 @@ public class ReservasFragment extends Fragment implements ReservaListener {
         binding = FragmentReservasBinding.inflate(inflater, container, false);
         reservas = new ArrayList<>();
 
-        // Listener para o ícone de perfil (Barra de pesquisa/topo)
         binding.tilPesquisa.setEndIconOnClickListener(v -> {
             Intent intent = new Intent(getActivity(), PerfilActivity.class);
             startActivity(intent);
         });
 
-        // Configurar a RecyclerView
         setupRecyclerView();
         setupSearchListeners();
 
-        //TODO: Search de reservas
-
-        // Configurar o Singleton e pedir os dados à API
         SingletonLusitania.getInstance(requireContext()).setReservaListener(this);
         SingletonLusitania.getInstance(requireContext()).getAllReservasAPI(requireContext());
 
@@ -64,20 +58,16 @@ public class ReservasFragment extends Fragment implements ReservaListener {
         RecyclerView recyclerView = binding.recyclerViewReservas;
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        reservaAdapter = new ReservaAdapter(requireContext(), reservas, new ReservaAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(Reserva reserva) {
-                ViewBilhetesFragment fragment = new ViewBilhetesFragment();
+        reservaAdapter = new ReservaAdapter(requireContext(), reservas, reserva -> {
+            ViewBilhetesFragment fragment = new ViewBilhetesFragment();
+            Bundle args = new Bundle();
+            args.putInt("ID_RESERVA", reserva.getId());
+            fragment.setArguments(args);
 
-                Bundle args = new Bundle();
-                args.putInt("ID_RESERVA", reserva.getId());
-                fragment.setArguments(args);
-
-                getParentFragmentManager().beginTransaction()
-                        .replace(R.id.fragment_container, fragment)
-                        .addToBackStack(null)
-                        .commit();
-            }
+            getParentFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, fragment)
+                    .addToBackStack(null)
+                    .commit();
         });
 
         recyclerView.setAdapter(reservaAdapter);
@@ -90,7 +80,6 @@ public class ReservasFragment extends Fragment implements ReservaListener {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                // Se o utilizador continuar a escrever, é apagada a pesquisa feita anteriormente
                 if (searchRunnable != null) {
                     searchHandler.removeCallbacks(searchRunnable);
                 }
@@ -106,7 +95,6 @@ public class ReservasFragment extends Fragment implements ReservaListener {
                         SingletonLusitania.getInstance(requireContext()).searchReservaAPI(getContext(), query);
                     }
                 };
-                // Aguarda 500ms após a última tecla antes de pesquisar
                 searchHandler.postDelayed(searchRunnable, 500);
             }
         });
@@ -117,18 +105,14 @@ public class ReservasFragment extends Fragment implements ReservaListener {
         if (searchHandler != null && searchRunnable != null) {
             searchHandler.removeCallbacks(searchRunnable);
         }
-
         super.onDestroyView();
         binding = null;
     }
 
     @Override
     public void onReservasLoaded(ArrayList<Reserva> listaReservas) {
-        // Atualizar a lista local
         reservas.clear();
         reservas.addAll(listaReservas);
-
-        // Notificar o adapter que os dados mudaram
         if (reservaAdapter != null) {
             reservaAdapter.notifyDataSetChanged();
         }
@@ -136,14 +120,26 @@ public class ReservasFragment extends Fragment implements ReservaListener {
 
     @Override
     public void onReservasError(String message) {
-        // Verificar se o fragmento ainda está anexado antes de mostrar o Toast (evita crashes)
         if (getContext() != null) {
             Toast.makeText(getContext(), "Erro: " + message, Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
+    public void onReservaCreated(Reserva reserva) {
+        SingletonLusitania.getInstance(requireContext()).getAllReservasAPI(requireContext());
+        Toast.makeText(requireContext(), "Reserva criada com sucesso!", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
     public void onReservaLoaded(Reserva reserva) {
-        // Este método não é usado na lista principal (usado apenas em detalhes/create)
+        // Implementação vazia (não é usado neste fragmento)
+    }
+
+    @Override
+    public void onReservaError(String message) {
+        if (getContext() != null) {
+            Toast.makeText(getContext(), "Erro: " + message, Toast.LENGTH_SHORT).show();
+        }
     }
 }

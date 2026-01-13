@@ -12,6 +12,7 @@ import java.util.ArrayList;
 
 import pt.ipleiria.estg.dei.maislusitania_android.models.Bilhete;
 import pt.ipleiria.estg.dei.maislusitania_android.models.Reserva;
+import pt.ipleiria.estg.dei.maislusitania_android.models.TipoBilhete;
 
 public class ReservasJsonParser {
 
@@ -83,6 +84,29 @@ public class ReservasJsonParser {
         }
         return listaBilhetes;
     }
+
+    // ==========================================
+// CRIAR BODY JSON PARA POST RESERVA
+// ==========================================
+    public static JSONObject criarBodyReserva(int localId, String dataVisita, ArrayList<TipoBilhete> tiposBilhete) throws JSONException {
+        JSONObject body = new JSONObject();
+        body.put("local_id", localId);
+        body.put("data_visita", dataVisita);
+
+        // Criar objeto bilhetes com as quantidades
+        JSONObject bilhetesObj = new JSONObject();
+        for (TipoBilhete tipo : tiposBilhete) {
+            if (tipo.getQuantidade() > 0) {
+                JSONObject quantidadeObj = new JSONObject();
+                quantidadeObj.put("quantidade", tipo.getQuantidade());
+                bilhetesObj.put(String.valueOf(tipo.getId()), quantidadeObj);
+            }
+        }
+        body.put("bilhetes", bilhetesObj);
+
+        return body;
+    }
+
 
     // Método auxiliar para verificar internet
     public static boolean isConnectionInternet(Context context) {

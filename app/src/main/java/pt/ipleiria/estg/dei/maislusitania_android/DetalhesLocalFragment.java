@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Map;
 
 import pt.ipleiria.estg.dei.maislusitania_android.R;
+import pt.ipleiria.estg.dei.maislusitania_android.ReservaFragment;
 import pt.ipleiria.estg.dei.maislusitania_android.adapters.AvaliacaoAdapter;
 import pt.ipleiria.estg.dei.maislusitania_android.databinding.FragmentDetalhesLocalBinding;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.LocaisListener;
@@ -81,7 +82,15 @@ public class DetalhesLocalFragment extends Fragment implements LocaisListener {
         SingletonLusitania.getInstance(getContext()).getLocalAPI(localId, getContext());
 
         binding.btnComprar.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Funcionalidade de compra em breve", Toast.LENGTH_SHORT).show();
+            // Criar instância do ReservaFragment com o ID do local
+            ReservaFragment reservaFragment = ReservaFragment.newInstance(localId);
+
+            // Fazer a transação do fragment
+            getParentFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragment_container, reservaFragment) // Ajusta se necessário
+                    .addToBackStack(null)
+                    .commit();
         });
 
         binding.btnVoltar.setOnClickListener(v -> {

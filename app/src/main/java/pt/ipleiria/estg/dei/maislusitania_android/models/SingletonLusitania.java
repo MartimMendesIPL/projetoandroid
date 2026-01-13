@@ -16,7 +16,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
@@ -91,6 +90,7 @@ public class SingletonLusitania {
     private AvaliacaoListener avaliacaoListener;
 
 
+
     //region - Construtor e Instância
     private SingletonLusitania(Context context) {
 
@@ -154,6 +154,7 @@ public class SingletonLusitania {
     public void setAvaliacaoListener(AvaliacaoListener avaliacaoListener){
         this.avaliacaoListener = avaliacaoListener;
     }
+
 
     //endregion
 
@@ -760,6 +761,61 @@ public class SingletonLusitania {
                     }
                 }, null);
     }
+
+    public void createReservaAPI(final Context context, int localId, String dataVisita, ArrayList<TipoBilhete> tiposBilhete) {
+        try {
+            // Usa o método do ReservasJsonParser para criar o body
+            JSONObject jsonBody = ReservasJsonParser.criarBodyReserva(localId, dataVisita, tiposBilhete);
+
+            // Faz o pedido POST
+            makeJsonObjectRequest(context, Request.Method.POST, mUrlAPIReserva, true, jsonBody,
+                    response -> {
+                        try {
+                            // Parse da resposta (assumindo que retorna a reserva criada)
+                            // Ajusta conforme o formato real da tua API
+                            int id = response.getInt("id");
+                            String estado = response.getString("estado");
+                            double precoTotal = response.getDouble("preco_total");
+                            String dataCriacao = response.getString("data_criacao");
+
+                            // Cria objeto Reserva com os dados retornados
+                            Reserva novaReserva = new Reserva(id, localId, "", dataVisita, precoTotal, estado, dataCriacao, "");
+
+                            Toast.makeText(context, "Reserva criada com sucesso!", Toast.LENGTH_SHORT).show();
+
+                            if (reservaListener != null) {
+                                reservaListener.onReservaCreated(novaReserva);
+                            }
+                        } catch (JSONException e) {
+                            Toast.makeText(context, "Erro ao processar resposta", Toast.LENGTH_SHORT).show();
+                            if (reservaListener != null) {
+                                reservaListener.onReservaError("Erro ao processar resposta: " + e.getMessage());
+                            }
+                        }
+                    },
+                    error -> {
+                        String mensagemErro = "Erro ao criar reserva";
+                        if (error.networkResponse != null && error.networkResponse.data != null) {
+                            try {
+                                String body = new String(error.networkResponse.data, StandardCharsets.UTF_8);
+                                JSONObject jsonError = new JSONObject(body);
+                                mensagemErro = jsonError.optString("message", mensagemErro);
+                            } catch (Exception ignored) {}
+                        }
+                        Toast.makeText(context, mensagemErro, Toast.LENGTH_SHORT).show();
+                        if (reservaListener != null) {
+                            reservaListener.onReservaError(mensagemErro);
+                        }
+                    }
+            );
+        } catch (JSONException e) {
+            Toast.makeText(context, "Erro ao criar pedido de reserva", Toast.LENGTH_SHORT).show();
+            if (reservaListener != null) {
+                reservaListener.onReservaError("Erro ao criar pedido: " + e.getMessage());
+            }
+        }
+    }
+
     //endregion
 
 //region - Avaliacoes
@@ -835,4 +891,8 @@ public class SingletonLusitania {
         );
     }
 //endregion
+
+
+
+
 }

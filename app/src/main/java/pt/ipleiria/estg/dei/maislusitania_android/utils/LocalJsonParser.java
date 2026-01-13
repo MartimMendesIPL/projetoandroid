@@ -22,6 +22,9 @@ public class LocalJsonParser {
         Local auxlocal = null;
         try
         {
+
+            android.util.Log.d("LocalJsonParser", "JSON completo: " + response);
+
             JSONObject local = new JSONObject(response);
             int id = local.getInt("id");
             String nome = local.getString("nome");
@@ -130,6 +133,7 @@ public class LocalJsonParser {
             }
 
             // Bilhetes
+            android.util.Log.d("LocalJsonParser", "Procurando tipos-bilhete...");
             JSONArray bilhetesArray = jsonObject.optJSONArray("tipos-bilhete");
             if (bilhetesArray != null) {
                 ArrayList<TipoBilhete> listaBilhetes = new ArrayList<>();
@@ -139,7 +143,9 @@ public class LocalJsonParser {
                             bilheteJson.getInt("id"),
                             bilheteJson.getString("nome"),
                             bilheteJson.getString("descricao"),
-                            bilheteJson.getString("preco")
+                            bilheteJson.getString("preco"),
+                            bilheteJson.optInt("ativo", 1),
+                            bilheteJson.optInt("local_id", id)
                     );
                     listaBilhetes.add(tb);
                 }
