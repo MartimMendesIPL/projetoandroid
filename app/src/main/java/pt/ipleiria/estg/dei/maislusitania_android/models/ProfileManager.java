@@ -40,9 +40,9 @@ public class ProfileManager {
         return new User(
                 sharedPreferences.getInt(KEY_ID, 0),
                 sharedPreferences.getString(KEY_USERNAME, ""),
+                sharedPreferences.getString(KEY_EMAIL, ""),
                 sharedPreferences.getString(KEY_FIRST_NAME, ""),
                 sharedPreferences.getString(KEY_LAST_NAME, ""),
-                sharedPreferences.getString(KEY_EMAIL, ""),
                 sharedPreferences.getString(KEY_MEMBER_SINCE, ""),
                 sharedPreferences.getString(KEY_PROFILE_IMAGE, "")
         );
