@@ -11,97 +11,107 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 
 import pt.ipleiria.estg.dei.maislusitania_android.adapters.LocalAdapter;
 import pt.ipleiria.estg.dei.maislusitania_android.databinding.FragmentLocaisBinding;
+import pt.ipleiria.estg.dei.maislusitania_android.listeners.LocaisListener;
 import pt.ipleiria.estg.dei.maislusitania_android.models.Local;
 import pt.ipleiria.estg.dei.maislusitania_android.models.SingletonLusitania;
-import pt.ipleiria.estg.dei.maislusitania_android.listeners.LocaisListener;
 
-public class LocaisFragment extends Fragment implements LocaisListener {
+public class LocaisFragment extends Fragment implements LocaisListener, LocalAdapter.OnItemClickListener {
 
     private FragmentLocaisBinding binding;
     private LocalAdapter adapter;
-    private ArrayList<Local> items;
 
-    @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentLocaisBinding.inflate(inflater, container, false);
-
-        items = new ArrayList<>();
-
-        binding.tilPesquisa.setEndIconOnClickListener(view -> {
-            Intent intent = new Intent(getActivity(), PerfilActivity.class);
-            startActivity(intent);
-        });
-
-        setupRecyclerView();
-
-        // Define este fragmento como o listener atual e carrega os locais
-        SingletonLusitania.getInstance(requireContext()).setLocaisListener(this);
-        SingletonLusitania.getInstance(requireContext()).getAllLocaisAPI(getContext());
-
         return binding.getRoot();
     }
 
-    private void setupRecyclerView() {
-        RecyclerView recyclerView = binding.recyclerViewLocais;
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-        adapter = new LocalAdapter(items, new LocalAdapter.OnItemClickListener() {
-            @Override
-            public void onItemClick(Local item) {
-                // Passamos o ID e a Avaliação Média
-                Fragment fragment = DetalhesLocalFragment.newInstance(item.getId());
-
-                getParentFragmentManager().beginTransaction()
-                        .replace(R.id.fragment_container, fragment)
-                        .addToBackStack(null)
-                        .commit();
-            }
-            @Override
-            public void onFavoriteClick(Local item, int position) {
-                SingletonLusitania.getInstance(requireContext()).toggleLocalFavoritoAPI(requireContext(), item);
-            }
-        });
-
-        recyclerView.setAdapter(adapter);
+        // A configuração inicial da UI e do RecyclerView permanece aqui.
+        setupRecyclerView();
+        setupClickListeners();
     }
 
     @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        binding = null;
+    public void onResume() {
+        super.onResume();
+        // A chamada para carregar os dados é movida para onResume.
+        // Isto garante que os dados são atualizados sempre que o fragmento se torna ativo.
+        SingletonLusitania.getInstance(requireContext()).setLocaisListener(this);
+        SingletonLusitania.getInstance(requireContext()).getAllLocaisAPI(requireContext());
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        // É uma boa prática remover o listener em onPause para evitar memory leaks
+        // ou atualizações de UI quando o fragmento não está visível.
+        SingletonLusitania.getInstance(requireContext()).setLocaisListener(null);
+    }
+
+    private void setupRecyclerView() {
+        adapter = new LocalAdapter(new ArrayList<>(), this);
+        binding.recyclerViewLocais.setLayoutManager(new LinearLayoutManager(getContext()));
+        binding.recyclerViewLocais.setAdapter(adapter);
+    }
+
+    private void setupClickListeners() {
+        binding.tilPesquisa.setEndIconOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), PerfilActivity.class);
+            startActivity(intent);
+        });
+    }
+
+    @Override
+    public void onItemClick(Local item) {
+        Fragment fragment = DetalhesLocalFragment.newInstance(item.getId());
+        getParentFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                .addToBackStack(null)
+                .commit();
+    }
+
+    @Override
+    public void onFavoriteClick(Local item, int position) {
+        SingletonLusitania.getInstance(requireContext()).toggleLocalFavoritoAPI(requireContext(), item);
     }
 
     @Override
     public void onLocaisLoaded(ArrayList<Local> listaLocais) {
-        if (listaLocais != null) {
-            items.clear();
-            items.addAll(listaLocais);
-            adapter.notifyDataSetChanged();
+        if (adapter != null && isAdded()) { // isAdded() verifica se o fragmento ainda está ligado à sua atividade
+            adapter.updateList(listaLocais);
         }
     }
 
     @Override
     public void onLocaisError(String message) {
-        if (getContext() != null) {
+        if (isAdded()) {
             Toast.makeText(getContext(), "Erro ao carregar locais: " + message, Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
     public void onLocalLoaded(Local local) {
-        // Não utilizado aqui
+        // Not used in this fragment
     }
 
     @Override
     public void onLocalError(String message) {
-        // Não utilizado aqui
+        // Not used in this fragment
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        // A limpeza do binding continua aqui.
+        binding = null;
     }
 }

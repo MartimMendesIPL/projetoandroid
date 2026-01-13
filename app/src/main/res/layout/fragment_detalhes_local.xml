@@ -26,31 +26,6 @@
                 android:scaleType="centerCrop"
                 android:src="@drawable/ic_launcher_background"
                 tools:ignore="ContentDescription" />
-
-            <!-- Botão Voltar (Sobreposto) -->
-            <androidx.cardview.widget.CardView
-                android:id="@+id/btnVoltar"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_gravity="top|start"
-                android:layout_marginStart="24dp"
-                android:layout_marginTop="24dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?attr/selectableItemBackground"
-                app:cardBackgroundColor="@color/blue_primary"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="4dp">
-
-                <ImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:contentDescription="Voltar"
-                    android:padding="12dp"
-                    android:src="@android:drawable/ic_menu_revert"
-                    app:tint="#FFFFFF" />
-            </androidx.cardview.widget.CardView>
-
         </FrameLayout>
 
         <!-- Card de Conteúdo (Sobreposto à imagem) -->
