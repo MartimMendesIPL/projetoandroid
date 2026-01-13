@@ -348,7 +348,7 @@ public class SingletonLusitania {
 
             }
             // Reinscrever nos tópicos MQTT
-            resubscribeToFavoritos(favoritos);
+            //resubscribeToFavoritos(favoritos);
             if (favoritoListener != null) favoritoListener.onFavoritosLoaded(favoritos);
             return;
         }
