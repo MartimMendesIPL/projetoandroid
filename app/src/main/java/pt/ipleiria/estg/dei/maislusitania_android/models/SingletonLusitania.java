@@ -41,30 +41,25 @@ import pt.ipleiria.estg.dei.maislusitania_android.utils.UtilParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.FavoritoJsonParser;
 
 public class SingletonLusitania {
+    // Singleton Instance
     private static volatile SingletonLusitania instance;
+    // declaracao das variaveis e constantes
     private ArrayList<Local> locais;
     private ArrayList<Favorito> favoritos;
     private final LocaisFavDBHelper dbHelper;
     private static RequestQueue volleyQueue = null;
-
     private Context context;
     private String mainUrl;
-
     //Helper do perfil, sharedpreferences
     private ProfileManager profileManager;
-
-
-
     // Keys
     private static final String KEY_TOKEN = "auth_key";
     private static final String PREF_NAME = "MaisLusitaniaPrefs";
     private static final String KEY_USERNAME = "username";
     private static final String KEY_MAIN_URL = "main_url";
     private static final String KEY_USER_ID = "user_id";
-
     // Default URL
     private static final String DEFAULT_MAIN_URL = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/";
-
     // Endpoints
     private static final String mUrlAPILogin = "/login-form";
     private static final String mUrlAPILocais = "/local-culturals";
@@ -78,10 +73,6 @@ public class SingletonLusitania {
     private static final String mUrlAPIReserva = "/reservas";
     private static final String mUrlAPIBilhetes = "/reservas/bilhetes";
     private static final String mUrlAPIAvaliacao = "/avaliacaos";
-
-
-
-
     // Listeners
     private LoginListener loginListener;
     private LocaisListener locaisListener;
@@ -94,13 +85,8 @@ public class SingletonLusitania {
     private BilheteListener bilheteListener;
     private AvaliacaoListener avaliacaoListener;
     private SignupListener signupListener;
-
-
-
     //region - Construtor e Instância
     private SingletonLusitania(Context context) {
-
-        //FIx em um memory leak que o IDE estava a avisar!!!
         this.context = context.getApplicationContext();
         profileManager = new ProfileManager(context);
 
@@ -112,60 +98,46 @@ public class SingletonLusitania {
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         mainUrl = prefs.getString(KEY_MAIN_URL, DEFAULT_MAIN_URL);
     }
-
     public static synchronized SingletonLusitania getInstance(Context context) {
         if (instance == null) {
             instance = new SingletonLusitania(context.getApplicationContext());
         }
         return instance;
     }
-
     // Setters Listeners
     public void setMapaListener(MapaListener mapaListener) {
         this.mapaListener = mapaListener;
     }
-
     public void setLoginListener(LoginListener loginListener) {
         this.loginListener = loginListener;
     }
-
     public void setSignupListener(SignupListener signupListener) {
         this.signupListener = signupListener;
     }
-
     public void setLocaisListener(LocaisListener locaisListener) {
         this.locaisListener = locaisListener;
     }
-
     public void setNoticiaListener(NoticiaListener noticiaListener) {
         this.noticiaListener = noticiaListener;
     }
-
     public void setPerfilListener(PerfilListener perfilListener) {
         this.perfilListener = perfilListener;
     }
-
     public void setEventoListener(EventoListener eventoListener) {
         this.eventoListener = eventoListener;
     }
-
     public void setFavoritoListener(FavoritoListener favoritoListener) {
         this.favoritoListener = favoritoListener;
     }
-
     public void setBilheteListener(BilheteListener bilheteListener) {
         this.bilheteListener = bilheteListener;
     }
-
     public void setReservaListener(ReservaListener reservaListener) {
         this.reservaListener = reservaListener;
     }
-
     public void setAvaliacaoListener(AvaliacaoListener avaliacaoListener){
         this.avaliacaoListener = avaliacaoListener;
     }
-
-
     //endregion
 
     // region Gestão da URL e Sessão
@@ -174,14 +146,12 @@ public class SingletonLusitania {
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         prefs.edit().putString(KEY_MAIN_URL, url).apply();
     }
-
     public String buildUrl(String endpoint) {
         String base = this.mainUrl;
         if (base.endsWith("/")) base = base.substring(0, base.length() - 1);
         if (!endpoint.startsWith("/")) endpoint = "/" + endpoint;
         return base + endpoint;
     }
-
     public User getCachedUser(){
         return profileManager.getUser();
     }
@@ -193,11 +163,9 @@ public class SingletonLusitania {
         editor.putString(KEY_USER_ID, user_id);
         editor.apply();
     }
-
     public boolean isUtilizadorLogado(Context context) {
         return getAuthToken(context) != null;
     }
-
     public void logout(Context context) {
         int userid = getUserId(context);
         SharedPreferences sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
@@ -206,12 +174,10 @@ public class SingletonLusitania {
         dbHelper.deleteAllFavoritosByUser(userid);
         profileManager.clearUserProfile();
     }
-
     private String getAuthToken(Context context) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         return sharedPreferences.getString(KEY_TOKEN, null);
     }
-
     public int getUserId(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         String userIdStr = prefs.getString(KEY_USER_ID, "-1");
@@ -221,7 +187,7 @@ public class SingletonLusitania {
             return -1; // Valor padrão se não for um número válido
         }
     }
-
+    // metodo para criar um favorito a partir de um local
     private Favorito MakeFavoritoFromLocal(Local local, int utilizadorid) {
         Favorito favorito = new Favorito(
                 local.getFavoritoId() + 1,
@@ -328,19 +294,21 @@ public class SingletonLusitania {
     //endregion
 
     //region - CRUD Local (Favoritos BD & API)
+    // metodo para obter os favoritos da base de dados local
     public ArrayList<Favorito> getFavoritosBD() {
         return dbHelper.getAllFavoritos();
     }
-
+    // metodo para adicionar um favorito à base de dados local
     public void addFavoritoBD(Favorito favorito) {
         dbHelper.adicionarFavorito(favorito);
     }
-
+    // metodo para remover um favorito da base de dados local
     public void removeFavoritoBD(int id, int utilizadorid) {
         dbHelper.removerFavorito(id, utilizadorid);
     }
-
+    // metodo para obter todos os favoritos via API
     public void getallFavoritosAPI(final Context context) {
+        // Se estiver offline, carrega os favoritos da BD local
         if (!UtilParser.isConnectionInternet(context)) {
             favoritos = getFavoritosBD();
             // log no logcat
@@ -348,21 +316,19 @@ public class SingletonLusitania {
                 android.util.Log.i("FAVORITOS_OFFLINE", "Favorito carregado offline: " + fav.getLocalNome());
 
             }
-            // Reinscrever nos tópicos MQTT
-            //resubscribeToFavoritos(favoritos);
+            // Dispara o listener
             if (favoritoListener != null) favoritoListener.onFavoritosLoaded(favoritos);
             return;
         }
+        // Se estiver online, carrega os favoritos via API
         makeJsonArrayRequest(context, Request.Method.GET, mUrlAPIFavoritos, true,
                 response -> {
                     try {
                         ArrayList<Favorito> favoritos = FavoritoJsonParser.parserJsonFavoritos(response);
-                        // Reinscrever nos tópicos MQTT
-                        resubscribeToFavoritos(favoritos);
                         if (favoritoListener != null) favoritoListener.onFavoritosLoaded(favoritos);
                     } catch (Exception e) {
                         if (favoritoListener != null)
-                            favoritoListener.onFavoritosError("Erro JSON Favoritos");
+                            favoritoListener.onFavoritosError("Erro JSON Favoritos," + e.getMessage());
                     }
                 },
                 error -> {
@@ -371,22 +337,36 @@ public class SingletonLusitania {
                 }
         );
     }
-
-    private void resubscribeToFavoritos(ArrayList<Favorito> favoritos) {
-        if (favoritos == null || favoritos.isEmpty()) return;
-
-        MqttHelper mqttHelper = MqttHelper.getInstance();
-        for (Favorito fav : favoritos) {
-            mqttHelper.subscribe(fav.getLocalNome());
-            android.util.Log.i("MQTT_SUBSCRIBE", "Subscrito ao tópico: " + fav.getLocalNome());
+    // metodo para reinscrever nos tópicos MQTT dos favoritos
+    public void resubscribeToFavoritos(final Context context) {
+        if (!UtilParser.isConnectionInternet(context)) {
+            Toast.makeText(context,"Sem ligação à internet. Não é possível subscrever aos tópicos MQTT.", Toast.LENGTH_SHORT).show();
+            android.util.Log.i("MQTT_SUBSCRIBE", "Sem ligação à internet. Não é possível subscrever aos tópicos MQTT.");
+            return;
         }
+        makeJsonArrayRequest(context, Request.Method.GET, mUrlAPIFavoritos, true,
+                response -> {
+                    try {
+                        ArrayList<Favorito> favoritos = FavoritoJsonParser.parserJsonFavoritos(response);
+                        for (Favorito fav : favoritos) {
+                            MqttHelper.getInstance().subscribe(fav.getLocalNome());
+                            android.util.Log.i("MQTT_SUBSCRIBE", "Subscreveu ao tópico MQTT: " + fav.getLocalNome());
+                        }
+                    } catch (Exception e) {
+                        android.util.Log.e("MQTT_SUBSCRIBE", "Erro ao reinscrever nos tópicos MQTT: " + e.getMessage());
+                    }
+                },
+                error -> {
+                    android.util.Log.e("MQTT_SUBSCRIBE", "Erro ao obter favoritos para reinscrição MQTT: " + error.getMessage());
+                }
+        );
     }
-
-    public void toggleLocalFavoritoAPI(final Context context, final Local local) { // para os locais
+    // metodo para alternar o estado de favorito na view do local via API
+    public void toggleLocalFavoritoAPI(final Context context, final Local local) {
         // Define Endpoint e Metodo baseado no estado atual
         String endpoint;
         int method;
-
+        // se estiver favorito, remove, senao adiciona
         if (local.isFavorite()) {
             endpoint = mUrlAPIremoveFavorito + "/" + local.getId();
             method = Request.Method.DELETE;
@@ -394,7 +374,6 @@ public class SingletonLusitania {
             removeFavoritoBD(local.getId(), getUserId(context));
             // Desinscreve do canal MQTT associado ao local
             MqttHelper.getInstance().unsubscribe(local.getNome());
-
         } else {
             endpoint = mUrladdFavorito + "/" + local.getId();
             method = Request.Method.POST;
@@ -404,14 +383,13 @@ public class SingletonLusitania {
             // Inscreve no canal MQTT associado ao local
             MqttHelper.getInstance().subscribe(local.getNome());
         }
-
         // Usa o helper (requiresAuth = true)
         makeJsonObjectRequest(context, method, endpoint, true, null,
                 response -> {
+                    // Atualiza o estado do favorito no local
                     local.setFavorite(!local.isFavorite());
                     String mensagem = local.isFavorite() ? "Adicionado aos favoritos" : "Removido dos favoritos";
                     Toast.makeText(context, mensagem, Toast.LENGTH_SHORT).show();
-
                     if (locaisListener != null) {
                         locaisListener.onLocaisLoaded(locais);
                     }
@@ -419,8 +397,8 @@ public class SingletonLusitania {
                 error -> Toast.makeText(context, "Erro ao alterar favorito", Toast.LENGTH_SHORT).show()
         );
     }
-
-    public void toggleFavoritoAPI(final Context context, final Favorito favorito) { // para os favoritos (quando fiz esse codigo só eu e deus sabiamos, agora só deus sabe)
+    // metodo para alternar o estado de favorito na view dos favoritos via API
+    public void toggleFavoritoAPI(final Context context, final Favorito favorito) {
         // nao deixa continuar se estiver offline
         if (!UtilParser.isConnectionInternet(context)) {
             Toast.makeText(context, "Sem ligação à internet", Toast.LENGTH_SHORT).show();
@@ -429,23 +407,20 @@ public class SingletonLusitania {
         // Define Endpoint e Metodo baseado no estado atual
         String endpoint;
         int method;
-
+        // se estiver favorito, remove, senao adiciona
         if (favorito.isFavorite()) {
             endpoint = mUrlAPIremoveFavorito + "/" + favorito.getLocalId();
             method = Request.Method.DELETE;
             // Remover dos favoritos locais
             removeFavoritoBD(favorito.getLocalId(), getUserId(context));
-
         } else {
             endpoint = mUrladdFavorito + "/" + favorito.getLocalId();
             method = Request.Method.POST;
-            // Adicionar aos favoritos locais
-            //addFavoritoBD(favorito);
         }
-
         // Usa o helper (requiresAuth = true)
         makeJsonObjectRequest(context, method, endpoint, true, null,
                 response -> {
+                    // Atualiza o estado do favorito no local
                     favorito.setFavorite(!favorito.isFavorite());
                     String mensagem = favorito.isFavorite() ? "Adicionado aos favoritos" : "Removido dos favoritos";
                     Toast.makeText(context, mensagem, Toast.LENGTH_SHORT).show();
@@ -497,25 +472,25 @@ public class SingletonLusitania {
                 }
         );
     }
-
+    // metodo para registar um novo utilizador via API
     public void signupAPI(final String username, final String email, final String password, final String primeiro_nome, final String ultimo_nome, final Context context) {
         JSONObject jsonBody = new JSONObject();
         try {
+            // Preenche o corpo do pedido com os dados do utilizador
             jsonBody.put("username", username);
             jsonBody.put("email", email);
             jsonBody.put("password", password);
             jsonBody.put("primeiro_nome", primeiro_nome);
             jsonBody.put("ultimo_nome", ultimo_nome);
-
         } catch (Exception e) {
             Toast.makeText(context, "Erro ao criar pedido", Toast.LENGTH_SHORT).show();
             return;
         }
-
         // Signup não requer Auth Token na URL (requiresAuth = false)
+        // faz o pedido
         makeJsonObjectRequest(context, Request.Method.POST, "/signup-form", false, jsonBody,
                 response -> {
-                    Toast.makeText(context, "Registo efetuado com sucesso! Faça login.", Toast.LENGTH_SHORT).show();
+                    // Registo bem sucedido
                     if (signupListener != null)
                         signupListener.onSignupSuccess();
                 },
@@ -599,11 +574,14 @@ public class SingletonLusitania {
     //endregion
 
     //region - Noticias API
+    // metodo para obter todas as noticias via API
     public void getNoticiasAPI(final Context context) {
         makeJsonArrayRequest(context, Request.Method.GET, mUrlAPINoticias, true,
                 response -> {
                     try {
+                        // Usa o parser para converter o JSONArray em ArrayList<Noticia>
                         ArrayList<Noticia> noticias = NoticiaJsonParser.parserJsonNoticias(response);
+                        // Dispara o listener com as notícias carregadas
                         if (noticiaListener != null) noticiaListener.onNoticiasLoaded(noticias);
                     } catch (Exception e) {
                         Toast.makeText(context, "Erro parser notícias", Toast.LENGTH_SHORT).show();
@@ -612,12 +590,14 @@ public class SingletonLusitania {
                 null // Usa erro padrão
         );
     }
-
+    // metodo para obter uma unica noticia via API
     public void getNoticiaAPI(final int noticiaId, final Context context) {
         makeJsonArrayRequest(context, Request.Method.GET, mUrlAPINoticias + "/" + noticiaId, true,
                 response -> {
                     try {
+                        // Usa o parser para converter o JSONArray em Noticia
                         Noticia noticia = NoticiaJsonParser.parserJsonNoticia(response);
+                        // Dispara o listener com a notícia carregada
                         if (noticiaListener != null) noticiaListener.onNoticiaLoaded(noticia);
                     } catch (Exception e) {
                         if (noticiaListener != null) noticiaListener.onNoticiaError(e.getMessage());
@@ -628,11 +608,14 @@ public class SingletonLusitania {
                 }
         );
     }
+    // metodo para pesquisar noticias via API
     public void searchNoticiaAPI(final Context context, final String query) {
         makeJsonArrayRequest(context, Request.Method.GET, mUrlAPINoticias + "/search/" + query, true,
                 response -> {
                     try {
+                        // Usa o parser para converter o JSONArray em ArrayList<Noticia>
                         ArrayList<Noticia> noticias = NoticiaJsonParser.parserJsonNoticias(response);
+                        // Dispara o listener com as notícias carregadas
                         if (noticiaListener != null) noticiaListener.onNoticiasLoaded(noticias);
                     } catch (Exception e) {
                         Toast.makeText(context, "Erro JSON Pesquisa Noticias", Toast.LENGTH_SHORT).show();

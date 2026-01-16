@@ -15,10 +15,12 @@ import pt.ipleiria.estg.dei.maislusitania_android.listeners.SignupListener;
 import pt.ipleiria.estg.dei.maislusitania_android.models.SingletonLusitania;
 
 public class RegisterActivity extends AppCompatActivity implements SignupListener {
-
+    // Declaração dos campos de entrada
     private EditText etRegUsername, etRegEmail , etRegPassword, etRegConfirmPassword, etRegPrimeiroNome, etRegUltimoNome;
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    // Metodo onCreate
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_register);
@@ -27,40 +29,46 @@ public class RegisterActivity extends AppCompatActivity implements SignupListene
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-
-        // Inicializar componentes de UI, se necessário
+        // Inicializar componentes de UI
         etRegUsername = findViewById(R.id.etRegUsername);
         etRegEmail = findViewById(R.id.etRegEmail);
         etRegPassword = findViewById(R.id.etRegPassword);
         etRegConfirmPassword = findViewById(R.id.etRegConfirmPassword);
         etRegPrimeiroNome = findViewById(R.id.etRegPrimeiroNome);
         etRegUltimoNome = findViewById(R.id.etRegUltimoNome);
-
-        // Registar como listener
+        // Configurar o listener de registo
         SingletonLusitania.getInstance(this).setSignupListener(this);
     }
-
-    public void Signup(View view) {
+    // Metodo onClick para o botao de registo
+    public void Signup(View view)
+    {
+        // Obter os valores dos campos de entrada
         String username = etRegUsername.getText().toString();
         String email = etRegEmail.getText().toString();
         String password = etRegPassword.getText().toString();
         String confirmPassword = etRegConfirmPassword.getText().toString();
         String primeiroNome = etRegPrimeiroNome.getText().toString();
         String ultimoNome = etRegUltimoNome.getText().toString();
-        if (!validateSignupCampos()) {
+        // Validar os campos de registo
+        if (!validateSignupCampos())
+        {
             return;
         }
+        // Chamar o metodo de registo do Singleton
         SingletonLusitania.getInstance(this).signupAPI(username, email, password, primeiroNome, ultimoNome, this);
     }
-
-    private boolean validateSignupCampos() {
+    // Metodo para validar os campos de registo
+    private boolean validateSignupCampos()
+    {
+        // Obter os valores dos campos de entrada
         String username = etRegUsername.getText().toString().trim();
         String password = etRegPassword.getText().toString().trim();
         String confirmPassword = etRegConfirmPassword.getText().toString().trim();
         String email = etRegEmail.getText().toString().trim();
         String primeiroNome = etRegPrimeiroNome.getText().toString().trim();
         String ultimoNome = etRegUltimoNome.getText().toString().trim();
-
+        // Validar os campos
+        // Verificar se os campos estão vazios
         if (username.isEmpty()) {
             etRegUsername.setError("Campo obrigatório");
             return false;
@@ -69,19 +77,22 @@ public class RegisterActivity extends AppCompatActivity implements SignupListene
             etRegPassword.setError("Campo obrigatório");
             return false;
         }
+        // Verificar se a password é igual à confirmação
         if (!password.equals(confirmPassword)) {
             etRegConfirmPassword.setError("As passwords não coincidem");
             return false;
         }
+        // Verificar se o email está vazio
         if (email.isEmpty()) {
             etRegEmail.setError("Campo obrigatório");
             return false;
         }
-        // Simple validação de email
+        // Verificar se o email é válido
         if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             etRegEmail.setError("Email inválido");
             return false;
         }
+        // Verificar se o primeiro e último nome estão vazios
         if (primeiroNome.isEmpty()) {
             etRegPrimeiroNome.setError("Campo obrigatório");
             return false;
@@ -92,18 +103,20 @@ public class RegisterActivity extends AppCompatActivity implements SignupListene
         }
         return true;
     }
-
-
-    public void goToLogin(View view) {
-        finish(); // Volta para a tela anterior
+    // Metodo onClick para voltar ao login
+    public void goToLogin(View view)
+    {
+        // Volta para a tela anterior
+        finish();
         // Opção 1: Fade simples
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
     }
-
     @Override
-    public void onSignupSuccess() {
+    public void onSignupSuccess()
+    {
         Toast.makeText(this,"Registo efetuado com sucesso! Por favor, inicie sessão.", Toast.LENGTH_LONG).show();
-        finish(); // Volta para a tela anterior
+        // Volta para a tela anterior
+        finish();
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
     }
 }

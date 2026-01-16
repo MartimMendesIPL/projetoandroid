@@ -26,53 +26,61 @@ import pt.ipleiria.estg.dei.maislusitania_android.models.SingletonLusitania;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.UtilParser; // Import UtilParser
 
 public class NoticiasFragment extends Fragment implements NoticiaListener {
-
+    // Declaração das variáveis
     private FragmentNoticiasBinding binding;
     private NoticiaAdapter adapter;
     private ArrayList<Noticia> items;
     // Variáveis para a Pesquisa Dinâmica
     private final Handler searchHandler = new Handler(Looper.getMainLooper());
     private Runnable searchRunnable;
-
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+    // Inflar o layout do fragmento
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
+    {
         binding = FragmentNoticiasBinding.inflate(inflater, container, false);
         items = new ArrayList<>();
-
         //Configurar Listeners
         setupSearchListeners();
-
+        // Configurar o clique no ícone de perfil
         binding.tilPesquisa.setEndIconOnClickListener(view -> {
             Intent intent = new Intent(getActivity(), PerfilActivity.class);
             startActivity(intent);
         });
-
+        // Configurar o RecyclerView
         setupRecyclerView();
-
         // Configurar o listener
         SingletonLusitania.getInstance(requireContext()).setNoticiaListener(this);
-        loadNoticias(); // Chamar o método que verifica a internet
-
+        // Carregar as notícias iniciais
+        loadNoticias();
         return binding.getRoot();
     }
-
-    private void loadNoticias() {
+    // Carregar notícias da API
+    private void loadNoticias()
+    {
+        // Verificar a conectividade antes de fazer a chamada à API
         if (getContext() == null) return;
-        if (!UtilParser.isConnectionInternet(getContext())) {
+        // Usar UtilParser para verificar a conexão com a internet
+        if (!UtilParser.isConnectionInternet(getContext()))
+        {
             showNoInternetWarning(true);
-        } else {
+        }
+        // Se houver conexão, carregar notícias ou pesquisar
+        else {
             showNoInternetWarning(false);
             String query = binding.etPesquisa.getText().toString().trim();
-            if (query.isEmpty()) {
+            // Se a consulta estiver vazia, carregar todas as notícias
+            if (query.isEmpty())
+            {
                 SingletonLusitania.getInstance(requireContext()).getNoticiasAPI(getContext());
-            } else {
+            }
+            // Caso contrário, pesquisar notícias com base na consulta
+            else
+            {
                 SingletonLusitania.getInstance(requireContext()).searchNoticiaAPI(getContext(), query);
             }
         }
     }
-
     /**
      * Configura a pesquisa dinâmica com delay para evitar chamadas excessivas à API.
      */
@@ -87,7 +95,6 @@ public class NoticiasFragment extends Fragment implements NoticiaListener {
                     searchHandler.removeCallbacks(searchRunnable);
                 }
             }
-
             @Override
             public void afterTextChanged(Editable s) {
                 searchRunnable = () -> {
@@ -99,19 +106,23 @@ public class NoticiasFragment extends Fragment implements NoticiaListener {
             }
         });
     }
-
-    private void setupRecyclerView() {
+    // Configurar o RecyclerView
+    private void setupRecyclerView()
+    {
+        // Configurar o layout manager
         RecyclerView recyclerView = binding.recyclerViewNoticias;
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
-        adapter = new NoticiaAdapter(getContext(), items, position -> {
+        // Configurar o adapter
+        adapter = new NoticiaAdapter(getContext(), items, position ->
+        {
+            // Navegar para o fragmento de detalhes da notícia
             Noticia item = items.get(position);
             DetalhesNoticiaFragment fragment = new DetalhesNoticiaFragment();
-
+            // Passar o ID da notícia como argumento
             Bundle args = new Bundle();
             args.putInt("noticia_id", item.getId());
             fragment.setArguments(args);
-
+            // Realizar a transação do fragmento
             requireActivity().getSupportFragmentManager()
                     .beginTransaction()
                     .replace(R.id.fragment_container, fragment)
@@ -120,18 +131,21 @@ public class NoticiasFragment extends Fragment implements NoticiaListener {
         });
         recyclerView.setAdapter(adapter);
     }
-
     @Override
-    public void onDestroyView() {
-        if (searchHandler != null && searchRunnable != null) {
+    // Limpar o binding quando a view for destruída
+    public void onDestroyView()
+    {
+        if (searchHandler != null && searchRunnable != null)
+        {
             searchHandler.removeCallbacks(searchRunnable);
         }
         super.onDestroyView();
         binding = null;
     }
-
     @Override
-    public void onNoticiasLoaded(ArrayList<Noticia> listaNoticias) {
+    // Metodo chamado quando as noticias sao carregadas
+    public void onNoticiasLoaded(ArrayList<Noticia> listaNoticias)
+    {
         if (binding == null) return;
         showNoInternetWarning(false);
         items.clear();
@@ -140,23 +154,28 @@ public class NoticiasFragment extends Fragment implements NoticiaListener {
             adapter.notifyDataSetChanged();
         }
     }
-
     @Override
     public void onNoticiaLoaded(Noticia noticia) {
         // Este metodo é usado para carregar uma única notícia (detalhes),
     }
-
     @Override
-    public void onNoticiaError(String message) {
+    // Metodo chamado quando ocorre um erro ao carregar as noticias
+    public void onNoticiaError(String message)
+    {
         if (binding == null) return;
-        if (getContext() != null && !UtilParser.isConnectionInternet(getContext())) {
+        // Verificar a conectividade
+        if (getContext() != null && !UtilParser.isConnectionInternet(getContext()))
+        {
+            // mostra o aviso de sem internet
             showNoInternetWarning(true);
         }
         Toast.makeText(getContext(), "Erro: " + message, Toast.LENGTH_SHORT).show();
     }
-
-    private void showNoInternetWarning(boolean show) {
-        if (binding != null) {
+    // Mostrar ou esconder o aviso de sem internet
+    private void showNoInternetWarning(boolean show)
+    {
+        if (binding != null)
+        {
             binding.recyclerViewNoticias.setVisibility(show ? View.GONE : View.VISIBLE);
             binding.includeNoInternet.getRoot().setVisibility(show ? View.VISIBLE : View.GONE);
         }

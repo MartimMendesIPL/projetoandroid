@@ -134,7 +134,6 @@ public class MqttHelper {
         try {
             String topic = "EVENTOS " + localNome;
             mqttClient.subscribe(topic, 1);
-            Log.i(TAG, "Subscrito ao tópico: " + topic);
         } catch (MqttException e) {
             Log.e(TAG, "Erro ao subscrever: " + e.getMessage());
         }

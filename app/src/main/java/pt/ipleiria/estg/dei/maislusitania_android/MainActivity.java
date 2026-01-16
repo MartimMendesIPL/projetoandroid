@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onConnected() {
                 // Restaurar subscrições apenas após conexão estabelecida
-                SingletonLusitania.getInstance(MainActivity.this).getallFavoritosAPI(MainActivity.this);
+                SingletonLusitania.getInstance(MainActivity.this).resubscribeToFavoritos(MainActivity.this);
             }
 
             @Override

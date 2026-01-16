@@ -1,6 +1,7 @@
 package pt.ipleiria.estg.dei.maislusitania_android.models;
 
 public class Favorito {
+    // Atributos
     private int id;
     private int utilizadorId;
     private int localId;
@@ -10,8 +11,7 @@ public class Favorito {
     private float AvaliacaoMedia;
     private String dataAdicao;
     private boolean isFavorite;
-
-
+    // Construtor
     public Favorito(int id, int utilizadorId, int localId, String localImagem, String localNome, String localDistrito, float avaliacaoMedia, String dataAdicao, boolean isFavorite) {
         this.id = id;
         this.utilizadorId = utilizadorId;
@@ -23,7 +23,6 @@ public class Favorito {
         this.dataAdicao = dataAdicao;
         this.isFavorite = isFavorite;
     }
-
     // Getters
     public int getId() { return id; }
     public int getUtilizadorId() { return utilizadorId; }
@@ -34,6 +33,7 @@ public class Favorito {
     public float getAvaliacaoMedia() { return AvaliacaoMedia; }
     public String getDataAdicao() { return dataAdicao; }
     public boolean isFavorite() { return isFavorite; }
+    // Setters
     public void setFavorite(boolean favorite) {
         isFavorite = favorite;
     }
