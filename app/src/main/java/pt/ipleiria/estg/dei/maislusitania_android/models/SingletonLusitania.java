@@ -57,7 +57,6 @@ public class SingletonLusitania {
     private ArrayList<Local> locais;
     private ArrayList<Favorito> favoritos;
     // DB
-    private final LocaisFavDBHelper favoritosDbHelper;
     private DbHelper dbHelper;
     private static RequestQueue volleyQueue = null;
     private Context context;
@@ -103,7 +102,6 @@ public class SingletonLusitania {
         profileManager = new ProfileManager(this.context);
 
         locais = new ArrayList<>();
-        favoritosDbHelper = new LocaisFavDBHelper(this.context);
         volleyQueue = Volley.newRequestQueue(this.context);
         this.dbHelper = new DbHelper(this.context);
 
@@ -163,7 +161,9 @@ public class SingletonLusitania {
         SharedPreferences sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         sharedPreferences.edit().clear().apply();
         // Apagar dados do utilizador armazenados localmente, se existirem
-        favoritosDbHelper.deleteAllFavoritosByUser(userid);
+
+        dbHelper.removerReservasBilhetes();
+        dbHelper.deleteAllFavoritosByUser(userid);
         profileManager.clearUserProfile();
     }
     private String getAuthToken(Context context) {
@@ -244,15 +244,15 @@ public class SingletonLusitania {
     //region - CRUD Local (Favoritos BD & API)
     // metodo para obter os favoritos da base de dados local
     public ArrayList<Favorito> getFavoritosBD() {
-        return favoritosDbHelper.getAllFavoritos();
+        return dbHelper.getAllFavoritos();
     }
     // metodo para adicionar um favorito à base de dados local
     public void addFavoritoBD(Favorito favorito) {
-        favoritosDbHelper.adicionarFavorito(favorito);
+        dbHelper.adicionarFavorito(favorito);
     }
     // metodo para remover um favorito da base de dados local
     public void removeFavoritoBD(int id, int utilizadorid) {
-        favoritosDbHelper.removerFavorito(id, utilizadorid);
+        dbHelper.removerFavorito(id, utilizadorid);
     }
     // metodo para obter todos os favoritos via API
     public void getallFavoritosAPI(final Context context) {
@@ -262,7 +262,6 @@ public class SingletonLusitania {
             // log no logcat
             for (Favorito fav : favoritos) {
                 android.util.Log.i("FAVORITOS_OFFLINE", "Favorito carregado offline: " + fav.getLocalNome());
-
             }
             // Dispara o listener
             if (favoritoListener != null) favoritoListener.onFavoritosLoaded(favoritos);
@@ -273,6 +272,10 @@ public class SingletonLusitania {
                 response -> {
                     try {
                         ArrayList<Favorito> favoritos = FavoritoJsonParser.parserJsonFavoritos(response);
+
+                        // Sincroniza com a BD local
+                        dbHelper.sincronizarFavoritos(favoritos);
+
                         if (favoritoListener != null) favoritoListener.onFavoritosLoaded(favoritos);
                     } catch (Exception e) {
                         if (favoritoListener != null)
@@ -285,6 +288,7 @@ public class SingletonLusitania {
                 }
         );
     }
+
     // metodo para reinscrever nos tópicos MQTT dos favoritos
     public void resubscribeToFavoritos(final Context context) {
         if (!UtilParser.isConnectionInternet(context)) {
@@ -744,26 +748,26 @@ public class SingletonLusitania {
 
     //region - Reservas
     public void getAllReservasAPI(Context context) {
-        // 1. Tenta carregar dados locais para uma UI rápida.
+        //Carregar dados locais para uma UI rápida.
         if (reservaListener != null) {
-            ArrayList<Reserva> reservasLocais = getAllReservasBD();
+            ArrayList<Reserva> reservasLocais = dbHelper.getAllReservas();
             reservaListener.onReservasLoaded(reservasLocais);
         }
 
-        // 2. Se estiver offline, os dados locais já foram mostrados. Fim.
+        //offline, os dados locais já foram mostrados
         if (!UtilParser.isConnectionInternet(context)) {
             Toast.makeText(context, "Sem internet. A mostrar dados guardados.", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // 3. MODO ONLINE: Busca as reservas na API.
+        //ONLINE: Busca as reservas na API.
         makeJsonArrayRequest(context, Request.Method.GET, mUrlAPIReserva, true,
                 response -> {
                     // Sucesso ao obter as reservas
                     ArrayList<Reserva> reservasDaAPI = ReservasJsonParser.parserJsonReservas(response);
 
                     // PASSO A - Sincroniza as Reservas na BD
-                    sincronizarReservasBD(reservasDaAPI);
+                    dbHelper.sincronizarReservas(reservasDaAPI);
 
                     // PASSO B - Inicia a cascata para sincronizar os bilhetes de cada reserva
                     for (Reserva reserva : reservasDaAPI) {
@@ -783,54 +787,6 @@ public class SingletonLusitania {
                 }
         );
     }
-
-    private void sincronizarReservasBD(ArrayList<Reserva> reservas) {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        db.beginTransaction();
-        try {
-            // Limpa as reservas antigas para evitar duplicados e manter os dados frescos
-            db.delete(DbContract.ReservaEntry.TABLE_NAME, null, null);
-
-            for (Reserva reserva : reservas) {
-                ContentValues values = new ContentValues();
-                values.put(DbContract.ReservaEntry.COLUMN_ID, reserva.getId());
-                values.put(DbContract.ReservaEntry.COLUMN_LOCAL_ID, reserva.getLocalId());
-                values.put(DbContract.ReservaEntry.COLUMN_LOCAL_NOME, reserva.getLocalNome());
-                values.put(DbContract.ReservaEntry.COLUMN_DATA_VISITA, reserva.getDataVisita());
-                values.put(DbContract.ReservaEntry.COLUMN_PRECO_TOTAL, reserva.getPrecoTotal());
-                values.put(DbContract.ReservaEntry.COLUMN_ESTADO, reserva.getEstado());
-                values.put(DbContract.ReservaEntry.COLUMN_DATA_CRIACAO, reserva.getDataCriacao());
-                values.put(DbContract.ReservaEntry.COLUMN_IMAGEM_LOCAL, reserva.getImagemLocal());
-                db.insert(DbContract.ReservaEntry.TABLE_NAME, null, values);
-            }
-            db.setTransactionSuccessful();
-        } finally {
-            db.endTransaction();
-        }
-    }
-
-    private ArrayList<Reserva> getAllReservasBD() {
-        ArrayList<Reserva> reservas = new ArrayList<>();
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        try (Cursor cursor = db.rawQuery("SELECT * FROM " + DbContract.ReservaEntry.TABLE_NAME, null)) {
-            if (cursor.moveToFirst()) {
-                do {
-                    reservas.add(new Reserva(
-                            cursor.getInt(cursor.getColumnIndexOrThrow(DbContract.ReservaEntry.COLUMN_ID)),
-                            cursor.getInt(cursor.getColumnIndexOrThrow(DbContract.ReservaEntry.COLUMN_LOCAL_ID)),
-                            cursor.getString(cursor.getColumnIndexOrThrow(DbContract.ReservaEntry.COLUMN_LOCAL_NOME)),
-                            cursor.getString(cursor.getColumnIndexOrThrow(DbContract.ReservaEntry.COLUMN_DATA_VISITA)),
-                            cursor.getDouble(cursor.getColumnIndexOrThrow(DbContract.ReservaEntry.COLUMN_PRECO_TOTAL)),
-                            cursor.getString(cursor.getColumnIndexOrThrow(DbContract.ReservaEntry.COLUMN_ESTADO)),
-                            cursor.getString(cursor.getColumnIndexOrThrow(DbContract.ReservaEntry.COLUMN_DATA_CRIACAO)),
-                            cursor.getString(cursor.getColumnIndexOrThrow(DbContract.ReservaEntry.COLUMN_IMAGEM_LOCAL))
-                    ));
-                } while (cursor.moveToNext());
-            }
-        }
-        return reservas;
-    }
-
     public void createReservaAPI(final Context context, int localId, String dataVisita, ArrayList<TipoBilhete> tiposBilhete) {
         try {
             JSONObject jsonBody = ReservasJsonParser.criarBodyReserva(localId, dataVisita, tiposBilhete);
@@ -896,7 +852,7 @@ public class SingletonLusitania {
     //region - Bilhetes
     public void getAllBilhetesAPI(final Context context, int idReserva) {
         // A primeira ação é sempre ler da base de dados local.
-        ArrayList<Bilhete> bilhetesLocais = getAllBilhetesBD(idReserva);
+        ArrayList<Bilhete> bilhetesLocais = dbHelper.getBilhetesByReserva(idReserva);
 
         // Se o bilheteListener está ativo (estamos no ViewBilhetesFragment),
         // notifica imediatamente a UI com os dados locais.
@@ -922,7 +878,7 @@ public class SingletonLusitania {
                     ArrayList<Bilhete> bilhetesDaAPI = ReservasJsonParser.parserJsonBilhetes(response);
 
                     // AGORA ISTO FUNCIONA SEMPRE, porque sincronizarReservasBD() já correu antes.
-                    sincronizarBilhetesBD(idReserva, bilhetesDaAPI);
+                    dbHelper.sincronizarBilhetes(idReserva, bilhetesDaAPI);
 
                     // Se estamos no ViewBilhetesFragment, atualiza a UI com os dados frescos da API.
                     if (bilheteListener != null) {
@@ -935,59 +891,6 @@ public class SingletonLusitania {
                 }
         );
     }
-
-    private void sincronizarBilhetesBD(int reservaId, ArrayList<Bilhete> bilhetes) {
-        SQLiteDatabase db = dbHelper.getWritableDatabase();
-        db.beginTransaction();
-        try {
-            // Limpa os bilhetes antigos APENAS para esta reserva
-            db.delete(DbContract.BilheteEntry.TABLE_NAME, DbContract.BilheteEntry.COLUMN_RESERVA_ID + " = ?", new String[]{String.valueOf(reservaId)});
-
-            for (Bilhete bilhete : bilhetes) {
-                ContentValues values = new ContentValues();
-                values.put(DbContract.BilheteEntry.COLUMN_CODIGO, bilhete.getCodigo());
-                values.put(DbContract.BilheteEntry.COLUMN_RESERVA_ID, bilhete.getReservaId());
-                values.put(DbContract.BilheteEntry.COLUMN_LOCAL_ID, bilhete.getLocalId());
-                values.put(DbContract.BilheteEntry.COLUMN_LOCAL_NOME, bilhete.getLocalNome());
-                values.put(DbContract.BilheteEntry.COLUMN_DATA_VISITA, bilhete.getDataVisita());
-                values.put(DbContract.BilheteEntry.COLUMN_TIPO_BILHETE_ID, bilhete.getTipoBilheteId());
-                values.put(DbContract.BilheteEntry.COLUMN_TIPO_BILHETE_NOME, bilhete.getTipoBilheteNome());
-                values.put(DbContract.BilheteEntry.COLUMN_PRECO, bilhete.getPreco());
-                values.put(DbContract.BilheteEntry.COLUMN_ESTADO, bilhete.getEstado());
-                db.insert(DbContract.BilheteEntry.TABLE_NAME, null, values);
-            }
-            db.setTransactionSuccessful();
-        } finally {
-            db.endTransaction();
-        }
-    }
-
-    private ArrayList<Bilhete> getAllBilhetesBD(int idReserva) {
-        ArrayList<Bilhete> bilhetes = new ArrayList<>();
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        try (Cursor cursor = db.query(DbContract.BilheteEntry.TABLE_NAME, null,
-                DbContract.BilheteEntry.COLUMN_RESERVA_ID + " = ?",
-                new String[]{String.valueOf(idReserva)}, null, null, null)) {
-
-            if (cursor.moveToFirst()) {
-                do {
-                    bilhetes.add(new Bilhete(
-                            cursor.getString(cursor.getColumnIndexOrThrow(DbContract.BilheteEntry.COLUMN_CODIGO)),
-                            cursor.getInt(cursor.getColumnIndexOrThrow(DbContract.BilheteEntry.COLUMN_RESERVA_ID)),
-                            cursor.getInt(cursor.getColumnIndexOrThrow(DbContract.BilheteEntry.COLUMN_LOCAL_ID)),
-                            cursor.getString(cursor.getColumnIndexOrThrow(DbContract.BilheteEntry.COLUMN_LOCAL_NOME)),
-                            cursor.getString(cursor.getColumnIndexOrThrow(DbContract.BilheteEntry.COLUMN_DATA_VISITA)),
-                            cursor.getInt(cursor.getColumnIndexOrThrow(DbContract.BilheteEntry.COLUMN_TIPO_BILHETE_ID)),
-                            cursor.getString(cursor.getColumnIndexOrThrow(DbContract.BilheteEntry.COLUMN_TIPO_BILHETE_NOME)),
-                            cursor.getDouble(cursor.getColumnIndexOrThrow(DbContract.BilheteEntry.COLUMN_PRECO)),
-                            cursor.getString(cursor.getColumnIndexOrThrow(DbContract.BilheteEntry.COLUMN_ESTADO))
-                    ));
-                } while (cursor.moveToNext());
-            }
-        }
-        return bilhetes;
-    }
-
     //endregion
 
 //region - Avaliacoes
