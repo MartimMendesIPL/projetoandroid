@@ -8,7 +8,6 @@ public interface ReservaListener {
     void onReservasLoaded(ArrayList<Reserva> listaReservas);
     void onReservaLoaded(Reserva reserva);
     void onReservasError(String message);
-
     void onReservaCreated(Reserva reserva);
     void onReservaError(String message);
 }

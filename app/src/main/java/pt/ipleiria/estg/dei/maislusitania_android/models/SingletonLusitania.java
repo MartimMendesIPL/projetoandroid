@@ -22,7 +22,7 @@ import org.json.JSONObject;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
-//Import Listeners
+//Import Listeners (Interfaces para comunicar com a UI)
 import pt.ipleiria.estg.dei.maislusitania_android.database.DbContract;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.AvaliacaoListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.BilheteListener;
@@ -35,7 +35,7 @@ import pt.ipleiria.estg.dei.maislusitania_android.listeners.NoticiaListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.PerfilListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.ReservaListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.SignupListener;
-//Import Parsers
+//Import Parsers (Conversores de JSON para Objetos Java)
 import pt.ipleiria.estg.dei.maislusitania_android.utils.ReservasJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.EventosJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.LocalJsonParser;
@@ -47,31 +47,39 @@ import pt.ipleiria.estg.dei.maislusitania_android.utils.FavoritoJsonParser;
 //MQTT
 import pt.ipleiria.estg.dei.maislusitania_android.utils.MqttHelper;
 
-//SQLite
+//SQLite (Base de Dados Local)
 import pt.ipleiria.estg.dei.maislusitania_android.database.DbHelper;
 
+// Classe Singleton: Gere toda a lógica de dados, API e BD Local
 public class SingletonLusitania {
-    // Singleton Instance
+
+    // Instância única do Singleton
     private static volatile SingletonLusitania instance;
-    // declaracao das variaveis e constantes
+
+    // Declaração das variáveis de listas locais
     private ArrayList<Local> locais;
     private ArrayList<Favorito> favoritos;
-    // DB
+
+    // Base de Dados e Fila de Pedidos Volley
     private DbHelper dbHelper;
     private static RequestQueue volleyQueue = null;
     private Context context;
     private String mainUrl;
-    //Helper do perfil, sharedpreferences
+
+    // Gestor do perfil e SharedPreferences
     private ProfileManager profileManager;
-    // Keys
+
+    // Chaves para SharedPreferences
     private static final String KEY_TOKEN = "auth_key";
     private static final String PREF_NAME = "MaisLusitaniaPrefs";
     private static final String KEY_USERNAME = "username";
     private static final String KEY_MAIN_URL = "main_url";
     private static final String KEY_USER_ID = "user_id";
-    // Default URL
+
+    // URL Base Padrão da API
     private static final String DEFAULT_MAIN_URL = "http://172.22.21.218/projetopsi/maislusitania/backend/web/api/";
-    // Endpoints
+
+    // Endpoints da API
     private static final String mUrlAPILogin = "/login-form";
     private static final String mUrlAPILocais = "/local-culturals";
     private static final String mUrlAPINoticias = "/noticias";
@@ -84,7 +92,8 @@ public class SingletonLusitania {
     private static final String mUrlAPIReserva = "/reservas";
     private static final String mUrlAPIBilhetes = "/reservas/bilhetes";
     private static final String mUrlAPIAvaliacao = "/avaliacaos";
-    // Listeners
+
+    // Definição dos Listeners para callbacks
     private LoginListener loginListener;
     private LocaisListener locaisListener;
     private MapaListener mapaListener;
@@ -96,7 +105,10 @@ public class SingletonLusitania {
     private BilheteListener bilheteListener;
     private AvaliacaoListener avaliacaoListener;
     private SignupListener signupListener;
+
     //region - Construtor e Instância
+
+    // Construtor privado para inicializar Volley, BD e Preferências
     private SingletonLusitania(Context context) {
         this.context = context.getApplicationContext();
         profileManager = new ProfileManager(this.context);
@@ -108,13 +120,16 @@ public class SingletonLusitania {
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         mainUrl = prefs.getString(KEY_MAIN_URL, DEFAULT_MAIN_URL);
     }
+
+    // Método para obter a instância única (Thread-Safe)
     public static synchronized SingletonLusitania getInstance(Context context) {
         if (instance == null) {
             instance = new SingletonLusitania(context.getApplicationContext());
         }
         return instance;
     }
-    // Setters Listeners
+
+    // Setters Listeners (Vinculam a UI ao Singleton)
     public void setMapaListener(MapaListener mapaListener) {
         this.mapaListener = mapaListener;
     }
@@ -131,20 +146,28 @@ public class SingletonLusitania {
     //endregion
 
     // region Gestão da URL e Sessão
+
+    // Atualiza o URL da API dinamicamente
     public void setMainUrl(String url) {
         this.mainUrl = url;
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         prefs.edit().putString(KEY_MAIN_URL, url).apply();
     }
+
+    // Constrói o URL completo (Base + Endpoint)
     public String buildUrl(String endpoint) {
         String base = this.mainUrl;
         if (base.endsWith("/")) base = base.substring(0, base.length() - 1);
         if (!endpoint.startsWith("/")) endpoint = "/" + endpoint;
         return base + endpoint;
     }
+
+    // Obtém o utilizador guardado em cache
     public User getCachedUser(){
         return profileManager.getUser();
     }
+
+    // Guarda os dados de sessão (Token e ID) nas SharedPreferences
     public void guardarUtilizador(Context context, String username, String token, String user_id) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -153,9 +176,13 @@ public class SingletonLusitania {
         editor.putString(KEY_USER_ID, user_id);
         editor.apply();
     }
+
+    // Verifica se existe um token de autenticação
     public boolean isUtilizadorLogado(Context context) {
         return getAuthToken(context) != null;
     }
+
+    // Faz logout: Limpa SharedPreferences, BD Local e Perfil
     public void logout(Context context) {
         int userid = getUserId(context);
         SharedPreferences sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
@@ -165,10 +192,14 @@ public class SingletonLusitania {
         dbHelper.deleteAllFavoritosByUser(userid);
         profileManager.clearUserProfile();
     }
+
+    // Recupera o token de autenticação
     private String getAuthToken(Context context) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         return sharedPreferences.getString(KEY_TOKEN, null);
     }
+
+    // Recupera o ID do utilizador logado
     public int getUserId(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         String userIdStr = prefs.getString(KEY_USER_ID, "-1");
@@ -178,7 +209,8 @@ public class SingletonLusitania {
             return -1; // Valor padrão se não for um número válido
         }
     }
-    // metodo para criar um favorito a partir de um local
+
+    // Cria um objeto Favorito auxiliar para inserção na BD
     private Favorito MakeFavoritoFromLocal(Local local, int utilizadorid) {
         Favorito favorito = new Favorito(
                 local.getFavoritoId() + 1,
@@ -199,6 +231,7 @@ public class SingletonLusitania {
 
     /**
      * Helper para fazer pedidos que esperam um JSONArray.
+     * Adiciona automaticamente o Token se requiresAuth for true.
      */
     private void makeJsonArrayRequest(Context context, int method, String endpoint, boolean requiresAuth,
                                       final Response.Listener<JSONArray> onSuccess,
@@ -220,6 +253,7 @@ public class SingletonLusitania {
 
     /**
      * Helper para fazer pedidos que esperam um JSONObject.
+     * Suporta envio de Body (JSON) para POST/PUT.
      */
     private void makeJsonObjectRequest(Context context, int method, String endpoint, boolean requiresAuth,
                                        JSONObject jsonBody,
@@ -241,19 +275,21 @@ public class SingletonLusitania {
     //endregion
 
     //region - CRUD Local (Favoritos BD & API)
-    // metodo para obter os favoritos da base de dados local
+
+    // Obtém favoritos da base de dados local
     public ArrayList<Favorito> getFavoritosBD() {
         return dbHelper.getAllFavoritos();
     }
-    // metodo para adicionar um favorito à base de dados local
+    // Adiciona um favorito à base de dados local
     public void addFavoritoBD(Favorito favorito) {
         dbHelper.adicionarFavorito(favorito);
     }
-    // metodo para remover um favorito da base de dados local
+    // Remove um favorito da base de dados local
     public void removeFavoritoBD(int id, int utilizadorid) {
         dbHelper.removerFavorito(id, utilizadorid);
     }
-    // metodo para obter todos os favoritos via API
+
+    // Obtém todos os favoritos. Se offline -> BD; Se online -> API + Sincronização BD
     public void getallFavoritosAPI(final Context context) {
         // Se estiver offline, carrega os favoritos da BD local
         if (!UtilParser.isConnectionInternet(context)) {
@@ -286,7 +322,7 @@ public class SingletonLusitania {
         );
     }
 
-    // metodo para reinscrever nos tópicos MQTT dos favoritos
+    // Reinscreve nos tópicos MQTT para os locais favoritos (ao iniciar a app)
     public void resubscribeToFavoritos(final Context context) {
         if (!UtilParser.isConnectionInternet(context)) {
             Toast.makeText(context,"Sem ligação à internet. Não é possível subscrever aos tópicos MQTT.", Toast.LENGTH_SHORT).show();
@@ -310,7 +346,8 @@ public class SingletonLusitania {
                 }
         );
     }
-    // metodo para alternar o estado de favorito na view do local via API
+
+    // Alterna favorito (View Local): Atualiza API, BD e MQTT
     public void toggleLocalFavoritoAPI(final Context context, final Local local) {
         // Define Endpoint e Metodo baseado no estado atual
         String endpoint;
@@ -346,7 +383,8 @@ public class SingletonLusitania {
                 error -> Toast.makeText(context, "Erro ao alterar favorito", Toast.LENGTH_SHORT).show()
         );
     }
-    // metodo para alternar o estado de favorito na view dos favoritos via API
+
+    // Alterna favorito (View Lista Favoritos): Atualiza API e BD
     public void toggleFavoritoAPI(final Context context, final Favorito favorito) {
         // nao deixa continuar se estiver offline
         if (!UtilParser.isConnectionInternet(context)) {
@@ -382,6 +420,8 @@ public class SingletonLusitania {
     //endregion
 
     //region - Login API e Signup API
+
+    // Efetua login e guarda o token recebido
     public void loginAPI(final String username, final String password, final Context context) {
         JSONObject jsonBody = new JSONObject();
         try {
@@ -421,7 +461,8 @@ public class SingletonLusitania {
                 }
         );
     }
-    // metodo para registar um novo utilizador via API
+
+    // Regista um novo utilizador
     public void signupAPI(final String username, final String email, final String password, final String primeiro_nome, final String ultimo_nome, final Context context) {
         JSONObject jsonBody = new JSONObject();
         try {
@@ -461,6 +502,8 @@ public class SingletonLusitania {
     //endregion
 
     //region - Locais API
+
+    // Obtém lista de todos os locais
     public void getAllLocaisAPI(final Context context) {
         makeJsonArrayRequest(context, Request.Method.GET, mUrlAPILocais, true,
                 response -> {
@@ -477,7 +520,7 @@ public class SingletonLusitania {
         );
     }
 
-    //Retorna um local em especifico
+    // Retorna detalhes de um local especifico
     public void getLocalAPI(final int localId, final Context context) {
         makeJsonObjectRequest(context, Request.Method.GET, mUrlAPILocais + "/" + localId, true, null,
                 response -> {
@@ -495,6 +538,7 @@ public class SingletonLusitania {
         );
     }
 
+    // Pesquisa locais por texto
     public void searchLocalAPI(final Context context, final String query) {
         makeJsonArrayRequest(context, Request.Method.GET, mUrlAPILocais + "/search/" + query, true,
                 response -> {
@@ -520,7 +564,8 @@ public class SingletonLusitania {
     //endregion
 
     //region - Noticias API
-    // metodo para obter todas as noticias via API
+
+    // Obtém todas as noticias
     public void getNoticiasAPI(final Context context) {
         makeJsonArrayRequest(context, Request.Method.GET, mUrlAPINoticias, true,
                 response -> {
@@ -536,7 +581,8 @@ public class SingletonLusitania {
                 null // Usa erro padrão
         );
     }
-    // metodo para obter uma unica noticia via API
+
+    // Obtém detalhes de uma unica noticia
     public void getNoticiaAPI(final int noticiaId, final Context context) {
         makeJsonArrayRequest(context, Request.Method.GET, mUrlAPINoticias + "/" + noticiaId, true,
                 response -> {
@@ -554,7 +600,8 @@ public class SingletonLusitania {
                 }
         );
     }
-    // metodo para pesquisar noticias via API
+
+    // Pesquisa noticias
     public void searchNoticiaAPI(final Context context, final String query) {
         makeJsonArrayRequest(context, Request.Method.GET, mUrlAPINoticias + "/search/" + query, true,
                 response -> {
@@ -573,6 +620,8 @@ public class SingletonLusitania {
     //endregion
 
     //region - Mapas API
+
+    // Obtém todos os pontos do mapa (público)
     public void getAllMapasAPI(final Context context) {
         // Mapas não requer token (requiresAuth = false)
         makeJsonArrayRequest(context, Request.Method.GET, mUrlAPIMapa, false,
@@ -591,6 +640,7 @@ public class SingletonLusitania {
         );
     }
 
+    // Pesquisa pontos no mapa
     public void searchMapaAPI(final Context context, final String query) {
         // Mapas não requer token (requiresAuth = false)
         makeJsonArrayRequest(context, Request.Method.GET, mUrlAPIMapa + "/search/" + query, false,
@@ -608,6 +658,8 @@ public class SingletonLusitania {
     //endregion
 
     //region - User Profile
+
+    // Obtém dados do perfil atual (/me)
     public void getUserProfileAPI(final Context context) {
         makeJsonArrayRequest(context, Request.Method.GET, mUrlUser + "/me", true,
                 response -> {
@@ -625,6 +677,7 @@ public class SingletonLusitania {
         );
     }
 
+    // Edita perfil do utilizador
     public void editUserProfileAPI(final Context context, final String primeiro_nome,
                                    final String ultimo_mome, final String username) {
 
@@ -664,6 +717,7 @@ public class SingletonLusitania {
         );
     }
 
+    // Altera password
     public void changePasswordAPI(final Context context, final String password_atual, final String password) {
         JSONObject jsonBody = new JSONObject();
         try {
@@ -683,6 +737,7 @@ public class SingletonLusitania {
         );
     }
 
+    // Apaga a conta do utilizador
     public void deleteUserAPI(final Context context) {
         makeJsonObjectRequest(context, Request.Method.DELETE, mUrlUser + "/delete-account", true, null,
                 response -> {
@@ -698,6 +753,8 @@ public class SingletonLusitania {
     //endregion
 
     //region - Eventos API
+
+    // Obtém todos os eventos
     public void getAllEventosAPI(final Context context) {
         makeJsonArrayRequest(context, Request.Method.GET, mUrlAPIEvento, true,
                 response -> {
@@ -712,6 +769,7 @@ public class SingletonLusitania {
         );
     }
 
+    // Obtém evento especifico
     public void getEventoAPI(final int eventoId, final Context context) {
         makeJsonArrayRequest(context, Request.Method.GET, mUrlAPIEvento + "/" + eventoId, true,
                 response -> {
@@ -728,6 +786,7 @@ public class SingletonLusitania {
         );
     }
 
+    // Pesquisa eventos
     public void searchEventoAPI(final Context context, final String query) {
         makeJsonArrayRequest(context, Request.Method.GET, mUrlAPIEvento + "/search/" + query, true,
                 response -> {
@@ -744,6 +803,8 @@ public class SingletonLusitania {
     //endregion
 
     //region - Reservas
+
+    // Obtém reservas: BD local primeiro, depois API em background
     public void getAllReservasAPI(Context context) {
         //Carregar dados locais para uma UI rápida.
         if (reservaListener != null) {
@@ -784,6 +845,8 @@ public class SingletonLusitania {
                 }
         );
     }
+
+    // Cria nova reserva
     public void createReservaAPI(final Context context, int localId, String dataVisita, ArrayList<TipoBilhete> tiposBilhete) {
         try {
             JSONObject jsonBody = ReservasJsonParser.criarBodyReserva(localId, dataVisita, tiposBilhete);
@@ -833,6 +896,7 @@ public class SingletonLusitania {
         }
     }
 
+    // Pesquisa reservas
     public void searchReservaAPI(final Context context, String query){
         makeJsonArrayRequest(context, Request.Method.GET, mUrlAPIReserva + "/search/" + query, true,
                 response -> {
@@ -847,6 +911,8 @@ public class SingletonLusitania {
     //endregion
 
     //region - Bilhetes
+
+    // Obtém bilhetes de uma reserva: BD primeiro, API background
     public void getAllBilhetesAPI(final Context context, int idReserva) {
         // A primeira ação é sempre ler da base de dados local.
         ArrayList<Bilhete> bilhetesLocais = dbHelper.getBilhetesByReserva(idReserva);
@@ -892,6 +958,7 @@ public class SingletonLusitania {
 
 //region - Avaliacoes
 
+    // Adiciona avaliação a um local
     public void addAvaliacao(final Context context, final int localId, final float rating, final String comentario) {
         String url = mUrlAPIAvaliacao + "/add/" + localId;
 
@@ -917,6 +984,7 @@ public class SingletonLusitania {
         );
     }
 
+    // Edita avaliação existente
     public void editAvaliacao(final Context context, final int localId, final int avaliacaoId, final float rating, final String comentario) {
         String url = mUrlAPIAvaliacao + "/edit/" + avaliacaoId;
 
@@ -942,6 +1010,7 @@ public class SingletonLusitania {
         );
     }
 
+    // Remove avaliação
     public void deleteAvaliacao(final Context context, final int localId, final int avaliacaoId) {
         String url = mUrlAPIAvaliacao + "/remove/" + avaliacaoId;
 

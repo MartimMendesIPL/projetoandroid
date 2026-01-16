@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 import pt.ipleiria.estg.dei.maislusitania_android.models.Noticia;
 
-public interface NoticiaListener {
+public interface  NoticiaListener {
     // para carregar as noticias
     void onNoticiasLoaded(ArrayList<Noticia> listaNoticias);
     // para carregar uma noticia

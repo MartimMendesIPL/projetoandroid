@@ -19,76 +19,97 @@ import pt.ipleiria.estg.dei.maislusitania_android.utils.NotificationHelper;
 import android.view.Window;
 import android.view.WindowManager;
 
+/**
+ * Activity principal da aplicação que gerencia navegação entre fragmentos
+ * Inclui barra de navegação inferior, FAB do mapa e ligação MQTT
+ */
 public class MainActivity extends AppCompatActivity {
 
+    // Referência para a barra de navegação inferior
     private BottomNavigationView bottomNavigationView;
 
+    /**
+     * Inicializa a activity, configura MQTT, FAB e listeners de navegação
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Cria o canal de notificações para notificações push
         NotificationHelper.createNotificationChannel(this);
 
+        // Obtém a instância do helper MQTT
         MqttHelper mqttHelper = MqttHelper.getInstance();
 
-        // Definir listener para restaurar subscrições após conexão
+        // Define listener para restaurar subscrições após conexão MQTT
         mqttHelper.setConnectionListener(new MqttHelper.MqttConnectionListener() {
+            /**
+             * Chamado quando a conexão MQTT é estabelecida com sucesso
+             */
             @Override
             public void onConnected() {
-                // Restaurar subscrições apenas após conexão estabelecida
+                // Restaura subscrições aos tópicos de favoritos
                 SingletonLusitania.getInstance(MainActivity.this).resubscribeToFavoritos(MainActivity.this);
             }
 
+            /**
+             * Chamado quando a conexão MQTT falha
+             */
             @Override
             public void onConnectionFailed(String error) {
                 android.util.Log.e("MainActivity", "Falha na conexão MQTT: " + error);
             }
         });
-        // Conectar MQTT
+
+        // Conecta ao servidor MQTT
         mqttHelper.connect(this);
 
+        // Obtém referências para elementos da UI
         bottomNavigationView = findViewById(R.id.bottom_navigation);
         FloatingActionButton fabMapa = findViewById(R.id.fab_mapa);
 
-        //Botao placeholder para criar espaço no menu
+        // Desativa o item placeholder (apenas para criar espaço visual no menu)
         bottomNavigationView.getMenu().findItem(R.id.navigation_placeholder).setEnabled(false);
 
-        // Desmarcar itens do bottom navigation
+        // Desseleciona todos os itens da barra de navegação inicialmente
         deselectNavMenu();
 
-        // Carregar o fragmento Mapa por padrão (tela inicial)
+        // Carrega o fragmento Mapa como tela inicial
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, new MapaFragment())
                     .commit();
         }
 
-        // Listener do FAB do Mapa
+        // Configura o listener do botão FAB (flutuante) do Mapa
         fabMapa.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Deseleciona itens da barra de navegação
                 deselectNavMenu();
 
+                // Carrega o fragmento Mapa
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragment_container, new MapaFragment())
                         .commit();
             }
         });
 
-        // Listener do BottomNavigationView
+        // Configura o listener da barra de navegação inferior
         bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
 
-                //Ligar menu
+                // Ativa seleção nos itens do menu
                 bottomNavigationView.getMenu().setGroupCheckable(0, true, true);
 
-                //Este item é preciso para que os botoes apareçam como deve ser
-                if (item.getItemId() == R.id.navigation_placeholder){
+                // Ignora o item placeholder (apenas visual)
+                if (item.getItemId() == R.id.navigation_placeholder) {
                     return false;
                 }
 
+                // Determina qual fragmento carregar baseado no item selecionado
                 Fragment selectedFragment = null;
 
                 if (item.getItemId() == R.id.navigation_bilhetes) {
@@ -101,6 +122,7 @@ public class MainActivity extends AppCompatActivity {
                     selectedFragment = new LocaisFragment();
                 }
 
+                // Carrega o fragmento selecionado
                 if (selectedFragment != null) {
                     getSupportFragmentManager().beginTransaction()
                             .replace(R.id.fragment_container, selectedFragment)
@@ -111,6 +133,9 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Desseleciona todos os itens da barra de navegação
+     */
     public void deselectNavMenu() {
         bottomNavigationView.getMenu().setGroupCheckable(0, false, true);
     }

@@ -30,16 +30,32 @@ import pt.ipleiria.estg.dei.maislusitania_android.models.Reserva;
 import pt.ipleiria.estg.dei.maislusitania_android.models.SingletonLusitania;
 import pt.ipleiria.estg.dei.maislusitania_android.models.TipoBilhete;
 
+/**
+ * Fragment para criar reservas de bilhetes em locais
+ */
 public class FazerReservaFragment extends Fragment implements LocaisListener, ReservaListener {
 
+    // Binding para acesso aos elementos da UI
     private FragmentReservaBinding binding;
+
+    // Adaptador para a lista de tipos de bilhetes
     private TipoBilheteAdapter adapter;
+
+    // ID do local e data selecionada
     private int localId;
     private Calendar selectedDate;
+
+    // Formatador de datas
     private SimpleDateFormat dateFormatter;
 
+    /**
+     * Construtor padrão
+     */
     public FazerReservaFragment() {}
 
+    /**
+     * Factory method para criar o fragment com o ID do local
+     */
     public static FazerReservaFragment newInstance(int localId) {
         FazerReservaFragment fragment = new FazerReservaFragment();
         Bundle args = new Bundle();
@@ -48,6 +64,9 @@ public class FazerReservaFragment extends Fragment implements LocaisListener, Re
         return fragment;
     }
 
+    /**
+     * Extrai o ID do local dos argumentos e inicializa datas
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,6 +77,9 @@ public class FazerReservaFragment extends Fragment implements LocaisListener, Re
         dateFormatter = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
     }
 
+    /**
+     * Inicializa o binding da view
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -65,6 +87,9 @@ public class FazerReservaFragment extends Fragment implements LocaisListener, Re
         return binding.getRoot();
     }
 
+    /**
+     * Configura os elementos da UI e carrega os dados do local
+     */
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -73,11 +98,14 @@ public class FazerReservaFragment extends Fragment implements LocaisListener, Re
         setupRecyclerView();
         setupButton();
 
-        // Faz o pedido à API
+        // Faz o pedido à API para obter dados do local
         Log.d("ReservaFragment", "A pedir dados do local ID: " + localId);
         SingletonLusitania.getInstance(requireContext()).getLocalAPI(localId, requireContext());
     }
 
+    /**
+     * Religa os listeners ao fragment ficar visível (impede desconexões)
+     */
     @Override
     public void onResume() {
         super.onResume();
@@ -88,15 +116,21 @@ public class FazerReservaFragment extends Fragment implements LocaisListener, Re
         SingletonLusitania.getInstance(requireContext()).setReservaListener(this);
     }
 
+    /**
+     * Configura o selecionador de datas
+     */
     private void setupDatePicker() {
         binding.etDate.setOnClickListener(v -> mostrarDatePicker());
         binding.etDate.setText(dateFormatter.format(selectedDate.getTime()));
     }
 
+    /**
+     * Configura a RecyclerView com o adaptador de tipos de bilhetes
+     */
     private void setupRecyclerView() {
         binding.rvTicketTypes.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        // Inicializa o adapter
+        // Inicializa o adaptador vazio
         adapter = new TipoBilheteAdapter(requireContext(), new ArrayList<>());
 
         // Configura o listener para atualizar o total quando a quantidade muda
@@ -105,26 +139,36 @@ public class FazerReservaFragment extends Fragment implements LocaisListener, Re
         binding.rvTicketTypes.setAdapter(adapter);
     }
 
+    /**
+     * Configura o botão de continuar
+     */
     private void setupButton() {
         binding.btnContinue.setEnabled(false);
         binding.btnContinue.setOnClickListener(v -> fazerReserva());
     }
 
+    /**
+     * Mostra o diálogo de seleção de data com limitações
+     */
     private void mostrarDatePicker() {
+        // Define a data máxima (1 ano a partir de hoje)
         Calendar dataMaxima = Calendar.getInstance();
         dataMaxima.add(Calendar.YEAR, 1);
 
+        // Configura restrições de datas (apenas datas futuras até 1 ano)
         CalendarConstraints constraints = new CalendarConstraints.Builder()
                 .setValidator(DateValidatorPointForward.now())
                 .setEnd(dataMaxima.getTimeInMillis())
                 .build();
 
+        // Cria o selecionador de datas
         MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
                 .setTitleText("Selecione a data da visita")
                 .setSelection(selectedDate.getTimeInMillis())
                 .setCalendarConstraints(constraints)
                 .build();
 
+        // Atualiza a data quando o utilizador seleciona uma
         datePicker.addOnPositiveButtonClickListener(selection -> {
             selectedDate.setTimeInMillis(selection);
             binding.etDate.setText(dateFormatter.format(selectedDate.getTime()));
@@ -133,12 +177,19 @@ public class FazerReservaFragment extends Fragment implements LocaisListener, Re
         datePicker.show(getParentFragmentManager(), "DATE_PICKER");
     }
 
+    /**
+     * Atualiza o preço total baseado nas quantidades selecionadas
+     */
     private void atualizarTotal() {
         double total = adapter.calcularTotal();
         binding.tvTotalPrice.setText(String.format(Locale.getDefault(), "%.2f €", total));
+        // Ativa o botão apenas se há bilhetes selecionados
         binding.btnContinue.setEnabled(total > 0);
     }
 
+    /**
+     * Submete a reserva à API
+     */
     private void fazerReserva() {
         double total = adapter.calcularTotal();
         if (total <= 0) {
@@ -146,18 +197,22 @@ public class FazerReservaFragment extends Fragment implements LocaisListener, Re
             return;
         }
 
+        // Obtém os bilhetes selecionados
         ArrayList<TipoBilhete> tiposBilheteSelecionados = adapter.getTiposBilheteSelecionados();
         if (tiposBilheteSelecionados.isEmpty()) {
             Toast.makeText(requireContext(), "Erro: Lista de bilhetes vazia", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        // Formata a data para o formato da API (yyyy-MM-dd)
         SimpleDateFormat apiDateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         String dataVisitaFormatada = apiDateFormat.format(selectedDate.getTime());
 
+        // Desativa o botão e mostra mensagem de progresso
         binding.btnContinue.setEnabled(false);
         Toast.makeText(requireContext(), "A processar reserva...", Toast.LENGTH_SHORT).show();
 
+        // Envia a reserva para a API
         SingletonLusitania.getInstance(requireContext()).createReservaAPI(
                 requireContext(),
                 localId,
@@ -166,6 +221,9 @@ public class FazerReservaFragment extends Fragment implements LocaisListener, Re
         );
     }
 
+    /**
+     * Callback quando o local é carregado com sucesso
+     */
     @Override
     public void onLocalLoaded(Local local) {
         Log.d("ReservaFragment", "onLocalLoaded chamado!");
@@ -174,16 +232,21 @@ public class FazerReservaFragment extends Fragment implements LocaisListener, Re
             ArrayList<TipoBilhete> bilhetes = local.getTiposBilhete();
 
             if (bilhetes != null && !bilhetes.isEmpty()) {
+                // Atualiza o adaptador com os tipos de bilhetes disponíveis
                 Log.d("ReservaFragment", "Bilhetes carregados: " + bilhetes.size());
                 adapter.updateTiposBilhete(bilhetes);
                 atualizarTotal();
             } else {
+                // Mostra erro se não há bilhetes disponíveis
                 Log.e("ReservaFragment", "Local carregado mas SEM bilhetes.");
                 Toast.makeText(requireContext(), "Não há bilhetes disponíveis para este local.", Toast.LENGTH_LONG).show();
             }
         }
     }
 
+    /**
+     * Callback quando ocorre erro ao carregar o local
+     */
     @Override
     public void onLocalError(String error) {
         Log.e("ReservaFragment", "Erro ao carregar local: " + error);
@@ -192,10 +255,14 @@ public class FazerReservaFragment extends Fragment implements LocaisListener, Re
         }
     }
 
+    /**
+     * Callback quando a reserva é criada com sucesso
+     */
     @Override
     public void onReservaCreated(Reserva reserva) {
         if (getContext() != null) {
             Toast.makeText(getContext(), "Reserva criada com sucesso!", Toast.LENGTH_LONG).show();
+            // Limpa seleções e volta para o fragment anterior
             adapter.limparSelecoes();
             atualizarTotal();
 
@@ -205,14 +272,21 @@ public class FazerReservaFragment extends Fragment implements LocaisListener, Re
         }
     }
 
+    /**
+     * Callback quando ocorre erro ao criar a reserva
+     */
     @Override
     public void onReservaError(String message) {
         if (getContext() != null) {
             Toast.makeText(getContext(), "Erro na reserva: " + message, Toast.LENGTH_LONG).show();
+            // Reativa o botão para permitir nova tentativa
             binding.btnContinue.setEnabled(true);
         }
     }
 
+    /**
+     * Callbacks não utilizados neste fragment
+     */
     @Override
     public void onLocaisLoaded(ArrayList<Local> locais) {}
     @Override
@@ -224,6 +298,9 @@ public class FazerReservaFragment extends Fragment implements LocaisListener, Re
     @Override
     public void onReservasError(String message) {}
 
+    /**
+     * Limpa as referências quando a view é destruída
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();
