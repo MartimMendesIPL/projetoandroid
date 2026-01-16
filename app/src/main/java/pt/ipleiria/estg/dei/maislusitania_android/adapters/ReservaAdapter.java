@@ -20,35 +20,36 @@ import java.util.Locale;
 import pt.ipleiria.estg.dei.maislusitania_android.R;
 import pt.ipleiria.estg.dei.maislusitania_android.models.Reserva;
 
+// Adaptador para apresentar uma lista de reservas numa RecyclerView
 public class ReservaAdapter extends RecyclerView.Adapter<ReservaAdapter.ReservaViewHolder> {
 
-    private List<Reserva> reservas;
-    private OnItemClickListener onItemClickListener;
-    private Context context;
+    private List<Reserva> reservas;                   // Lista de reservas
+    private OnItemClickListener onItemClickListener;  // Listener de cliques
+    private Context context;                          // Contexto da aplicação
 
-    // Interface para clicks na lista
+    // Interface para tratar cliques nos itens da lista
     public interface OnItemClickListener {
         void onItemClick(Reserva reserva);
     }
 
+    // Construtor que inicializa o adaptador com contexto, lista de reservas e listener de cliques
     public ReservaAdapter(Context context, List<Reserva> reservas, OnItemClickListener listener) {
         this.context = context;
         this.reservas = reservas != null ? reservas : new ArrayList<>();
         this.onItemClickListener = listener;
     }
 
-    // ViewHolder: mantém as referências das views do layout item_list_reserva
+    // ViewHolder que representa cada item na lista
     public static class ReservaViewHolder extends RecyclerView.ViewHolder {
-        ImageView ivReservaImagem;
-        TextView tvReservaLocal;
-        TextView tvReservaData;
-        TextView tvReservaPreco; // Mudado de Tipo para Preço
-        TextView tvReservaEstado;
+        ImageView ivReservaImagem;    // Imagem do local
+        TextView tvReservaLocal;      // Nome do local
+        TextView tvReservaData;       // Data da visita
+        TextView tvReservaPreco;      // Preço total da reserva
+        TextView tvReservaEstado;     // Estado da reserva
 
-
+        // Inicializa as referências aos elementos do layout
         public ReservaViewHolder(@NonNull View itemView) {
             super(itemView);
-            // Certifique-se que estes IDs existem no seu item_list_reserva.xml
             ivReservaImagem = itemView.findViewById(R.id.ivReservaImagem);
             tvReservaLocal = itemView.findViewById(R.id.tvReservaLocal);
             tvReservaData = itemView.findViewById(R.id.tvReservaData);
@@ -57,48 +58,46 @@ public class ReservaAdapter extends RecyclerView.Adapter<ReservaAdapter.ReservaV
         }
     }
 
+    // Cria um novo ViewHolder quando necessário
     @NonNull
     @Override
     public ReservaViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        // Infla o layout de RESERVA
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_list_reserva, parent, false);
         return new ReservaViewHolder(view);
     }
 
+    // Associa os dados da reserva aos elementos visuais do ViewHolder
     @Override
     public void onBindViewHolder(@NonNull ReservaViewHolder holder, int position) {
         Reserva reserva = reservas.get(position);
 
-        // Carregar imagem com Glide
+        // Carrega a imagem com Glide
         Glide.with(context)
                 .load(reserva.getImagemLocal())
                 .into(holder.ivReservaImagem);
 
-
-        // 1. Nome do Local (Vem direto do JSON/Model agora)
+        // Preenche o nome do local
         holder.tvReservaLocal.setText(reserva.getLocalNome());
 
-        // 2. Data
+        // Preenche a data de visita
         holder.tvReservaData.setText(formatarData(reserva.getDataVisita()));
 
-        // 3. Preço Total (Formatado para Euro)
-        // String.format("%.2f€") garante 2 casas decimais (ex: 12.50€)
+        // Preenche o preço total formatado em Euro (2 casas decimais)
         holder.tvReservaPreco.setText(String.format(Locale.getDefault(), "Total: %.2f€", reserva.getPrecoTotal()));
 
-        // 4. Estado e Cor
-        holder.tvReservaEstado.setText(reserva.getEstado());
+        // Define o estado e cor associada
+        String estado = reserva.getEstado() != null ? reserva.getEstado() : "";
+        holder.tvReservaEstado.setText(estado);
 
         int cor;
-        String estado = reserva.getEstado() != null ? reserva.getEstado() : "";
-
         switch (estado) {
             case "Confirmada":
                 cor = Color.parseColor("#28A745"); // Verde
                 break;
             case "Pendente":
-            case "Expirado": // Assumindo lógica do PHP onde Expirado é tratado visualmente similar
-                cor = Color.parseColor("#FFC107"); // Amarelo/Laranja
+            case "Expirado":
+                cor = Color.parseColor("#FFC107"); // Amarelo
                 break;
             case "Cancelada":
                 cor = Color.parseColor("#DC3545"); // Vermelho
@@ -109,16 +108,7 @@ public class ReservaAdapter extends RecyclerView.Adapter<ReservaAdapter.ReservaV
         }
         holder.tvReservaEstado.setTextColor(cor);
 
-        // 5. Imagem (Opcional - Usando Glide)
-        // Exemplo: Carregar imagem baseada no ID do local se tiveres URL
-        // String imageUrl = "http://teu-ip/api/locais/" + reserva.getLocalId() + "/image";
-        /*
-        Glide.with(context)
-             .load(R.drawable.placeholder_image) // Imagem padrão
-             .into(holder.ivReservaImagem);
-        */
-
-        // Click listener
+        // Define o listener de clique no item
         holder.itemView.setOnClickListener(v -> {
             if (onItemClickListener != null) {
                 onItemClickListener.onItemClick(reserva);
@@ -126,18 +116,19 @@ public class ReservaAdapter extends RecyclerView.Adapter<ReservaAdapter.ReservaV
         });
     }
 
+    // Retorna o número total de reservas
     @Override
     public int getItemCount() {
         return reservas.size();
     }
 
-    // Atualizar lista
+    // Atualiza a lista de reservas e notifica o adaptador
     public void updateReservas(List<Reserva> newReservas) {
         this.reservas = newReservas != null ? newReservas : new ArrayList<>();
         notifyDataSetChanged();
     }
 
-    // Formatar data (pode melhorar usando SimpleDateFormat se necessário)
+    // Formata a data da reserva
     private String formatarData(String data) {
         return data;
     }

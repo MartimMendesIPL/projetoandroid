@@ -18,79 +18,93 @@ import java.util.ArrayList;
 import pt.ipleiria.estg.dei.maislusitania_android.R;
 import pt.ipleiria.estg.dei.maislusitania_android.models.Noticia;
 
+// Adaptador para apresentar uma lista de notícias numa RecyclerView
 public class NoticiaAdapter extends RecyclerView.Adapter<NoticiaAdapter.ViewHolder> {
-    // declaracao de variaveis
-    private Context context;
-    private ArrayList<Noticia> noticias;
-    private OnNoticiaListener onNoticiaListener;
+
+    private Context context;                          // Contexto da aplicação
+    private ArrayList<Noticia> noticias;              // Lista de notícias
+    private OnNoticiaListener onNoticiaListener;      // Listener de cliques
+
+    // Interface para tratar cliques nos itens da lista
     public interface OnNoticiaListener {
         void onNoticiaClick(int position);
     }
-    // construtor
+
+    // Construtor que inicializa o adaptador com contexto, lista de notícias e listener de cliques
     public NoticiaAdapter(Context context, ArrayList<Noticia> noticias, OnNoticiaListener onNoticiaListener) {
         this.context = context;
         this.noticias = noticias;
         this.onNoticiaListener = onNoticiaListener;
     }
-    // inflar o layout
+
+    // Cria um novo ViewHolder quando necessário
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_list_noticia, parent, false);
         return new ViewHolder(view, onNoticiaListener);
     }
-    // ligar os dados aos elementos do layout
+
+    // Associa os dados da notícia aos elementos visuais do ViewHolder
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        // Obter a notícia atual
         Noticia noticia = noticias.get(position);
-        // Definir textos
+
+        // Preenche os textos da notícia
         holder.tvNome.setText(noticia.getNome());
         holder.tvLocalNome.setText(noticia.getLocal_nome());
-        // Formatar ou exibir a data como vem da API
         holder.tvDataPublicacao.setText(noticia.getDataPublicacao());
-        // Carregar imagem usando Glide
+
+        // Carrega a imagem com Glide
         String urlImagem = noticia.getImagem();
-        // Se a imagem não for nula ou vazia, carrega imagem padrao
         if (urlImagem != null && !urlImagem.isEmpty()) {
             Glide.with(context)
                     .load(urlImagem)
-                    .placeholder(R.drawable.ic_launcher_background) // Imagem de placeholder enquanto carrega
+                    .placeholder(R.drawable.ic_launcher_background) // Imagem enquanto carrega
                     .error(R.drawable.ic_launcher_background)       // Imagem em caso de erro
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)       // Guarda em cache
                     .into(holder.ivImagem);
         } else {
             holder.ivImagem.setImageResource(R.drawable.ic_launcher_background);
         }
     }
-    // retornar o tamanho da lista
+
+    // Retorna o número total de notícias
     @Override
     public int getItemCount() {
         return noticias != null ? noticias.size() : 0;
     }
-    // Atualizar a lista de notícias
+
+    // Atualiza a lista de notícias e notifica o adaptador
     public void updateNoticias(ArrayList<Noticia> novasNoticias) {
         this.noticias = novasNoticias;
         notifyDataSetChanged();
     }
-    // ViewHolder
+
+    // ViewHolder que representa cada item na lista
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        // declaracao de variaveis
-        TextView tvNome, tvLocalNome, tvDataPublicacao;
-        ImageView ivImagem;
+
+        TextView tvNome;                // Título da notícia
+        TextView tvLocalNome;           // Nome do local
+        TextView tvDataPublicacao;      // Data de publicação
+        ImageView ivImagem;             // Imagem da notícia
         OnNoticiaListener onNoticiaListener;
-        // construtor
+
+        // Inicializa as referências aos elementos do layout
         public ViewHolder(@NonNull View itemView, OnNoticiaListener onNoticiaListener) {
             super(itemView);
-            // Vincular os IDs do layout item_list_noticia.xml
+
+            // Vincula os IDs do layout aos atributos
             ivImagem = itemView.findViewById(R.id.ivImagem);
-            tvNome= itemView.findViewById(R.id.tvNome);
+            tvNome = itemView.findViewById(R.id.tvNome);
             tvLocalNome = itemView.findViewById(R.id.tvResumo);
             tvDataPublicacao = itemView.findViewById(R.id.tvDataPublicacao);
+
             this.onNoticiaListener = onNoticiaListener;
             itemView.setOnClickListener(this);
         }
-        // tratar o clique
+
+        // Trata o clique no item
         @Override
         public void onClick(View v) {
             if (onNoticiaListener != null) {

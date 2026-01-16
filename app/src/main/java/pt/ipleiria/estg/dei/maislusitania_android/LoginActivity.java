@@ -12,16 +12,23 @@ import androidx.appcompat.app.AppCompatActivity;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.LoginListener;
 import pt.ipleiria.estg.dei.maislusitania_android.models.SingletonLusitania;
 
+/**
+ * Activity de autenticação do utilizador com login e registo
+ */
 public class LoginActivity extends AppCompatActivity implements LoginListener {
 
+    // Campos de entrada de username e password
     private EditText etUsername, etPassword;
 
+    /**
+     * Inicializa a activity e verifica se o utilizador já está autenticado
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         // VERIFICAÇÃO AUTOMÁTICA (SharedPreferences via Singleton)
-        // Se já tem token guardado, salta o login
+        // Se já tem token guardado, salta o ecrã de login
         if (SingletonLusitania.getInstance(this).isUtilizadorLogado(this)) {
             MainActivity();
             return; // Interrompe o onCreate para não carregar o layout de login
@@ -32,27 +39,38 @@ public class LoginActivity extends AppCompatActivity implements LoginListener {
         etUsername = findViewById(R.id.et_username);
         etPassword = findViewById(R.id.et_password);
 
-        // Registar como listener
+        // Registra esta activity como listener de eventos de login
         SingletonLusitania.getInstance(this).setLoginListener(this);
     }
 
+    /**
+     * Navega para a activity de registo
+     */
     public void goToRegister(View view) {
         Intent intent = new Intent(this, RegisterActivity.class);
         startActivity(intent);
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
     }
 
+    /**
+     * Realiza o login do utilizador na API
+     */
     public void Login(View view) {
         String username = etUsername.getText().toString();
         String password = etPassword.getText().toString();
 
+        // Valida os campos antes de enviar
         if (!validateLoginCampos()) {
             return;
         }
 
+        // Envia pedido de login à API
         SingletonLusitania.getInstance(this).loginAPI(username, password, this);
     }
 
+    /**
+     * Valida se os campos de username e password estão preenchidos
+     */
     private boolean validateLoginCampos() {
         String username = etUsername.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
@@ -68,39 +86,50 @@ public class LoginActivity extends AppCompatActivity implements LoginListener {
         return true;
     }
 
+    /**
+     * Callback quando o login é bem-sucedido
+     * Guarda as credenciais e navega para MainActivity
+     */
     @Override
     public void onValidateLogin(final String token, final String username, final String user_id) {
         runOnUiThread(() -> {
-            // 2. GUARDAR NAS PREFS (via Singleton)
-            SingletonLusitania.getInstance(this).guardarUtilizador(this,username, token, user_id);
+            // Guarda os dados do utilizador nas preferências
+            SingletonLusitania.getInstance(this).guardarUtilizador(this, username, token, user_id);
 
             Toast.makeText(this, "Bem-vindo, " + username + "!", Toast.LENGTH_SHORT).show();
             MainActivity();
         });
     }
 
+    /**
+     * Navega para MainActivity e fecha LoginActivity
+     */
     private void MainActivity() {
         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
         startActivity(intent);
-        finish(); // Fecha a LoginActivity para o user não voltar atrás
+        finish(); // Fecha a LoginActivity para o utilizador não voltar atrás
     }
 
-
+    /**
+     * Acesso como convidado sem autenticação
+     */
     public void GuestLogin(View view) {
         MainActivity();
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
     }
 
-    //Popup Alterar API e guardar na shareprefence
+    /**
+     * Mostra diálogo para alterar a URL da API e guarda nas preferências
+     */
     public void AlterarAPI(View view) {
         AlertDialog.Builder builder = new AlertDialog.Builder(LoginActivity.this);
 
-        // Inflate custom view
+        // Carrega o layout customizado do diálogo
         LayoutInflater inflater = getLayoutInflater();
         View dialogView = inflater.inflate(R.layout.dialog_change_url, null);
         EditText etMainUrl = dialogView.findViewById(R.id.etMainUrl);
 
-        // Pre-fill current value
+        // Pré-preenchimento com a URL atual
         etMainUrl.setText(SingletonLusitania.getInstance(getApplicationContext()).buildUrl(""));
 
         builder.setView(dialogView)
@@ -108,6 +137,7 @@ public class LoginActivity extends AppCompatActivity implements LoginListener {
                 .setPositiveButton("Guardar", (dialog, which) -> {
                     String url = etMainUrl.getText().toString().trim();
                     if (!url.isEmpty()) {
+                        // Guarda a nova URL no Singleton
                         SingletonLusitania.getInstance(getApplicationContext()).setMainUrl(url);
                         Toast.makeText(LoginActivity.this, "URL guardada", Toast.LENGTH_SHORT).show();
                     }
