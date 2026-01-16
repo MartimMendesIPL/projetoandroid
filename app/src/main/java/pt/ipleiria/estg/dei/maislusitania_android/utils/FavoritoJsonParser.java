@@ -28,7 +28,7 @@ public class FavoritoJsonParser {
                 String localNome = favorito.getString("local_nome");
                 String localDistrito = favorito.getString("local_distrito");
                 // Usa o optDouble para evitar exceções se o campo não existir
-                float avaliacaoMedia = (float) favorito.optDouble("avaliacao_media", 0.0);
+                float avaliacaoMedia = (float) favorito.optDouble("local_rating", 0.0);
                 String dataAdicao = favorito.getString("data_adicao");
                 boolean isFavorite = favorito.optBoolean("is_favorite", true);
                 // Cria o objeto Favorito
