@@ -68,11 +68,12 @@ public class ReservasJsonParser {
                     String data_visita = jsonObject.getString("data_visita");
                     int tipo_bilhete_id = jsonObject.getInt("tipo_bilhete_id");
                     String tipo_bilhete_nome = jsonObject.getString("tipo_bilhete_nome");
-                    String estado = jsonObject.getString("estado");
 
                     // Tratamento do Preço Unitário
                     String precoStr = jsonObject.getString("preco").replace(",", "");
                     double preco = Double.parseDouble(precoStr);
+
+                    String estado = jsonObject.getString("estado");
 
                     Bilhete bilhete = new Bilhete(codigo, reserva_id, local_id, local_nome, data_visita, tipo_bilhete_id, tipo_bilhete_nome, preco, estado);
                     listaBilhetes.add(bilhete);

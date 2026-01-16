@@ -30,7 +30,7 @@ import pt.ipleiria.estg.dei.maislusitania_android.models.Reserva;
 import pt.ipleiria.estg.dei.maislusitania_android.models.SingletonLusitania;
 import pt.ipleiria.estg.dei.maislusitania_android.models.TipoBilhete;
 
-public class ReservaFragment extends Fragment implements LocaisListener, ReservaListener {
+public class FazerReservaFragment extends Fragment implements LocaisListener, ReservaListener {
 
     private FragmentReservaBinding binding;
     private TipoBilheteAdapter adapter;
@@ -38,10 +38,10 @@ public class ReservaFragment extends Fragment implements LocaisListener, Reserva
     private Calendar selectedDate;
     private SimpleDateFormat dateFormatter;
 
-    public ReservaFragment() {}
+    public FazerReservaFragment() {}
 
-    public static ReservaFragment newInstance(int localId) {
-        ReservaFragment fragment = new ReservaFragment();
+    public static FazerReservaFragment newInstance(int localId) {
+        FazerReservaFragment fragment = new FazerReservaFragment();
         Bundle args = new Bundle();
         args.putInt("local_id", localId);
         fragment.setArguments(args);
