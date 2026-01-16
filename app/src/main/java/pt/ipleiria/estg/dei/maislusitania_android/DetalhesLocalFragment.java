@@ -78,11 +78,11 @@ public class DetalhesLocalFragment extends Fragment implements LocaisListener {
     private void setupClickListeners() {
         binding.btnComprar.setOnClickListener(v -> {
             // Criar instância do ReservaFragment com o ID do local
-            ReservaFragment reservaFragment = ReservaFragment.newInstance(localId);
+            FazerReservaFragment fazerReservaFragment = FazerReservaFragment.newInstance(localId);
             // Fazer a transação do fragment
             getParentFragmentManager()
                     .beginTransaction()
-                    .replace(R.id.fragment_container, reservaFragment) // Ajusta se necessário
+                    .replace(R.id.fragment_container, fazerReservaFragment) // Ajusta se necessário
                     .addToBackStack(null)
                     .commit();
 

@@ -1,7 +1,10 @@
 package pt.ipleiria.estg.dei.maislusitania_android.models;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -19,6 +22,8 @@ import org.json.JSONObject;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
+//Import Listeners
+import pt.ipleiria.estg.dei.maislusitania_android.database.DbContract;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.AvaliacaoListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.BilheteListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.EventoListener;
@@ -30,15 +35,20 @@ import pt.ipleiria.estg.dei.maislusitania_android.listeners.NoticiaListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.PerfilListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.ReservaListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.SignupListener;
+//Import Parsers
 import pt.ipleiria.estg.dei.maislusitania_android.utils.ReservasJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.EventosJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.LocalJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.MapaJsonParser;
-import pt.ipleiria.estg.dei.maislusitania_android.utils.MqttHelper;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.NoticiaJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.UserJsonParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.UtilParser;
 import pt.ipleiria.estg.dei.maislusitania_android.utils.FavoritoJsonParser;
+//MQTT
+import pt.ipleiria.estg.dei.maislusitania_android.utils.MqttHelper;
+
+//SQLite
+import pt.ipleiria.estg.dei.maislusitania_android.database.DbHelper;
 
 public class SingletonLusitania {
     // Singleton Instance
@@ -46,7 +56,9 @@ public class SingletonLusitania {
     // declaracao das variaveis e constantes
     private ArrayList<Local> locais;
     private ArrayList<Favorito> favoritos;
-    private final LocaisFavDBHelper dbHelper;
+    // DB
+    private final LocaisFavDBHelper favoritosDbHelper;
+    private DbHelper dbHelper;
     private static RequestQueue volleyQueue = null;
     private Context context;
     private String mainUrl;
@@ -88,12 +100,12 @@ public class SingletonLusitania {
     //region - Construtor e Instância
     private SingletonLusitania(Context context) {
         this.context = context.getApplicationContext();
-        profileManager = new ProfileManager(context);
+        profileManager = new ProfileManager(this.context);
 
         locais = new ArrayList<>();
-        dbHelper = new LocaisFavDBHelper(context);
-        volleyQueue = Volley.newRequestQueue(context);
-        this.context = context;
+        favoritosDbHelper = new LocaisFavDBHelper(this.context);
+        volleyQueue = Volley.newRequestQueue(this.context);
+        this.dbHelper = new DbHelper(this.context);
 
         SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         mainUrl = prefs.getString(KEY_MAIN_URL, DEFAULT_MAIN_URL);
@@ -108,36 +120,16 @@ public class SingletonLusitania {
     public void setMapaListener(MapaListener mapaListener) {
         this.mapaListener = mapaListener;
     }
-    public void setLoginListener(LoginListener loginListener) {
-        this.loginListener = loginListener;
-    }
-    public void setSignupListener(SignupListener signupListener) {
-        this.signupListener = signupListener;
-    }
-    public void setLocaisListener(LocaisListener locaisListener) {
-        this.locaisListener = locaisListener;
-    }
-    public void setNoticiaListener(NoticiaListener noticiaListener) {
-        this.noticiaListener = noticiaListener;
-    }
-    public void setPerfilListener(PerfilListener perfilListener) {
-        this.perfilListener = perfilListener;
-    }
-    public void setEventoListener(EventoListener eventoListener) {
-        this.eventoListener = eventoListener;
-    }
-    public void setFavoritoListener(FavoritoListener favoritoListener) {
-        this.favoritoListener = favoritoListener;
-    }
-    public void setBilheteListener(BilheteListener bilheteListener) {
-        this.bilheteListener = bilheteListener;
-    }
-    public void setReservaListener(ReservaListener reservaListener) {
-        this.reservaListener = reservaListener;
-    }
-    public void setAvaliacaoListener(AvaliacaoListener avaliacaoListener){
-        this.avaliacaoListener = avaliacaoListener;
-    }
+    public void setLoginListener(LoginListener loginListener) { this.loginListener = loginListener; }
+    public void setSignupListener(SignupListener signupListener) { this.signupListener = signupListener; }
+    public void setLocaisListener(LocaisListener locaisListener) { this.locaisListener = locaisListener; }
+    public void setNoticiaListener(NoticiaListener noticiaListener) { this.noticiaListener = noticiaListener; }
+    public void setPerfilListener(PerfilListener perfilListener) { this.perfilListener = perfilListener; }
+    public void setEventoListener(EventoListener eventoListener) { this.eventoListener = eventoListener; }
+    public void setFavoritoListener(FavoritoListener favoritoListener) { this.favoritoListener = favoritoListener; }
+    public void setBilheteListener(BilheteListener bilheteListener) { this.bilheteListener = bilheteListener; }
+    public void setReservaListener(ReservaListener reservaListener) { this.reservaListener = reservaListener; }
+    public void setAvaliacaoListener(AvaliacaoListener avaliacaoListener){ this.avaliacaoListener = avaliacaoListener;}
     //endregion
 
     // region Gestão da URL e Sessão
@@ -171,7 +163,7 @@ public class SingletonLusitania {
         SharedPreferences sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         sharedPreferences.edit().clear().apply();
         // Apagar dados do utilizador armazenados localmente, se existirem
-        dbHelper.deleteAllFavoritosByUser(userid);
+        favoritosDbHelper.deleteAllFavoritosByUser(userid);
         profileManager.clearUserProfile();
     }
     private String getAuthToken(Context context) {
@@ -212,12 +204,6 @@ public class SingletonLusitania {
     private void makeJsonArrayRequest(Context context, int method, String endpoint, boolean requiresAuth,
                                       final Response.Listener<JSONArray> onSuccess,
                                       final Response.ErrorListener onError) {
-
-        if (!UtilParser.isConnectionInternet(context)) {
-            Toast.makeText(context, "Sem ligação à internet", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
         String url = buildUrl(endpoint);
         if (requiresAuth) {
             String token = getAuthToken(context);
@@ -229,12 +215,7 @@ public class SingletonLusitania {
             url += (url.contains("?") ? "&" : "?") + "access-token=" + token;
         }
 
-        JsonArrayRequest req = new JsonArrayRequest(method, url, null,
-                onSuccess,
-                error -> {
-                    if (onError != null) onError.onErrorResponse(error);
-                    else handleDefaultError(context, error);
-                });
+        JsonArrayRequest req = new JsonArrayRequest(method, url, null, onSuccess, onError);
         volleyQueue.add(req);
     }
 
@@ -245,12 +226,6 @@ public class SingletonLusitania {
                                        JSONObject jsonBody,
                                        final Response.Listener<JSONObject> onSuccess,
                                        final Response.ErrorListener onError) {
-
-        if (!UtilParser.isConnectionInternet(context)) {
-            Toast.makeText(context, "Sem ligação à internet", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
         String url = buildUrl(endpoint);
         if (requiresAuth) {
             String token = getAuthToken(context);
@@ -261,50 +236,23 @@ public class SingletonLusitania {
             url += (url.contains("?") ? "&" : "?") + "access-token=" + token;
         }
 
-        JsonObjectRequest req = new JsonObjectRequest(method, url, jsonBody,
-                onSuccess,
-                error -> {
-                    if (onError != null) onError.onErrorResponse(error);
-                    else handleDefaultError(context, error);
-                });
+        JsonObjectRequest req = new JsonObjectRequest(method, url, jsonBody, onSuccess, onError);
         volleyQueue.add(req);
     }
-
-    //Tratar dos erros
-    private void handleDefaultError(Context context, VolleyError error) {
-        String msg = "Erro na comunicação"; // Mensagem fallback
-
-        if (error.networkResponse != null && error.networkResponse.data != null) {
-            try {
-                // Tenta ler o JSON de erro do servidor
-                String body = new String(error.networkResponse.data, StandardCharsets.UTF_8);
-                JSONObject json = new JSONObject(body);
-                // Tenta ler "error", se falhar tenta "message", se falhar usa a msg padrão
-                msg = json.optString("error", json.optString("message", "Erro servidor: " + error.networkResponse.statusCode));
-            } catch (Exception e) {
-                msg = "Erro inesperado (" + error.networkResponse.statusCode + ")";
-            }
-        } else if (error instanceof com.android.volley.NoConnectionError) {
-            msg = "Sem ligação à internet";
-        }
-
-        Toast.makeText(context, msg, Toast.LENGTH_SHORT).show();
-    }
-
     //endregion
 
     //region - CRUD Local (Favoritos BD & API)
     // metodo para obter os favoritos da base de dados local
     public ArrayList<Favorito> getFavoritosBD() {
-        return dbHelper.getAllFavoritos();
+        return favoritosDbHelper.getAllFavoritos();
     }
     // metodo para adicionar um favorito à base de dados local
     public void addFavoritoBD(Favorito favorito) {
-        dbHelper.adicionarFavorito(favorito);
+        favoritosDbHelper.adicionarFavorito(favorito);
     }
     // metodo para remover um favorito da base de dados local
     public void removeFavoritoBD(int id, int utilizadorid) {
-        dbHelper.removerFavorito(id, utilizadorid);
+        favoritosDbHelper.removerFavorito(id, utilizadorid);
     }
     // metodo para obter todos os favoritos via API
     public void getallFavoritosAPI(final Context context) {
@@ -568,9 +516,6 @@ public class SingletonLusitania {
                 }
         );
     }
-
-
-
     //endregion
 
     //region - Noticias API
@@ -797,65 +742,107 @@ public class SingletonLusitania {
     }
     //endregion
 
-    //region - Reservas/Bilhetes API
-    public void getAllReservasAPI(final Context context) {
+    //region - Reservas
+    public void getAllReservasAPI(Context context) {
+        // 1. Tenta carregar dados locais para uma UI rápida.
+        if (reservaListener != null) {
+            ArrayList<Reserva> reservasLocais = getAllReservasBD();
+            reservaListener.onReservasLoaded(reservasLocais);
+        }
+
+        // 2. Se estiver offline, os dados locais já foram mostrados. Fim.
+        if (!UtilParser.isConnectionInternet(context)) {
+            Toast.makeText(context, "Sem internet. A mostrar dados guardados.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // 3. MODO ONLINE: Busca as reservas na API.
         makeJsonArrayRequest(context, Request.Method.GET, mUrlAPIReserva, true,
                 response -> {
-                    try {
-                        ArrayList<Reserva> reservas = ReservasJsonParser.parserJsonReservas(response);
-                        if (reservaListener != null) reservaListener.onReservasLoaded(reservas);
-                    } catch (Exception e) {
-                        Toast.makeText(context, "Erro JSON Bilhetes", Toast.LENGTH_SHORT).show();
+                    // Sucesso ao obter as reservas
+                    ArrayList<Reserva> reservasDaAPI = ReservasJsonParser.parserJsonReservas(response);
+
+                    // PASSO A - Sincroniza as Reservas na BD
+                    sincronizarReservasBD(reservasDaAPI);
+
+                    // PASSO B - Inicia a cascata para sincronizar os bilhetes de cada reserva
+                    for (Reserva reserva : reservasDaAPI) {
+                        // Chama o método dos bilhetes. O bilheteListener não é necessário aqui,
+                        // pois o objetivo é apenas guardar os dados silenciosamente em segundo plano.
+                        getAllBilhetesAPI(context, reserva.getId());
+                    }
+
+                    // Notifica a UI do ReservasFragment com os dados frescos
+                    if (reservaListener != null) {
+                        reservaListener.onReservasLoaded(reservasDaAPI);
                     }
                 },
-                null
+                error -> {
+                    // Se a API de reservas falhar, a UI já tem os dados locais.
+                    Toast.makeText(context, "Falha ao sincronizar reservas. A mostrar dados guardados.", Toast.LENGTH_SHORT).show();
+                }
         );
     }
 
-    public void getAllBilhetesAPI(final Context context, int idReserva) {
+    private void sincronizarReservasBD(ArrayList<Reserva> reservas) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        db.beginTransaction();
+        try {
+            // Limpa as reservas antigas para evitar duplicados e manter os dados frescos
+            db.delete(DbContract.ReservaEntry.TABLE_NAME, null, null);
 
-        String url = mUrlAPIReserva + "/" + idReserva;
-        makeJsonArrayRequest(context, Request.Method.GET, url, true,
-                response -> {
-                    try {
-                        ArrayList<Bilhete> bilhetes = ReservasJsonParser.parserJsonBilhetes(response);
-                        if (bilheteListener != null) bilheteListener.onBilhetesLoaded(bilhetes);
-
-                    } catch (Exception e) {
-                        Toast.makeText(context, "Erro JSON Bilhetes", Toast.LENGTH_SHORT).show();
-                    }
-                }, null);
+            for (Reserva reserva : reservas) {
+                ContentValues values = new ContentValues();
+                values.put(DbContract.ReservaEntry.COLUMN_ID, reserva.getId());
+                values.put(DbContract.ReservaEntry.COLUMN_LOCAL_ID, reserva.getLocalId());
+                values.put(DbContract.ReservaEntry.COLUMN_LOCAL_NOME, reserva.getLocalNome());
+                values.put(DbContract.ReservaEntry.COLUMN_DATA_VISITA, reserva.getDataVisita());
+                values.put(DbContract.ReservaEntry.COLUMN_PRECO_TOTAL, reserva.getPrecoTotal());
+                values.put(DbContract.ReservaEntry.COLUMN_ESTADO, reserva.getEstado());
+                values.put(DbContract.ReservaEntry.COLUMN_DATA_CRIACAO, reserva.getDataCriacao());
+                values.put(DbContract.ReservaEntry.COLUMN_IMAGEM_LOCAL, reserva.getImagemLocal());
+                db.insert(DbContract.ReservaEntry.TABLE_NAME, null, values);
+            }
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
     }
 
-    public void searchReservaAPI(final Context context, String query){
-        makeJsonArrayRequest(context, Request.Method.GET, mUrlAPIReserva + "/search/" + query, true,
-                response -> {
-                    try{
-                        ArrayList<Reserva> reservas = ReservasJsonParser.parserJsonReservas(response);
-                        if (reservaListener != null) reservaListener.onReservasLoaded(reservas);
-                    } catch (Exception e) {
-                        Toast.makeText(context, "Erro JSON Reservas", Toast.LENGTH_SHORT).show();
-                    }
-                }, null);
+    private ArrayList<Reserva> getAllReservasBD() {
+        ArrayList<Reserva> reservas = new ArrayList<>();
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        try (Cursor cursor = db.rawQuery("SELECT * FROM " + DbContract.ReservaEntry.TABLE_NAME, null)) {
+            if (cursor.moveToFirst()) {
+                do {
+                    reservas.add(new Reserva(
+                            cursor.getInt(cursor.getColumnIndexOrThrow(DbContract.ReservaEntry.COLUMN_ID)),
+                            cursor.getInt(cursor.getColumnIndexOrThrow(DbContract.ReservaEntry.COLUMN_LOCAL_ID)),
+                            cursor.getString(cursor.getColumnIndexOrThrow(DbContract.ReservaEntry.COLUMN_LOCAL_NOME)),
+                            cursor.getString(cursor.getColumnIndexOrThrow(DbContract.ReservaEntry.COLUMN_DATA_VISITA)),
+                            cursor.getDouble(cursor.getColumnIndexOrThrow(DbContract.ReservaEntry.COLUMN_PRECO_TOTAL)),
+                            cursor.getString(cursor.getColumnIndexOrThrow(DbContract.ReservaEntry.COLUMN_ESTADO)),
+                            cursor.getString(cursor.getColumnIndexOrThrow(DbContract.ReservaEntry.COLUMN_DATA_CRIACAO)),
+                            cursor.getString(cursor.getColumnIndexOrThrow(DbContract.ReservaEntry.COLUMN_IMAGEM_LOCAL))
+                    ));
+                } while (cursor.moveToNext());
+            }
+        }
+        return reservas;
     }
 
     public void createReservaAPI(final Context context, int localId, String dataVisita, ArrayList<TipoBilhete> tiposBilhete) {
         try {
-            // Usa o método do ReservasJsonParser para criar o body
             JSONObject jsonBody = ReservasJsonParser.criarBodyReserva(localId, dataVisita, tiposBilhete);
 
-            // Faz o pedido POST
             makeJsonObjectRequest(context, Request.Method.POST, mUrlAPIReserva, true, jsonBody,
                     response -> {
                         try {
-                            // Parse da resposta (assumindo que retorna a reserva criada)
-                            // Ajusta conforme o formato real da tua API
                             int id = response.getInt("id");
                             String estado = response.getString("estado");
                             double precoTotal = response.getDouble("preco_total");
                             String dataCriacao = response.getString("data_criacao");
 
-                            // Cria objeto Reserva com os dados retornados
                             Reserva novaReserva = new Reserva(id, localId, "", dataVisita, precoTotal, estado, dataCriacao, "");
 
                             Toast.makeText(context, "Reserva criada com sucesso!", Toast.LENGTH_SHORT).show();
@@ -893,6 +880,114 @@ public class SingletonLusitania {
         }
     }
 
+    public void searchReservaAPI(final Context context, String query){
+        makeJsonArrayRequest(context, Request.Method.GET, mUrlAPIReserva + "/search/" + query, true,
+                response -> {
+                    try{
+                        ArrayList<Reserva> reservas = ReservasJsonParser.parserJsonReservas(response);
+                        if (reservaListener != null) reservaListener.onReservasLoaded(reservas);
+                    } catch (Exception e) {
+                        Toast.makeText(context, "Erro JSON Reservas", Toast.LENGTH_SHORT).show();
+                    }
+                }, null);
+    }
+    //endregion
+
+    //region - Bilhetes
+    public void getAllBilhetesAPI(final Context context, int idReserva) {
+        // A primeira ação é sempre ler da base de dados local.
+        ArrayList<Bilhete> bilhetesLocais = getAllBilhetesBD(idReserva);
+
+        // Se o bilheteListener está ativo (estamos no ViewBilhetesFragment),
+        // notifica imediatamente a UI com os dados locais.
+        if (bilheteListener != null) {
+            bilheteListener.onBilhetesLoaded(bilhetesLocais);
+        }
+
+        // Se estamos offline, o trabalho está feito. A UI foi notificada.
+        if (!UtilParser.isConnectionInternet(context)) {
+            // Opcional: só mostra o Toast se estivermos a interagir com o ecrã de bilhetes
+            if (bilheteListener != null) {
+                Toast.makeText(context, "Sem internet. A mostrar bilhetes guardados.", Toast.LENGTH_SHORT).show();
+            }
+            return;
+        }
+
+        // MODO ONLINE: Continua para sincronizar em segundo plano.
+        // A URL que você confirmou estar correta.
+        String url = mUrlAPIReserva + "/" + idReserva;
+        makeJsonArrayRequest(context, Request.Method.GET, url, true,
+                response -> {
+                    // SUCESSO DA API
+                    ArrayList<Bilhete> bilhetesDaAPI = ReservasJsonParser.parserJsonBilhetes(response);
+
+                    // AGORA ISTO FUNCIONA SEMPRE, porque sincronizarReservasBD() já correu antes.
+                    sincronizarBilhetesBD(idReserva, bilhetesDaAPI);
+
+                    // Se estamos no ViewBilhetesFragment, atualiza a UI com os dados frescos da API.
+                    if (bilheteListener != null) {
+                        bilheteListener.onBilhetesLoaded(bilhetesDaAPI);
+                    }
+                },
+                error -> {
+                    // Se a API de bilhetes falhar, não fazemos nada. A UI (se existir) já tem os dados locais.
+                    // Um Toast aqui poderia ser confuso para o utilizador, pois ele não iniciou esta ação diretamente.
+                }
+        );
+    }
+
+    private void sincronizarBilhetesBD(int reservaId, ArrayList<Bilhete> bilhetes) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        db.beginTransaction();
+        try {
+            // Limpa os bilhetes antigos APENAS para esta reserva
+            db.delete(DbContract.BilheteEntry.TABLE_NAME, DbContract.BilheteEntry.COLUMN_RESERVA_ID + " = ?", new String[]{String.valueOf(reservaId)});
+
+            for (Bilhete bilhete : bilhetes) {
+                ContentValues values = new ContentValues();
+                values.put(DbContract.BilheteEntry.COLUMN_CODIGO, bilhete.getCodigo());
+                values.put(DbContract.BilheteEntry.COLUMN_RESERVA_ID, bilhete.getReservaId());
+                values.put(DbContract.BilheteEntry.COLUMN_LOCAL_ID, bilhete.getLocalId());
+                values.put(DbContract.BilheteEntry.COLUMN_LOCAL_NOME, bilhete.getLocalNome());
+                values.put(DbContract.BilheteEntry.COLUMN_DATA_VISITA, bilhete.getDataVisita());
+                values.put(DbContract.BilheteEntry.COLUMN_TIPO_BILHETE_ID, bilhete.getTipoBilheteId());
+                values.put(DbContract.BilheteEntry.COLUMN_TIPO_BILHETE_NOME, bilhete.getTipoBilheteNome());
+                values.put(DbContract.BilheteEntry.COLUMN_PRECO, bilhete.getPreco());
+                values.put(DbContract.BilheteEntry.COLUMN_ESTADO, bilhete.getEstado());
+                db.insert(DbContract.BilheteEntry.TABLE_NAME, null, values);
+            }
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    private ArrayList<Bilhete> getAllBilhetesBD(int idReserva) {
+        ArrayList<Bilhete> bilhetes = new ArrayList<>();
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        try (Cursor cursor = db.query(DbContract.BilheteEntry.TABLE_NAME, null,
+                DbContract.BilheteEntry.COLUMN_RESERVA_ID + " = ?",
+                new String[]{String.valueOf(idReserva)}, null, null, null)) {
+
+            if (cursor.moveToFirst()) {
+                do {
+                    bilhetes.add(new Bilhete(
+                            cursor.getString(cursor.getColumnIndexOrThrow(DbContract.BilheteEntry.COLUMN_CODIGO)),
+                            cursor.getInt(cursor.getColumnIndexOrThrow(DbContract.BilheteEntry.COLUMN_RESERVA_ID)),
+                            cursor.getInt(cursor.getColumnIndexOrThrow(DbContract.BilheteEntry.COLUMN_LOCAL_ID)),
+                            cursor.getString(cursor.getColumnIndexOrThrow(DbContract.BilheteEntry.COLUMN_LOCAL_NOME)),
+                            cursor.getString(cursor.getColumnIndexOrThrow(DbContract.BilheteEntry.COLUMN_DATA_VISITA)),
+                            cursor.getInt(cursor.getColumnIndexOrThrow(DbContract.BilheteEntry.COLUMN_TIPO_BILHETE_ID)),
+                            cursor.getString(cursor.getColumnIndexOrThrow(DbContract.BilheteEntry.COLUMN_TIPO_BILHETE_NOME)),
+                            cursor.getDouble(cursor.getColumnIndexOrThrow(DbContract.BilheteEntry.COLUMN_PRECO)),
+                            cursor.getString(cursor.getColumnIndexOrThrow(DbContract.BilheteEntry.COLUMN_ESTADO))
+                    ));
+                } while (cursor.moveToNext());
+            }
+        }
+        return bilhetes;
+    }
+
     //endregion
 
 //region - Avaliacoes
@@ -913,12 +1008,10 @@ public class SingletonLusitania {
         makeJsonObjectRequest(context, Request.Method.POST, url, true, jsonBody,
                 response -> {
                     Toast.makeText(context, "Avaliação adicionada com sucesso!", Toast.LENGTH_SHORT).show();
-                    // <-- ADICIONE ESTA LINHA para recarregar os dados do local
                     getLocalAPI(localId, context);
                 },
                 error -> {
                     String mensagemErro = "Erro ao adicionar avaliação";
-                    // Lógica de tratamento de erro...
                     Toast.makeText(context, mensagemErro, Toast.LENGTH_SHORT).show();
                 }
         );
@@ -940,12 +1033,10 @@ public class SingletonLusitania {
         makeJsonObjectRequest(context, Request.Method.PUT, url, true, jsonBody,
                 response -> {
                     Toast.makeText(context, "Avaliação editada com sucesso!", Toast.LENGTH_SHORT).show();
-                    // <-- ADICIONE ESTA LINHA para recarregar os dados do local
                     getLocalAPI(localId, context);
                 },
                 error -> {
                     String mensagemErro = "Erro ao editar avaliação";
-                    // Lógica de tratamento de erro...
                     Toast.makeText(context, mensagemErro, Toast.LENGTH_SHORT).show();
                 }
         );
@@ -957,19 +1048,13 @@ public class SingletonLusitania {
         makeJsonObjectRequest(context, Request.Method.DELETE, url, true, null,
                 response -> {
                     Toast.makeText(context, "Avaliação removida com sucesso!", Toast.LENGTH_SHORT).show();
-                    // <-- ADICIONE ESTA LINHA para recarregar os dados do local
                     getLocalAPI(localId, context);
                 },
                 error -> {
                     String mensagemErro = "Erro ao remover avaliação";
-                    // Lógica de tratamento de erro...
                     Toast.makeText(context, mensagemErro, Toast.LENGTH_SHORT).show();
                 }
         );
     }
 //endregion
-
-
-
-
 }
