@@ -9,17 +9,18 @@ import java.util.ArrayList;
 import pt.ipleiria.estg.dei.maislusitania_android.models.Favorito;
 
 public class FavoritoJsonParser {
-    // Converter um ARRAY de JSONs numa LISTA de Favoritos
+    // Metodo para converter o JSONArray de favoritos em uma lista de objetos Favorito
     public static ArrayList<Favorito> parserJsonFavoritos(JSONArray response)
     {
+        // Lista para armazenar os favoritos convertidos
         ArrayList<Favorito> favoritos = new ArrayList<>();
-
         for (int i = 0; i < response.length(); i++)
         {
             try
             {
+                // Obtém o objeto JSON da posição i
                 JSONObject favorito = (JSONObject) response.get(i);
-
+                // Extrai os campos necessários
                 int id = favorito.getInt("id");
                 int utilizadorId = favorito.getInt("utilizador_id");
                 int localId = favorito.getInt("local_id");
@@ -30,10 +31,10 @@ public class FavoritoJsonParser {
                 float avaliacaoMedia = (float) favorito.optDouble("avaliacao_media", 0.0);
                 String dataAdicao = favorito.getString("data_adicao");
                 boolean isFavorite = favorito.optBoolean("is_favorite", true);
-
+                // Cria o objeto Favorito
                 Favorito auxFavorito = new Favorito(id, utilizadorId, localId, localImagem, localNome, localDistrito, avaliacaoMedia, dataAdicao, isFavorite);
+                // Adiciona o favorito à lista
                 favoritos.add(auxFavorito);
-
             }
             catch (JSONException e)
             {
