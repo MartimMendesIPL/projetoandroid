@@ -1,5 +1,6 @@
 package pt.ipleiria.estg.dei.maislusitania_android;
 
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -50,7 +51,10 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onConnected() {
                 // Restaura subscrições aos tópicos de favoritos
-                SingletonLusitania.getInstance(MainActivity.this).resubscribeToFavoritos(MainActivity.this);
+                // verificar se o utilizador está logado antes de resubscrever
+                if (!SingletonLusitania.getInstance(MainActivity.this).isGuestMode(MainActivity.this)) {
+                    SingletonLusitania.getInstance(MainActivity.this).resubscribeToFavoritos(MainActivity.this);
+                }
             }
 
             /**
@@ -113,10 +117,13 @@ public class MainActivity extends AppCompatActivity {
                 Fragment selectedFragment = null;
 
                 if (item.getItemId() == R.id.navigation_bilhetes) {
+                    if (verificarModoConvidado("Faça login para aceder aos bilhetes")) return false;
                     selectedFragment = new ReservasFragment();
                 } else if (item.getItemId() == R.id.navigation_eventos) {
+                    if (verificarModoConvidado("Faça login para aceder aos eventos")) return false;
                     selectedFragment = new EventosFragment();
                 } else if (item.getItemId() == R.id.navigation_noticias) {
+                    if (verificarModoConvidado("Faça login para aceder as noticias")) return false;
                     selectedFragment = new NoticiasFragment();
                 } else if (item.getItemId() == R.id.navigation_locais) {
                     selectedFragment = new LocaisFragment();
@@ -138,5 +145,15 @@ public class MainActivity extends AppCompatActivity {
      */
     public void deselectNavMenu() {
         bottomNavigationView.getMenu().setGroupCheckable(0, false, true);
+    }
+
+    private boolean verificarModoConvidado(String mensagem) {
+        if (SingletonLusitania.getInstance(this).isGuestMode(this)) {
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
+            Toast.makeText(this, mensagem, Toast.LENGTH_SHORT).show();
+            return true;
+        }
+        return false;
     }
 }

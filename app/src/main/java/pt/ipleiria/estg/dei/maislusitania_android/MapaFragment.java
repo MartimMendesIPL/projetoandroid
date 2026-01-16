@@ -59,9 +59,17 @@ public class MapaFragment extends Fragment implements MapaListener {
         setupSearchListeners();
 
         // Define ação do ícone de fim da barra de pesquisa (navega para Perfil)
-        binding.tilPesquisa.setEndIconOnClickListener(v ->
-                startActivity(new Intent(requireActivity(), PerfilActivity.class))
-        );
+        binding.tilPesquisa.setEndIconOnClickListener(v -> {
+            if (SingletonLusitania.getInstance(requireContext()).isGuestMode(requireContext())) {
+                Intent intent = new Intent(requireContext(), LoginActivity.class);
+                startActivity(intent);
+                Toast.makeText(requireContext(), "Faça login para aceder ao perfil", Toast.LENGTH_SHORT).show();
+            }else {
+                Intent intent = new Intent(requireContext(), PerfilActivity.class);
+                startActivity(intent);
+            }
+
+        });
 
         // Configura a WebView com as definições necessárias
         setupWebView(binding.webViewMap);

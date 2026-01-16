@@ -124,8 +124,14 @@ public class LocaisFragment extends Fragment implements LocaisListener, LocalAda
      */
     private void setupClickListeners() {
         binding.tilPesquisa.setEndIconOnClickListener(v -> {
-            Intent intent = new Intent(getActivity(), PerfilActivity.class);
-            startActivity(intent);
+            if (SingletonLusitania.getInstance(requireContext()).isGuestMode(requireContext())) {
+                Intent intent = new Intent(requireContext(), LoginActivity.class);
+                startActivity(intent);
+                Toast.makeText(requireContext(), "Faça login para aceder ao perfil", Toast.LENGTH_SHORT).show();
+            }else {
+                Intent intent = new Intent(requireContext(), PerfilActivity.class);
+                startActivity(intent);
+            }
         });
     }
 

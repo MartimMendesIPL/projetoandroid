@@ -93,9 +93,10 @@ public class LoginActivity extends AppCompatActivity implements LoginListener {
     @Override
     public void onValidateLogin(final String token, final String username, final String user_id) {
         runOnUiThread(() -> {
-            // Guarda os dados do utilizador nas preferências
-            SingletonLusitania.getInstance(this).guardarUtilizador(this, username, token, user_id);
+            // Desativa modo convidado ao fazer login
+            SingletonLusitania.getInstance(this).setGuestMode(this, false);
 
+            SingletonLusitania.getInstance(this).guardarUtilizador(this, username, token, user_id);
             Toast.makeText(this, "Bem-vindo, " + username + "!", Toast.LENGTH_SHORT).show();
             MainActivity();
         });
@@ -114,6 +115,8 @@ public class LoginActivity extends AppCompatActivity implements LoginListener {
      * Acesso como convidado sem autenticação
      */
     public void GuestLogin(View view) {
+        // Ativa modo convidado
+        SingletonLusitania.getInstance(this).setGuestMode(this, true);
         MainActivity();
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
     }

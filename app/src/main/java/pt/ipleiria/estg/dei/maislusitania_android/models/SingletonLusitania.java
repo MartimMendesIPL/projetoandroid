@@ -70,6 +70,7 @@ public class SingletonLusitania {
     private ProfileManager profileManager;
 
     // Chaves para SharedPreferences
+    private static final String KEY_GUEST_MODE = "guest_mode";
     private static final String KEY_TOKEN = "auth_key";
     private static final String PREF_NAME = "MaisLusitaniaPrefs";
     private static final String KEY_USERNAME = "username";
@@ -185,9 +186,14 @@ public class SingletonLusitania {
     // Faz logout: Limpa SharedPreferences, BD Local e Perfil
     public void logout(Context context) {
         int userid = getUserId(context);
+
         SharedPreferences sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         sharedPreferences.edit().clear().apply();
-        // Apagar dados do utilizador armazenados localmente, se existirem
+
+        // Limpa modo convidado DEPOIS de limpar tudo
+        setGuestMode(context, false);
+
+        // Apagar dados do utilizador armazenados localmente
         dbHelper.removerReservasBilhetes();
         dbHelper.deleteAllFavoritosByUser(userid);
         profileManager.clearUserProfile();
@@ -208,6 +214,16 @@ public class SingletonLusitania {
         } catch (NumberFormatException e) {
             return -1; // Valor padrão se não for um número válido
         }
+    }
+    // Métodos para gerir modo convidado
+    public void setGuestMode(Context context, boolean isGuest) {
+        SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        prefs.edit().putBoolean(KEY_GUEST_MODE, isGuest).apply();
+    }
+
+    public boolean isGuestMode(Context context) {
+        SharedPreferences prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        return prefs.getBoolean(KEY_GUEST_MODE, false);
     }
 
     // Cria um objeto Favorito auxiliar para inserção na BD
@@ -349,6 +365,11 @@ public class SingletonLusitania {
 
     // Alterna favorito (View Local): Atualiza API, BD e MQTT
     public void toggleLocalFavoritoAPI(final Context context, final Local local) {
+        // Convidados não podem adicionar favoritos
+        if (isGuestMode(context)) {
+            Toast.makeText(context, "Faça login para adicionar favoritos", Toast.LENGTH_SHORT).show();
+            return;
+        }
         // Define Endpoint e Metodo baseado no estado atual
         String endpoint;
         int method;
@@ -505,7 +526,8 @@ public class SingletonLusitania {
 
     // Obtém lista de todos os locais
     public void getAllLocaisAPI(final Context context) {
-        makeJsonArrayRequest(context, Request.Method.GET, mUrlAPILocais, true,
+        boolean requiresAuth = !isGuestMode(context);
+        makeJsonArrayRequest(context, Request.Method.GET, mUrlAPILocais, requiresAuth,
                 response -> {
                     try {
                         locais = LocalJsonParser.parserJsonLocais(response);
@@ -522,7 +544,8 @@ public class SingletonLusitania {
 
     // Retorna detalhes de um local especifico
     public void getLocalAPI(final int localId, final Context context) {
-        makeJsonObjectRequest(context, Request.Method.GET, mUrlAPILocais + "/" + localId, true, null,
+        boolean requiresAuth = !isGuestMode(context);
+        makeJsonObjectRequest(context, Request.Method.GET, mUrlAPILocais + "/" + localId, requiresAuth, null,
                 response -> {
                     try {
                         // Adicionado .toString() porque o parser espera String e o response é JSONObject
@@ -540,7 +563,8 @@ public class SingletonLusitania {
 
     // Pesquisa locais por texto
     public void searchLocalAPI(final Context context, final String query) {
-        makeJsonArrayRequest(context, Request.Method.GET, mUrlAPILocais + "/search/" + query, true,
+        boolean requiresAuth = !isGuestMode(context);
+        makeJsonArrayRequest(context, Request.Method.GET, mUrlAPILocais + "/search/" + query, requiresAuth,
                 response -> {
                     try {
                         // The same parser can be used for search results
