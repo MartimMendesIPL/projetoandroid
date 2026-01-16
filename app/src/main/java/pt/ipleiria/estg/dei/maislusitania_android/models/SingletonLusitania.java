@@ -188,7 +188,6 @@ public class SingletonLusitania {
         SharedPreferences sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         sharedPreferences.edit().clear().apply();
         // Apagar dados do utilizador armazenados localmente, se existirem
-
         dbHelper.removerReservasBilhetes();
         dbHelper.deleteAllFavoritosByUser(userid);
         profileManager.clearUserProfile();
@@ -308,10 +307,8 @@ public class SingletonLusitania {
                 response -> {
                     try {
                         ArrayList<Favorito> favoritos = FavoritoJsonParser.parserJsonFavoritos(response);
-
                         // Sincroniza com a BD local
                         dbHelper.sincronizarFavoritos(favoritos);
-
                         if (favoritoListener != null) favoritoListener.onFavoritosLoaded(favoritos);
                     } catch (Exception e) {
                         if (favoritoListener != null)

@@ -56,7 +56,6 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:layout_marginTop="8dp">
-
                 <RatingBar
                     android:id="@+id/ratingBar"
                     android:layout_width="wrap_content"
@@ -65,9 +64,9 @@
                     android:numStars="5"
                     android:rating="0"
                     android:isIndicator="true"
-                    android:progressTint="#FFD700"
-                    android:progressBackgroundTint="#5A5A5A"
-                    android:secondaryProgressTint="#5A5A5A"
+                    android:progressBackgroundTint="@android:color/darker_gray"
+                    android:progressTint="@color/blue_primary"
+                    android:secondaryProgressTint="@color/blue_primary"
                     />
             </LinearLayout>
 
