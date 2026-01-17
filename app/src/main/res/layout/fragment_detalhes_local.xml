@@ -378,6 +378,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:gravity="top"
+                                android:textColor="@color/black"
                                 android:hint="Escreva o seu comentário (opcional)"
                                 android:minLines="3" />
                         </com.google.android.material.textfield.TextInputLayout>
