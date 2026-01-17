@@ -22,7 +22,7 @@ import java.util.Calendar;
 import java.util.Locale;
 
 import pt.ipleiria.estg.dei.maislusitania_android.adapters.TipoBilheteAdapter;
-import pt.ipleiria.estg.dei.maislusitania_android.databinding.FragmentReservaBinding;
+import pt.ipleiria.estg.dei.maislusitania_android.databinding.FragmentFazerReservaBinding;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.LocaisListener;
 import pt.ipleiria.estg.dei.maislusitania_android.listeners.ReservaListener;
 import pt.ipleiria.estg.dei.maislusitania_android.models.Local;
@@ -36,7 +36,7 @@ import pt.ipleiria.estg.dei.maislusitania_android.models.TipoBilhete;
 public class FazerReservaFragment extends Fragment implements LocaisListener, ReservaListener {
 
     // Binding para acesso aos elementos da UI
-    private FragmentReservaBinding binding;
+    private FragmentFazerReservaBinding binding;
 
     // Adaptador para a lista de tipos de bilhetes
     private TipoBilheteAdapter adapter;
@@ -83,7 +83,7 @@ public class FazerReservaFragment extends Fragment implements LocaisListener, Re
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        binding = FragmentReservaBinding.inflate(inflater, container, false);
+        binding = FragmentFazerReservaBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
 

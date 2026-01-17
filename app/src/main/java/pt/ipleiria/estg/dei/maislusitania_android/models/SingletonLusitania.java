@@ -21,6 +21,7 @@ import org.json.JSONObject;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 
 //Import Listeners (Interfaces para comunicar com a UI)
 import pt.ipleiria.estg.dei.maislusitania_android.database.DbContract;
@@ -833,6 +834,7 @@ public class SingletonLusitania {
         //Carregar dados locais para uma UI rápida.
         if (reservaListener != null) {
             ArrayList<Reserva> reservasLocais = dbHelper.getAllReservas();
+            Collections.sort(reservasLocais, (r1, r2) -> r2.getDataCriacao().compareTo(r1.getDataCriacao()));
             reservaListener.onReservasLoaded(reservasLocais);
         }
 
@@ -860,6 +862,7 @@ public class SingletonLusitania {
 
                     // Notifica a UI do ReservasFragment com os dados frescos
                     if (reservaListener != null) {
+                        Collections.sort(reservasDaAPI, (r1, r2) -> r2.getDataCriacao().compareTo(r1.getDataCriacao()));
                         reservaListener.onReservasLoaded(reservasDaAPI);
                     }
                 },

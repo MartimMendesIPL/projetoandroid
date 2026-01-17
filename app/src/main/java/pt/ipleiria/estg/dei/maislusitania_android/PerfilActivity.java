@@ -71,9 +71,8 @@ public class PerfilActivity extends AppCompatActivity {
             etLastName.setText(binding.tvLastName.getText().toString());
             etUsername.setText(binding.tvUsername.getText().toString());
 
-            builder.setView(dialogView)
-                    .setTitle("Editar Perfil")
-                    .setPositiveButton("Guardar", (dialog, which) -> {
+            AlertDialog dialog = builder.setView(dialogView)
+                    .setPositiveButton("Guardar", (dialogInterface, which) -> {
                         String firstName = etFirstName.getText().toString().trim();
                         String lastName = etLastName.getText().toString().trim();
                         String username = etUsername.getText().toString().trim();
@@ -91,9 +90,11 @@ public class PerfilActivity extends AppCompatActivity {
                             Toast.makeText(this, "Preencha todos os campos", Toast.LENGTH_SHORT).show();
                         }
                     })
-                    .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss())
-                    .create()
-                    .show();
+                    .setNegativeButton("Cancelar", (dialogInterface, which) -> dialogInterface.dismiss())
+                    .create();
+
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.white);
+            dialog.show();
         });
 
         // Layout Mudar Password - abre diálogo para alterar password
@@ -108,9 +109,8 @@ public class PerfilActivity extends AppCompatActivity {
             EditText etCurrentPassword = dialogView.findViewById(R.id.etCurrentPassword);
             EditText etNewPassword = dialogView.findViewById(R.id.etNewPassword);
 
-            builder.setView(dialogView)
-                    .setTitle("Mudar Password")
-                    .setPositiveButton("Guardar", (dialog, which) -> {
+            AlertDialog dialog = builder.setView(dialogView)
+                    .setPositiveButton("Guardar", (dialogInterface, which) -> {
                         String currentPassword = etCurrentPassword.getText().toString().trim();
                         String newPassword = etNewPassword.getText().toString().trim();
 
@@ -127,9 +127,11 @@ public class PerfilActivity extends AppCompatActivity {
                             Toast.makeText(this, "Preencha todos os campos", Toast.LENGTH_SHORT).show();
                         }
                     })
-                    .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss())
-                    .create()
-                    .show();
+                    .setNegativeButton("Cancelar", (dialogInterface, which) -> dialogInterface.dismiss())
+                    .create();
+
+            dialog.getWindow().setBackgroundDrawableResource(android.R.color.white);
+            dialog.show();
         });
 
         // Layout Apagar Conta - solicita confirmação antes de apagar

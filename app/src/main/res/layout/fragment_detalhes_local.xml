@@ -313,12 +313,14 @@
                     app:cardCornerRadius="8dp"
                     app:cardElevation="0dp"
                     app:strokeColor="#DADADA"
-                    app:strokeWidth="1dp">
+                    app:strokeWidth="1dp"
+                    app:cardBackgroundColor="@color/white">
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:padding="16dp">
+                        android:padding="16dp"
+                        android:background="@color/white">
 
                         <!-- Botão para APAGAR (ícone) -->
                         <ImageButton
@@ -402,7 +404,7 @@
                     android:layout_height="wrap_content"
                     android:nestedScrollingEnabled="false"
                     tools:itemCount="2"
-                    tools:listitem="@layout/item_list_avaliacao" />
+                    tools:listitem="@layout/item_list_avaliacao"/>
 
             </LinearLayout>
 

@@ -142,9 +142,8 @@ public class LoginActivity extends AppCompatActivity implements LoginListener {
         // Pré-preenchimento com a URL atual
         etMainUrl.setText(SingletonLusitania.getInstance(getApplicationContext()).buildUrl(""));
 
-        builder.setView(dialogView)
-                .setTitle("Configurar URL")
-                .setPositiveButton("Guardar", (dialog, which) -> {
+        AlertDialog dialog =    builder.setView(dialogView)
+                .setPositiveButton("Guardar", (dialogInterface, which) -> {
                     String url = etMainUrl.getText().toString().trim();
                     if (!url.isEmpty()) {
                         // Guarda a nova URL no Singleton
@@ -152,8 +151,10 @@ public class LoginActivity extends AppCompatActivity implements LoginListener {
                         Toast.makeText(LoginActivity.this, "URL guardada", Toast.LENGTH_SHORT).show();
                     }
                 })
-                .setNegativeButton("Cancelar", (dialog, which) -> dialog.dismiss())
-                .create()
-                .show();
+                .setNegativeButton("Cancelar", (dialogInterface, which) -> dialogInterface.dismiss())
+                .create();
+
+        dialog.getWindow().setBackgroundDrawableResource(android.R.color.white);
+        dialog.show();
     }
 }
