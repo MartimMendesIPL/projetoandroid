@@ -152,6 +152,12 @@ public class EventosFragment extends Fragment implements EventoListener {
             // Navega para o fragment de detalhes
             requireActivity().getSupportFragmentManager()
                     .beginTransaction()
+                    .setCustomAnimations(
+                            R.anim.slide_up_fade_in,
+                            R.anim.slide_down_fade_out,
+                            R.anim.slide_up_fade_in,
+                            R.anim.slide_down_fade_out
+                    )
                     .replace(R.id.fragment_container, fragment)
                     .addToBackStack(null)
                     .commit();

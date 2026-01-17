@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -31,6 +32,20 @@ public class FavoritoActivity extends AppCompatActivity implements FavoritoListe
         // inflar o layout
         binding = ActivityFavoritoBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+                    getSupportFragmentManager().popBackStack();
+                    binding.btnVoltar.setVisibility(View.VISIBLE);
+                    binding.btnVoltar.setAlpha(1f);
+                } else {
+                    finish();
+                }
+            }
+        });
+
         // inicializar a lista de favoritos
         items = new ArrayList<>();
         // configurar o botao de voltar
@@ -40,6 +55,7 @@ public class FavoritoActivity extends AppCompatActivity implements FavoritoListe
         // configurar o listener e carregar os favoritos
         SingletonLusitania.getInstance(this).setFavoritoListener(this);
         SingletonLusitania.getInstance(this).getallFavoritosAPI(this);
+        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
     }
     // metodo para configurar o RecyclerView
     private void setupRecyclerView()
@@ -59,13 +75,24 @@ public class FavoritoActivity extends AppCompatActivity implements FavoritoListe
                     Toast.makeText(FavoritoActivity.this, "Sem ligação à Internet.", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                Toast.makeText(FavoritoActivity.this, "Clique detectado para: " + item.getLocalNome(), Toast.LENGTH_SHORT).show();
                 // navegar para o fragmento de detalhes do local
                 Fragment fragment = DetalhesLocalFragment.newInstance(item.getLocalId());
                 getSupportFragmentManager().beginTransaction()
+                        .setCustomAnimations(
+                                R.anim.slide_up_fade_in,
+                                R.anim.slide_down_fade_out,
+                                R.anim.slide_up_fade_in,
+                                R.anim.slide_down_fade_out
+                        )
                         .replace(R.id.fragment_container, fragment)
                         .addToBackStack(null)
                         .commit();
+
+                binding.btnVoltar.animate()
+                        .alpha(0f)
+                        .setDuration(300)
+                        .withEndAction(() -> binding.btnVoltar.setVisibility(View.GONE))
+                        .start();
             }
             @Override
             // metodo para lidar com o clique no favorito
@@ -103,6 +130,11 @@ public class FavoritoActivity extends AppCompatActivity implements FavoritoListe
     public void onFavoritosError(String message)
     {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+    }
+    @Override
+    public void finish() {
+        super.finish();
+        overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
     }
     @Override
     // limpar o binding quando a activity for destruida

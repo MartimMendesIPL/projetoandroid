@@ -41,6 +41,13 @@ public class LoginActivity extends AppCompatActivity implements LoginListener {
 
         // Registra esta activity como listener de eventos de login
         SingletonLusitania.getInstance(this).setLoginListener(this);
+        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+    }
+
+    @Override
+    public void finish() {
+        super.finish();
+        overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
     }
 
     /**
@@ -49,7 +56,7 @@ public class LoginActivity extends AppCompatActivity implements LoginListener {
     public void goToRegister(View view) {
         Intent intent = new Intent(this, RegisterActivity.class);
         startActivity(intent);
-        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
     }
 
     /**
@@ -118,7 +125,7 @@ public class LoginActivity extends AppCompatActivity implements LoginListener {
         // Ativa modo convidado
         SingletonLusitania.getInstance(this).setGuestMode(this, true);
         MainActivity();
-        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
     }
 
     /**

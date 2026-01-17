@@ -175,6 +175,12 @@ public class LocaisFragment extends Fragment implements LocaisListener, LocalAda
             // Cria o fragment de detalhes com o ID do local
             Fragment fragment = DetalhesLocalFragment.newInstance(item.getId());
             getParentFragmentManager().beginTransaction()
+                    .setCustomAnimations(
+                            R.anim.slide_up_fade_in,
+                            R.anim.slide_down_fade_out,
+                            R.anim.slide_up_fade_in,
+                            R.anim.slide_down_fade_out
+                    )
                     .replace(R.id.fragment_container, fragment)
                     .addToBackStack(null)
                     .commit();
