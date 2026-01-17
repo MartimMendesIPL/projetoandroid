@@ -278,16 +278,14 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:background="@color/white">
+                android:orientation="vertical">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="12dp"
                     android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:background="@color/white">
+                    android:orientation="horizontal">
 
                     <ImageView
                         android:layout_width="24dp"
@@ -321,7 +319,8 @@
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:padding="16dp">
+                        android:padding="16dp"
+                        android:background="@color/white">
 
                         <!-- Botão para APAGAR (ícone) -->
                         <ImageButton
@@ -405,8 +404,7 @@
                     android:layout_height="wrap_content"
                     android:nestedScrollingEnabled="false"
                     tools:itemCount="2"
-                    tools:listitem="@layout/item_list_avaliacao"
-                    android:background="@color/white"/>
+                    tools:listitem="@layout/item_list_avaliacao"/>
 
             </LinearLayout>
 
