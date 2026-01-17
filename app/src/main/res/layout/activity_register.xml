@@ -244,6 +244,7 @@
         app:layout_constraintBottom_toBottomOf="@+id/tvAlreadyHaveAccount"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/tvAlreadyHaveAccount"
+        android:layout_marginStart="8dp"
         android:onClick="goToLogin" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

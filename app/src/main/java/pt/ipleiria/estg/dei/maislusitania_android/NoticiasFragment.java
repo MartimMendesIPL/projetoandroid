@@ -125,6 +125,12 @@ public class NoticiasFragment extends Fragment implements NoticiaListener {
             // Realizar a transação do fragmento
             requireActivity().getSupportFragmentManager()
                     .beginTransaction()
+                    .setCustomAnimations(
+                            R.anim.slide_up_fade_in,
+                            R.anim.slide_down_fade_out,
+                            R.anim.slide_up_fade_in,
+                            R.anim.slide_down_fade_out
+                    )
                     .replace(R.id.fragment_container, fragment)
                     .addToBackStack(null)
                     .commit();

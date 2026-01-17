@@ -93,6 +93,12 @@ public class ReservasFragment extends Fragment implements ReservaListener {
 
             // Navega para o fragment de detalhes
             getParentFragmentManager().beginTransaction()
+                    .setCustomAnimations(
+                            R.anim.slide_up_fade_in,
+                            R.anim.slide_down_fade_out,
+                            R.anim.slide_up_fade_in,
+                            R.anim.slide_down_fade_out
+                    )
                     .replace(R.id.fragment_container, fragment)
                     .addToBackStack(null)
                     .commit();

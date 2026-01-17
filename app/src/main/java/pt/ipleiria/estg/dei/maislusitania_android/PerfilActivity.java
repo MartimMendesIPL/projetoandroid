@@ -37,6 +37,7 @@ public class PerfilActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
         configurarListeners();
         carregarDadosUtilizador();
+        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
     }
 
     /**
@@ -232,6 +233,15 @@ public class PerfilActivity extends AppCompatActivity {
                 binding.ivProfilePhoto.setImageResource(R.drawable.ic_perfil);
             }
         }
+    }
+
+    /**
+     * Customiza a animação de saída quando a activity fecha
+     */
+    @Override
+    public void finish() {
+        super.finish();
+        overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
     }
 
     /**

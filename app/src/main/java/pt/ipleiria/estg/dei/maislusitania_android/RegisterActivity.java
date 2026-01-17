@@ -38,6 +38,8 @@ public class RegisterActivity extends AppCompatActivity implements SignupListene
         etRegUltimoNome = findViewById(R.id.etRegUltimoNome);
         // Configurar o listener de registo
         SingletonLusitania.getInstance(this).setSignupListener(this);
+
+        overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
     }
     // Metodo onClick para o botao de registo
     public void Signup(View view)
@@ -109,7 +111,7 @@ public class RegisterActivity extends AppCompatActivity implements SignupListene
         // Volta para a tela anterior
         finish();
         // Opção 1: Fade simples
-        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+        overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
     }
     @Override
     public void onSignupSuccess()
@@ -117,6 +119,12 @@ public class RegisterActivity extends AppCompatActivity implements SignupListene
         Toast.makeText(this,"Registo efetuado com sucesso! Por favor, inicie sessão.", Toast.LENGTH_LONG).show();
         // Volta para a tela anterior
         finish();
-        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+        overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);
+    }
+
+    @Override
+    public void finish() {
+        super.finish();
+        overridePendingTransition(R.anim.slide_out_right, R.anim.slide_in_left);
     }
 }

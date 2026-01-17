@@ -110,6 +110,12 @@ public class DetalhesLocalFragment extends Fragment implements LocaisListener {
             FazerReservaFragment fazerReservaFragment = FazerReservaFragment.newInstance(localId);
             getParentFragmentManager()
                     .beginTransaction()
+                    .setCustomAnimations(
+                            R.anim.slide_up_fade_in,
+                            R.anim.slide_down_fade_out,
+                            R.anim.slide_up_fade_in,
+                            R.anim.slide_down_fade_out
+                    )
                     .replace(R.id.fragment_container, fazerReservaFragment)
                     .addToBackStack(null)
                     .commit();
